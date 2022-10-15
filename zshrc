@@ -70,7 +70,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+# plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -102,15 +102,16 @@ source $ZSH/oh-my-zsh.sh
 
 # No arguments: `git status`
 # With arguments: acts like `git`
-#g() {
-#  if [[ $# -gt 0 ]]; then
-#    git "$@"
-#  else
-#    git status
-#  fi
-#}
+function g() {
+  if [[ $# -gt 0 ]]; then
+    git "$@"
+  else
+    git status
+  fi
+}
+
 
 # aliases
-[[ -f ~/.zsh/aliases ]] && source ~/.zsh/aliases
+[[ -f ~/.aliases ]] && source ~/.aliases
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
