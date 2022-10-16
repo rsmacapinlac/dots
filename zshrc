@@ -116,8 +116,27 @@ function g() {
   fi
 }
 
+# Keybindings for fzf
+#source /usr/share/doc/fzf/examples/key-bindings.zsh
+#source /usr/share/doc/fzf/examples/completion.zsh
+
+# modify the prompt to contain git branch name if applicable
+function git_prompt_info() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  if [[ -n $current_branch ]]; then
+    echo " %{$fg_bold[green]%}[$current_branch]%{$reset_color%}"
+  fi
+}
+
+setopt promptsubst
+
+# Allow exported PS1 variable to override default prompt.
+if ! env | grep -q '^PS1='; then
+  PS1='${SSH_CONNECTION+"%{$fg_bold[green]%}%n@%m:"}%{$fg_bold[blue]%}%c%{$reset_color%}$(git_prompt_info) ➜ '
+fi
 
 # aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 
+# fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

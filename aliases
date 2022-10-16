@@ -3,7 +3,9 @@ alias ll="ls -al"
 alias ln="ln -v"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
-alias v="$VISUAL"
+
+# Habit change
+alias v="echo \"Use 'e'\"! Gawd!"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
