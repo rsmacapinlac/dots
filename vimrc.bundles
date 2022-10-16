@@ -26,23 +26,46 @@ else
 endif
 
 Plug 'junegunn/fzf.vim'
-Plug 'elixir-lang/vim-elixir'
-Plug 'fatih/vim-go'
 Plug 'janko-m/vim-test'
-Plug 'pangloss/vim-javascript'
+
+" Utilities
+"
+" https://github.com/pbrisbin/vim-mkdir
+" When you :o and the file / dir doesn't exists, it creates it
 Plug 'pbrisbin/vim-mkdir'
-Plug 'slim-template/vim-slim'
-Plug 'tpope/vim-bundler'
+
+
+" https://github.com/tpope/vim-endwise
+" Code completion
 Plug 'tpope/vim-endwise'
+
+" https://github.com/tpope/vim-eunuch
+" File utilities
 Plug 'tpope/vim-eunuch'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-projectionist'
+
+" https://github.com/tpope/vim-surround
+" Seems useful, might need to evaluate
+Plug 'tpope/vim-surround'
+
+" https://github.com/slim-template/vim-slim
+Plug 'slim-template/vim-slim'
+
+" Ruby / Rails stuff
+Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rake'
-Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-rhubarb'
-Plug 'tpope/vim-surround'
 Plug 'vim-ruby/vim-ruby'
+
+" https://github.com/tomtom/tcomment_vim/blob/master/doc/tcomment.txt
 Plug 'vim-scripts/tComment'
+
+" pretty layout
+Plug 'altercation/vim-colors-solarized'
+
+" minimal writer, replacement for focuswriter
+Plug 'junegunn/goyo.vim'
+"
+" Markdown highlighting
+Plug 'plasticboy/vim-markdown'
 
 call plug#end()
