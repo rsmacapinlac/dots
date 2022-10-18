@@ -1,0 +1,31 @@
+set imap_user = "rsmacapinlac@boogienet.com"
+# set smtp_url = "smtp://rsmacapinlac@boogienet.com@smtp.gmail.com:587/"
+
+set sendmail = "msmtp -a rsmacapinlac@boogienet.com"
+
+# mbsync drops mail here
+set folder = "/home/ritchie/Mail/boogienet.com"
+
+set from = "rsmacapinlac@boogienet.com"
+set realname = "Ritchie Macapinlac"
+# set folder = "imaps://imap.gmail.com:993"
+
+unmailboxes *
+unalternates *
+unset signature
+
+set spoolfile = "+INBOX"
+set postponed = "+Drafts"
+#set record = "+[Gmail]/Sent Mail"
+#set trash = "+[Gmail]/Trash"
+
+mailboxes "=INBOX"
+mailboxes "=Drafts"
+mailboxes "=Receipts and Invoices"
+mailboxes "=zzz - Automated"
+mailboxes "=zzz - Automated/Hosting Plugin Alerts"
+mailboxes "=zzz - Automations"
+mailboxes "=zzz - Automations/MonthlyReport"
+mailboxes "=zzz - Automations/Weekly"
+mailboxes "=zzz - Reference"
+mailboxes "=zzz - Reference/Financials"

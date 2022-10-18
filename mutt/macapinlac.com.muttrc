@@ -1,0 +1,39 @@
+set sendmail = "msmtp -a ritchie@macapinlac.com"
+
+# mbsync drops mail here
+set folder = "~/Mail/macapinlac.com/"
+set mbox_type = Maildir
+
+set from = "ritchie@macapinlac.com"
+set realname = "Ritchie Macapinlac"
+
+unmailboxes *
+unalternates *
+unset signature
+
+set ssl_starttls = yes
+set ssl_force_tls = yes
+
+set spoolfile = "+INBOX"
+set postponed = "+[Gmail]/Drafts"
+
+mailboxes "=INBOX"
+# mailboxes "=[Gmail]/Sent Mail"
+mailboxes "=[Gmail]/Drafts"
+# mailboxes "=[Gmail]/Trash"
+mailboxes "=!Projects"
+mailboxes "=!Projects/2022 - Resume update"
+mailboxes "=zzz - Automated"
+mailboxes "=zzz - Automated/Banking"
+mailboxes "=zzz - Automated/Jobs"
+mailboxes "=zzz - Automated/Newsletters"
+mailboxes "=zzz - Automated/Shopping"
+mailboxes "=zzz - Village at Walker Lakes"
+mailboxes "=zzz - Village at Walker Lakes/Alberta New Home Warranty" 
+mailboxes "=zzz - Village at Walker Lakes/Casawise" 
+mailboxes "=zzz - Village at Walker Lakes/KDM Management" 
+mailboxes "=zzz - Village at Walker Lakes/Landmark" 
+mailboxes "=zzzz - Saved Emails"
+mailboxes "=zzzz - Saved Emails/Nexus program"
+mailboxes "=zzzz - Saved Emails/Rouxbe Updates"
+mailboxes "=zzzz - Saved Emails/Tri Coach"
