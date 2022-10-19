@@ -33,6 +33,9 @@ bind index,pager B sidebar-toggle-visible
 # macro index,pager gi "<change-folder>=INBOX<enter>" "go to inbox"
 
 #color sidebar_highlight red default
+#
+color indicator cyan black
+color sidebar_highlight black color8
 color sidebar_divider brightblack black
 color sidebar_flagged red black
 color sidebar_new green black
