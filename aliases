@@ -4,6 +4,9 @@ alias ln="ln -v"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 
+# Ritchie's stuff :)
+alias w="feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers"
+
 # Habit change
 alias v="echo \"Use 'e'\"! Gawd!"
 
