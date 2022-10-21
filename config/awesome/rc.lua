@@ -256,7 +256,9 @@ root.buttons(gears.table.join(
 globalkeys = gears.table.join(
     awful.key({ "Control", "Shift"}, "w", function() awful.spawn.with_shell(wallpaper_cmd) end,
               {description="Change wallpaper", group="Ritchie"}),
-
+    awful.key({ modkey }, "space", function () awful.util.spawn("dmenu_run") end,
+              {description = "run dmenu", group = "Ritchie"}),
+    -- End Ritchie's stuff
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
@@ -341,9 +343,6 @@ globalkeys = gears.table.join(
     -- Prompt
     awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
               {description = "run prompt", group = "launcher"}),
-    -- Super + Space to spawn dmenu
-    awful.key({ modkey }, "space", function () awful.util.spawn("dmenu_run") end,
-              {description = "run dmenu", group = "launcher"}),
 
     awful.key({ modkey }, "x",
               function ()
