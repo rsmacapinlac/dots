@@ -130,7 +130,7 @@ nnoremap <C-l> <C-w>l
 nnoremap <c-p> :Files<cr>
 
 " Unmap ex mode
-:map Q <Nop>
+map Q <Nop>
 
 
 "
