@@ -72,7 +72,10 @@ ZSH_THEME="robbyrussell"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   zsh-autosuggestions
+  ssh-agent
 )
+
+zstyle :omz:plugins:ssh-agent agent-forwarding yes
 
 source $ZSH/oh-my-zsh.sh
 
