@@ -64,6 +64,7 @@ Plug 'altercation/vim-colors-solarized'
 
 " minimal writer, replacement for focuswriter
 Plug 'junegunn/goyo.vim'
+Plug 'junegunn/limelight.vim'
 "
 " Markdown highlighting
 Plug 'plasticboy/vim-markdown'

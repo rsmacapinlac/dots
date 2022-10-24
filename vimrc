@@ -132,6 +132,10 @@ nnoremap <c-p> :Files<cr>
 " Unmap ex mode
 map Q <Nop>
 
+" Goyo and Limelight integration
+autocmd! User GoyoEnter Limelight
+autocmd! User GoyoLeave Limelight!
+
 
 "
 " Set spellfile to location that is guaranteed to exist, can be symlinked to
