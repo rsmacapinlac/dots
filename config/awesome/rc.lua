@@ -24,9 +24,13 @@ local has_fdo, freedesktop = pcall(require, "freedesktop")
 
 -- {{ Ritchie's customizations
 --
-
-local wallpaper_dir = os.getenv("HOME") .. "Nextcloud/Wallpapers"
+local wallpaper_dir = os.getenv("HOME") .. "/Nextcloud/Wallpapers"
 local wallpaper_cmd = "feh --bg-scale --bg-fill --randomize " .. wallpaper_dir
+local polybar_cmd = os.getenv("HOME") .. "/.config/polybar/launch.sh"
+-- Test variables
+--naughty.notify({ preset = naughty.config.presets.critical,
+--                 title = "ugh",
+--                 text = wallpaper_cmd})
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -55,11 +59,11 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+beautiful.init(gears.filesystem.get_themes_dir() .. "zenburn/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "x-terminal-emulator"
--- terminal = "/usr/local/bin/alacritty"
+-- terminal = "x-terminal-emulator"
+terminal = "alacritty"
 editor = os.getenv("EDITOR") or "editor"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -120,59 +124,9 @@ else
 end
 
 
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-                                     menu = mymainmenu })
-
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
-
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
-
--- {{{ Wibar
--- Create a textclock widget
-mytextclock = wibox.widget.textclock()
-
--- Create a wibox for each screen and add it
-local taglist_buttons = gears.table.join(
-                    awful.button({ }, 1, function(t) t:view_only() end),
-                    awful.button({ modkey }, 1, function(t)
-                                              if client.focus then
-                                                  client.focus:move_to_tag(t)
-                                              end
-                                          end),
-                    awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, function(t)
-                                              if client.focus then
-                                                  client.focus:toggle_tag(t)
-                                              end
-                                          end),
-                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
-                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
-                )
-
-local tasklist_buttons = gears.table.join(
-                     awful.button({ }, 1, function (c)
-                                              if c == client.focus then
-                                                  c.minimized = true
-                                              else
-                                                  c:emit_signal(
-                                                      "request::activate",
-                                                      "tasklist",
-                                                      {raise = true}
-                                                  )
-                                              end
-                                          end),
-                     awful.button({ }, 3, function()
-                                              awful.menu.client_list({ theme = { width = 250 } })
-                                          end),
-                     awful.button({ }, 4, function ()
-                                              awful.client.focus.byidx(1)
-                                          end),
-                     awful.button({ }, 5, function ()
-                                              awful.client.focus.byidx(-1)
-                                          end))
 
 local function set_wallpaper(s)
     -- Wallpaper
@@ -194,53 +148,13 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    awful.tag({ "Main", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    -- local names = { "Main", "Browsing", "IM", "4", "5", "6", "7", "8", "9" }
+    -- local l = awful.layout.suit  -- Just to save some typing: use an alias.
+    -- local layouts = { l.tile, l.tile, l.tile, l.tile, l.tile,
+    --     l.tile, l.tile, l.tile, l.tile}
+    -- awful.tag(names, s, layouts)
 
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contain an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
-    -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist {
-        screen  = s,
-        filter  = awful.widget.taglist.filter.all,
-        buttons = taglist_buttons
-    }
-
-    -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist {
-        screen  = s,
-        filter  = awful.widget.tasklist.filter.currenttags,
-        buttons = tasklist_buttons
-    }
-
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
-
-    -- Add widgets to the wibox
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mytaglist,
-            s.mypromptbox,
-        },
-        s.mytasklist, -- Middle widget
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
-        },
-    }
 end)
 -- }}}
 
@@ -254,11 +168,14 @@ root.buttons(gears.table.join(
 
 -- {{{ Key bindings
 globalkeys = gears.table.join(
-    awful.key({ "Control", "Shift"}, "w", function() awful.spawn.with_shell(wallpaper_cmd) end,
+    awful.key({ "Control", "Shift"}, "w", function() awful.util.spawn(wallpaper_cmd) end,
               {description="Change wallpaper", group="Ritchie"}),
-    awful.key({ modkey }, "space", function () awful.util.spawn("dmenu_run") end,
-              {description = "run dmenu", group = "Ritchie"}),
+    awful.key({ "Control" }, "space", function () awful.util.spawn("rofi -show run") end,
+              {description = "Run rofi", group = "Ritchie"}),
+    awful.key({ modkey }, "b", function () awful.util.spawn("firefox") end,
+              {description = "run Firefox", group = "Ritchie"}),
     -- End Ritchie's stuff
+    --
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
@@ -557,5 +474,7 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 beautiful.useless_gap = 5
 
 -- Autostart applications
-awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
---awful.spawn.with_shell(wallpaper_cmd)
+-- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
+awful.spawn.with_shell(wallpaper_cmd)
+awful.spawn.with_shell("nextcloud")
+awful.spawn.with_shell(polybar_cmd)
