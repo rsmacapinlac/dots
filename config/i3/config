@@ -49,6 +49,7 @@ exec --no-startup-id blueman-applet
 exec --no-startup-id nextcloud
 exec --no-startup-id ~/.config/i3/scripts/screens.sh
 exec --no-startup-id feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers
+exec --no-startup-id cbatticon -u 20 -i notification -c "poweroff" -l 15 -r 3
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
