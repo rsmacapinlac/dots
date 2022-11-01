@@ -22,6 +22,7 @@ font pango:monospace 11
 for_window [class="^.*"] border pixel 2
 gaps inner 10
 gaps outer 10
+gaps bottom 25
 
 # #---Dropdown Windows---# #
 # General dropdown window traits. The order can matter.
