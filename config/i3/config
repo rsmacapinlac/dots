@@ -49,7 +49,7 @@ exec --no-startup-id nm-applet
 exec --no-startup-id blueman-applet
 exec --no-startup-id nextcloud
 exec --no-startup-id ~/.config/i3/scripts/screens.sh
-exec --no-startup-id ~/workspace/wallpapers/bin/switch_wallpapers
+exec --no-startup-id ~/.bin/change_wallpaper.sh"
 exec --no-startup-id cbatticon -u 20 -i notification -c "poweroff" -l 15 -r 3
 
 # Use pactl to adjust volume in PulseAudio.
@@ -65,7 +65,7 @@ bindsym --release Caps_Lock exec pkill -SIGRTMIN+10 i3blocks
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-bindsym Control+shift+r exec --no-startup-id ~/workspace/wallpapers/bin/switch_wallpapers
+bindsym Control+shift+r exec --no-startup-id ~/.bin/change_wallpaper.sh
 # start a terminal
 bindsym $mod+Return exec alacritty
 
