@@ -20,7 +20,8 @@ end
 ------------------
 
 -- status, password = pipe_from('pass Email/rsmacapinlac@boogienet.com')
-password = get_imap_password('.rsmacapinlac@boogienet.com') 
+-- password = get_imap_password('.rsmacapinlac@boogienet.com') 
+password = os.getenv("BOOGIENET_IMAP_PASSWORD")
 account = IMAP {
     server = 'rcentral503.webserversystems.com',
     username = 'rsmacapinlac@boogienet.com',
