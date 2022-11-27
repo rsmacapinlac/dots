@@ -7,25 +7,17 @@ options.subscribe = true
 options.create = true
 options.expunge = true
 
--- Utility function to get IMAP password from file
-function get_imap_password(file)
-  local home = os.getenv("HOME")
-  local file = home .. "/" .. file
-  local str = io.open(file):read()
-  return str;
-end
-
 ------------------
 ----  Accounts  --
 ------------------
 
 -- status, password = pipe_from('pass Email/rsmacapinlac@boogienet.com')
--- password = get_imap_password('.rsmacapinlac@boogienet.com') 
-password = os.getenv("BOOGIENET_IMAP_PASSWORD")
+local password = get_imap_password("BOOGIENET_IMAP_PASSWORD", ".rsmacapinlac@boogienet.com")
+
 account = IMAP {
     server = 'rcentral503.webserversystems.com',
     username = 'rsmacapinlac@boogienet.com',
-    password = password 
+    password = password
 }
 
 account.INBOX:check_status()

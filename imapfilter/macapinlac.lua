@@ -7,22 +7,12 @@ options.subscribe = true
 options.create = true
 options.expunge = true
 
--- Utility function to get IMAP password from file
-function get_imap_password(file)
-  local home = os.getenv("HOME")
-  local file = home .. "/" .. file
-  local str = io.open(file):read()
-  return str;
-end
 ------------------
 ----  Accounts  --
 ------------------
 
--- Connects to "imap1.mail.server", as user "user1" with "secret1" as
--- password is saved in a text
--- status, password = pipe_from('pass Email/ritchie@macapinlac.com')
--- password = get_imap_password('.ritchie@macapinlac.com')
-password = os.getenv("MACAPINLAC_IMAP_PASSWORD")
+local password = get_imap_password("MACAPINLAC_IMAP_PASSWORD", ".ritchie@macapinlac.com")
+
 account = IMAP {
     server = 'imap.gmail.com',
     username = 'ritchie@macapinlac.com',
@@ -100,6 +90,12 @@ jobs        = account.INBOX:contain_from('jobs-noreply@linkedin.com') +
               account.INBOX:contain_from('hello@creativeclass.co') +
               account.INBOX:contain_to('ritchie+jobs@macapinlac.com')
 jobs:move_messages(account['zzz - Automated/Jobs'])
+
+
+-- RitchiePlex
+ritchieplex = account.INBOX:contain_from('ritchieplex@macapinlac.network')
+ritchieplex:move_messages(account['zzz - Automated/RitchiePlex'])
+
 
 -- Ugh, just delete it!
 ugh         = account.INBOX:contain_from('e-service@acmsmail.china-airlines.com')
