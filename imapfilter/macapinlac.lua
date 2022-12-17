@@ -30,6 +30,10 @@ cal_delete_older  = 90
 messages = account["[Gmail]/All Mail"]:contain_field("sender", "calendar-notification@google.com") * account["[Gmail]/All Mail"]:is_older(cal_delete_older)
 messages:move_messages(account["[Gmail]/Trash"])
 
+-- Homelab: Yukari
+yukari = account.INBOX:contain_subject('[YUKARI] A new DSM update has been detected on yukari')
+yukari:move_messages(account['zzz - Automation/Homelab - Notifications'])
+
 -- Newsletters
 newsletters = account.INBOX:contain_to('ritchie+newsletter@macapinlac.com') +
               account.INBOX:contain_to('ritchie+newsletters@macapinlac.com') +
