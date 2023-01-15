@@ -34,6 +34,9 @@ messages:move_messages(account["[Gmail]/Trash"])
 yukari = account.INBOX:contain_subject('[YUKARI] A new DSM update has been detected on yukari')
 yukari:move_messages(account['zzz - Automation/Homelab - Notifications'])
 
+yukari = account.INBOX:contain_subject('[YUKARI] Packages on yukari are out-of-date')
+yukari:move_messages(account['zzz - Automation/Homelab - Notifications'])
+
 -- Newsletters
 newsletters = account.INBOX:contain_to('ritchie+newsletter@macapinlac.com') +
               account.INBOX:contain_to('ritchie+newsletters@macapinlac.com') +
