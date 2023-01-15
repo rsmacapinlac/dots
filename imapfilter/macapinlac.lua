@@ -45,9 +45,12 @@ newsletters = account.INBOX:contain_to('ritchie+newsletter@macapinlac.com') +
 
 newsletters:move_messages(account['zzz - Automated/Newsletters'])
 
--- BC Hydro
+-- BC Hydro and Fortis
 bchydro = account.INBOX:contain_from('notifications@bchydro.com')
 bchydro:move_messages(account['zzz - 3236 East 6th/BC Hydro'])
+
+fortis = account.INBOX:contain_from('gas.customerservice@fortisbc.com')
+fortis:move_messages(account['zzz - Automation/Download attachments'])
 
 -- TD Canada trust
 td = account.INBOX:contain_from('noreply@td.com')
