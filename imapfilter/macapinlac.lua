@@ -101,6 +101,9 @@ jobs        = account.INBOX:contain_from('jobs-noreply@linkedin.com') +
               account.INBOX:contain_to('ritchie+jobs@macapinlac.com')
 jobs:move_messages(account['zzz - Automated/Jobs'])
 
+-- Village at Walker lakes
+anhwp = account.INBOX:contain_from('communications@anhwp.com')
+anhwp:move_messages(account['zzz - Village at Walker Lakes/Alberta New Home Warranty'])
 
 -- RitchiePlex
 ritchieplex = account.INBOX:contain_from('ritchieplex@macapinlac.network')
