@@ -5,7 +5,8 @@ alias mkdir="mkdir -p"
 alias e="$EDITOR"
 
 # Ritchie's stuff :)
-# alias w="feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers"
+
+# Change wallpaper
 alias w="$HOME/.bin/change_wallpaper.sh"
 
 # Habit change

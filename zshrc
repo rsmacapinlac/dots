@@ -141,7 +141,7 @@ if ! env | grep -q '^PS1='; then
 fi
 
 # aliases
-alias w='feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers'
+# alias w='feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers'
 [[ -f ~/.aliases ]] && source ~/.aliases
 
 # fzf
