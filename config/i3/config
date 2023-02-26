@@ -65,7 +65,9 @@ bindsym --release Caps_Lock exec pkill -SIGRTMIN+10 i3blocks
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-bindsym Control+shift+r exec --no-startup-id ~/.bin/change_wallpaper.sh
+# change wallpaper
+bindsym Control+shift+w exec --no-startup-id ~/.bin/change_wallpaper.sh
+
 # start a terminal
 bindsym $mod+Return exec alacritty
 
@@ -221,11 +223,17 @@ bindsym $mod+r mode "resize"
 #        status_command i3blocks
 #}
 
+# set a wallpaper
+exec_always $HOME/.bin/change_wallpaper.sh
+
 # Run polybar
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 
 # Run picom
 exec_always --no-startup-id picom
+
+# Run autorandr
+exec_always --no-startup-id autorandr --change
 
 # Focus doesn't follow mouse
 focus_follows_mouse no
