@@ -24,7 +24,7 @@ SyncState *
 
 
 IMAPStore boogienet.com-remote
-Host rcentral503.webserversystems.com
+Host mail.boogienet.com
 Port 993
 User rsmacapinlac@boogienet.com
 PassCmd "cat ~/.rsmacapinlac@boogienet.com"
