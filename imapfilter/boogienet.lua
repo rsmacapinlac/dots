@@ -15,7 +15,7 @@ options.expunge = true
 local password = get_imap_password("BOOGIENET_IMAP_PASSWORD", ".rsmacapinlac@boogienet.com")
 
 account = IMAP {
-    server = 'mail.boogienet.com',
+    server = 'mail.hostedemail.com',
     username = 'rsmacapinlac@boogienet.com',
     password = password
 }
