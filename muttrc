@@ -1,6 +1,6 @@
 
 # default colors, and mapped behaviors
-source ~/.mutt/behaviors-colors
+# source ~/.mutt/behaviors-colors
 
 set sort = 'reverse-date'
 
@@ -9,10 +9,10 @@ source ~/.mutt/macapinlac.com.muttrc
 # source ~/.mutt/boogienet.com.muttrc
 
 # viewing messages
-auto_view text/html # automatically show html (mailcap uses lynx)
-auto_view application/pgp-encrypted
+#auto_view text/html # automatically show html (mailcap uses lynx)
+#auto_view application/pgp-encrypted
 #set display_filter = "tac | sed '/\\\[-- Autoview/,+1d' | tac" # Suppress autoview messages.
-alternative_order text/plain text/enriched text/html
+#alternative_order text/plain text/enriched text/html
 
 # set sidebar stuff 
 #set sidebar_visible = yes
