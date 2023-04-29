@@ -5,6 +5,7 @@ User ritchie@macapinlac.com
 PassCmd "cat ~/.ritchie@macapinlac.com"
 AuthMechs LOGIN
 SSLType IMAPS
+Pipelinedepth 1
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
 MaildirStore macapinlac.com-local
@@ -15,7 +16,8 @@ Inbox /home/ritchie/Mail/macapinlac.com/INBOX
 Channel ritchie@macapinlac.com
 Far :macapinlac.com-remote:
 Near :macapinlac.com-local:
-Patterns * !"[Gmail]/All Mail" !"[Gmail]/Sent Mail" !"[Gmail]/Trash"
+Patterns * !"[Gmail]/All Mail" !"[Gmail]Spam" !"[Gmail]/Sent Mail" !"[Gmail]/Trash"
+#Patterns *
 Create Both
 Expunge Both
 SyncState *

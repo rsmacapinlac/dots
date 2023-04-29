@@ -5,8 +5,8 @@ source ~/.mutt/behaviors-colors
 set sort = 'reverse-date'
 
 # Default account
-# source ~/.mutt/macapinlac.com.muttrc
-source ~/.mutt/boogienet.com.muttrc
+source ~/.mutt/macapinlac.com.muttrc
+# source ~/.mutt/boogienet.com.muttrc
 
 # viewing messages
 auto_view text/html		# automatically show html (mailcap uses lynx)
@@ -26,7 +26,7 @@ set sidebar_format = '%D%?F? [%F]?%* %?N?%N/? %?S?%S?'
 # Moving through stuff
 bind index,pager \Ck sidebar-prev
 bind index,pager \Cj sidebar-next
-bind index,pager \Co sidebar-open
+bind index,pager \Cl sidebar-open
 bind index,pager \Cp sidebar-prev-new
 bind index,pager \Cn sidebar-next-new
 bind index,pager B sidebar-toggle-visible
@@ -42,7 +42,7 @@ color sidebar_new green black
 
 # refresh <ctrl>r to sync
 bind index \Cr noop
-macro index \Cr "<shell-escape>imapfilter -v && mbsync --all --verbose" "filter and sync email"
+macro index \Cr "<shell-escape>mbsync --all --verbose" "filter and sync email"
 
 # Macros for switching accounts
 bind index,pager i noop

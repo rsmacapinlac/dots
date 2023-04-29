@@ -21,6 +21,11 @@ mailboxes "=INBOX"
 # mailboxes "=[Gmail]/Sent Mail"
 mailboxes "=[Gmail]/Drafts"
 # mailboxes "=[Gmail]/Trash"
+
+mailboxes "=BlessedSacrament"
+
+mailboxes "=ESS"
+
 mailboxes "=!Projects"
 mailboxes "=!Projects/2022 - Resume update"
 mailboxes "=zzz - Automated"
