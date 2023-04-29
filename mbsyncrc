@@ -24,7 +24,7 @@ SyncState *
 
 
 IMAPStore boogienet.com-remote
-Host mail.boogienet.com
+Host mail.hostedemail.com
 Port 993
 User rsmacapinlac@boogienet.com
 PassCmd "cat ~/.rsmacapinlac@boogienet.com"
@@ -40,7 +40,8 @@ Inbox /home/ritchie/Mail/boogienet.com/INBOX
 Channel rsmacapinlac@boogienet.com
 Far :boogienet.com-remote:
 Near :boogienet.com-local:
-Patterns * !"Sent" !"Trash" !"zzz - Automated" !"zzz - Automations" 
+# Patterns * !"Sent" !"Trash" !"zzz - Automated" !"zzz - Automations" 
+Patterns *
 Create Both
 Expunge Both
 SyncState *

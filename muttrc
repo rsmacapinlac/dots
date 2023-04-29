@@ -5,8 +5,8 @@ source ~/.mutt/behaviors-colors
 set sort = 'reverse-date'
 
 # Default account
-source ~/.mutt/macapinlac.com.muttrc
-# source ~/.mutt/boogienet.com.muttrc
+# source ~/.mutt/macapinlac.com.muttrc
+source ~/.mutt/boogienet.com.muttrc
 
 # viewing messages
 auto_view text/html		# automatically show html (mailcap uses lynx)
