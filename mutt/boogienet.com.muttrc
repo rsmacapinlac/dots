@@ -1,14 +1,11 @@
-set imap_user = "rsmacapinlac@boogienet.com"
-# set smtp_url = "smtp://rsmacapinlac@boogienet.com@smtp.gmail.com:587/"
-
 set sendmail = "msmtp -a rsmacapinlac@boogienet.com"
 
 # mbsync drops mail here
 set folder = "/home/ritchie/Mail/boogienet.com"
+set mbox_type = Maildir
 
 set from = "rsmacapinlac@boogienet.com"
 set realname = "Ritchie Macapinlac"
-# set folder = "imaps://imap.gmail.com:993"
 
 unmailboxes *
 unalternates *
@@ -16,17 +13,17 @@ unset signature
 
 set spoolfile = "+INBOX"
 set postponed = "+Drafts"
-#set record = "+[Gmail]/Sent Mail"
-#set trash = "+[Gmail]/Trash"
+set record    = "+Sent Items"
+set trash     = "+Trash"
 
-mailboxes "=INBOX"
-mailboxes "=INBOX/Receipts and Invoices"
-mailboxes "=INBOX/zzz - Automated"
-mailboxes "=INBOX/zzz - Automated/Hosting Plugin Alerts"
-mailboxes "=INBOX/zzz - Automations"
-mailboxes "=INBOX/zzz - Automations/MonthlyReport"
-mailboxes "=INBOX/zzz - Automations/Weekly"
-mailboxes "=INBOX/zzz - Reference"
-mailboxes "=INBOX/zzz - Reference/Financials"
+#mailboxes "=INBOX"
+#mailboxes "=INBOX/Receipts and Invoices"
+#mailboxes "=INBOX/zzz - Automated"
+#mailboxes "=INBOX/zzz - Automated/Hosting Plugin Alerts"
+#mailboxes "=INBOX/zzz - Automations"
+#mailboxes "=INBOX/zzz - Automations/MonthlyReport"
+#mailboxes "=INBOX/zzz - Automations/Weekly"
+#mailboxes "=INBOX/zzz - Reference"
+#mailboxes "=INBOX/zzz - Reference/Financials"
 
-mailboxes "=Drafts"
+#mailboxes "=Drafts"

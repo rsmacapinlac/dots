@@ -14,3 +14,7 @@ alias v="echo \"Use 'e'\"! Gawd!"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
+
+# Mail!
+alias m='neomutt'
+
