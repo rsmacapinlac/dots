@@ -1,10 +1,10 @@
-set sendmail = "msmtp -a ritchie@macapinlac.com"
+set sendmail = "msmtp -a rsmacapinlac@gmail.com"
 
 # mbsync drops mail here
-set folder = "~/Mail/macapinlac.com/"
+set folder = "~/Mail/gmail.com/"
 set mbox_type = Maildir
 
-set from = "ritchie@macapinlac.com"
+set from = "rsmacapinlac@gmail.com"
 set realname = "Ritchie Macapinlac"
 
 unmailboxes *

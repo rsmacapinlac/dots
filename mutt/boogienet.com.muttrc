@@ -1,7 +1,7 @@
 set sendmail = "msmtp -a rsmacapinlac@boogienet.com"
 
 # mbsync drops mail here
-set folder = "/home/ritchie/Mail/boogienet.com"
+set folder = "~/Mail/boogienet.com"
 set mbox_type = Maildir
 
 set from = "rsmacapinlac@boogienet.com"

@@ -49,27 +49,28 @@ Expunge Both
 SyncState *
 # End profile
 
-#IMAPStore rsmacapinlac@gmail.com-remote
-#Host imap.gmail.com
-#Port 993
-#User rsmacapinlac@gmail.com
-#PassCmd "pass Email/rsmacapinlac@gmail.com"
-#AuthMechs LOGIN
-#SSLType IMAPS
-#CertificateFile /etc/ssl/certs/ca-certificates.crt
+IMAPStore gmail.com-remote
+Host imap.gmail.com
+Port 993
+User rsmacapinlac@gmail.com
+PassCmd "cat ~/.rsmacapinlac@gmail.com"
+AuthMechs LOGIN
+SSLType IMAPS
+Pipelinedepth 1
+CertificateFile /etc/ssl/certs/ca-certificates.crt
 
-#MaildirStore rsmacapinlac@gmail.com-local
-#Subfolders Verbatim
-#Path /home/ritchie/.local/share/mail/rsmacapinlac@gmail.com/
-#Inbox /home/ritchie/.local/share/mail/rsmacapinlac@gmail.com/INBOX
+MaildirStore gmail.com-local
+Subfolders Verbatim
+Path /home/ritchie/Mail/gmail.com/
+Inbox /home/ritchie/Mail/gmail.com/INBOX
 
-#Channel rsmacapinlac@gmail.com
-#Expunge Both
-#Far:rsmacapinlac@gmail.com-remote:
-#Near:rsmacapinlac@gmail.com-local:
-#Patterns * !"[Gmail]/All Mail"
-#Create Both
-#SyncState *
-#MaxMessages 0
-#ExpireUnread no
-# End profile
+Channel rsmacapinlac@gmail.com
+Far :gmail.com-remote:
+Near :gmail.com-local:
+Patterns * !"[Gmail]/All Mail" !"[Gmail]Spam" !"[Gmail]/Sent Mail" !"[Gmail]/Trash"
+#Patterns *
+Create Both
+Expunge Both
+SyncState *
+# MaxMessages 0
+# ExpireUnread no
