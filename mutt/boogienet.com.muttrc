@@ -11,6 +11,9 @@ unmailboxes *
 unalternates *
 unset signature
 
+set ssl_starttls = yes
+set ssl_force_tls = yes
+
 set spoolfile = "+INBOX"
 set postponed = "+Drafts"
 set record    = "+Sent Items"
