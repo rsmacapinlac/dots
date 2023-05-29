@@ -8,7 +8,6 @@
 # i3 config file (v4)
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
-
 set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -20,9 +19,9 @@ font pango:monospace 11
 #font pango:DejaVu Sans Mono 8
 
 for_window [class="^.*"] border pixel 2
-gaps inner 10
-gaps outer 10
-gaps bottom 25
+gaps inner 5
+gaps outer 5
+# gaps bottom 25
 
 # #---Dropdown Windows---# #
 # General dropdown window traits. The order can matter.
