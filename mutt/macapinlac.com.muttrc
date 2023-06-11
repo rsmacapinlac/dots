@@ -1,11 +1,19 @@
-set sendmail = "msmtp -a ritchie@macapinlac.com"
+# set sendmail = "msmtp -a ritchie@macapinlac.com"
 
 # mbsync drops mail here
-set folder = "~/Mail/macapinlac.com/"
-set mbox_type = Maildir
+#set folder = "~/Mail/macapinlac.com/"
+#set mbox_type = Maildir
 
 set from = "ritchie@macapinlac.com"
 set realname = "Ritchie Macapinlac"
+
+# IMAP settings
+set imap_user = "ritchie@macapinlac.com"
+set imap_pass = `pass show email/macapinlac.com`
+
+# # SMTP settings
+set smtp_url = "smtps://ritchie@macapinlac.com@smtp.gmail.com"
+set smtp_pass = $imap_pass
 
 unmailboxes *
 unalternates *
@@ -14,7 +22,10 @@ unset signature
 set ssl_starttls = yes
 set ssl_force_tls = yes
 
-set spoolfile = "+INBOX"
-set postponed = "+[Gmail]/Drafts"
-set record    = "+[Gmail]/Sent Mail"
-set trash     = "+[Gmail]/Trash"
+set spoolfile = "imaps://imap.gmail.com/INBOX"
+set record="imaps://imap.gmail.com/[Gmail]/Sent Mail"
+set postponed="imaps://imap.gmail.com/[Gmail]/Drafts"
+set mbox="imaps://imap.gmail.com/[Gmail]/All Mail"
+set header_cache = "~/.mutt/cache/headers"
+set message_cachedir = "~/.mutt/cache/bodies"
+set certificate_file = "~/.mutt/certificates"
