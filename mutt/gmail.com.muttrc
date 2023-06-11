@@ -1,11 +1,19 @@
-set sendmail = "msmtp -a rsmacapinlac@gmail.com"
+# set sendmail = "msmtp -a ritchie@macapinlac.com"
 
 # mbsync drops mail here
-set folder = "~/Mail/gmail.com/"
-set mbox_type = Maildir
+#set folder = "~/Mail/macapinlac.com/"
+#set mbox_type = Maildir
 
 set from = "rsmacapinlac@gmail.com"
 set realname = "Ritchie Macapinlac"
+
+# IMAP settings
+set imap_user = "rsmacapinlac@gmail.com"
+set imap_pass = `pass show email/gmail.com`
+
+# # SMTP settings
+set smtp_url = "smtps://rsmacapinlac@gmail.com@smtp.gmail.com"
+set smtp_pass = $imap_pass
 
 unmailboxes *
 unalternates *
@@ -14,7 +22,7 @@ unset signature
 set ssl_starttls = yes
 set ssl_force_tls = yes
 
-set spoolfile = "+INBOX"
-set postponed = "+[Gmail]/Drafts"
-set record    = "+[Gmail]/Sent Mail"
-set trash     = "+[Gmail]/Trash"
+set spoolfile = "imaps://imap.gmail.com/INBOX"
+set record="imaps://imap.gmail.com/[Gmail]/Sent Mail"
+set postponed="imaps://imap.gmail.com/[Gmail]/Drafts"
+set mbox="imaps://imap.gmail.com/[Gmail]/All Mail"

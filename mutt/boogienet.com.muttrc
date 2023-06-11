@@ -1,11 +1,19 @@
-set sendmail = "msmtp -a rsmacapinlac@boogienet.com"
+# set sendmail = "msmtp -a rsmacapinlac@boogienet.com"
 
 # mbsync drops mail here
-set folder = "~/Mail/boogienet.com"
-set mbox_type = Maildir
+#set folder = "~/Mail/boogienet.com"
+#set mbox_type = Maildir
 
 set from = "rsmacapinlac@boogienet.com"
 set realname = "Ritchie Macapinlac"
+
+# IMAP settings
+set imap_user = "rsmacapinlac@boogienet.com"
+set imap_pass = `pass show email/boogienet.com`
+
+# # SMTP settings
+set smtp_url = "smtp://rsmacapinlac@boogienet.com@mail.hostedemail.com:587"
+set smtp_pass = $imap_pass
 
 unmailboxes *
 unalternates *
@@ -14,10 +22,13 @@ unset signature
 set ssl_starttls = yes
 set ssl_force_tls = yes
 
-set spoolfile = "+INBOX"
-set postponed = "+Drafts"
-set record    = "+Sent Items"
-set trash     = "+Trash"
+set spoolfile = "imaps://mail.hostedemail.com"
+set record="imaps://mail.hostedemail.com/Sent Items"
+set postponed="imaps://mail.hostedmail.com/Drafts"
+
+set header_cache = "~/.mutt/cache/headers"
+set message_cachedir = "~/.mutt/cache/bodies"
+set certificate_file = "~/.mutt/certificates"
 
 #mailboxes "=INBOX"
 #mailboxes "=INBOX/Receipts and Invoices"

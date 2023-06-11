@@ -52,13 +52,14 @@ unset markers
 # Default account
 source ~/.mutt/macapinlac.com.muttrc
 # source ~/.mutt/boogienet.com.muttrc
+# source ~/.mutt/gmail.com.muttrc
 
 # refresh <ctrl>r to sync
 # bind index \Cr noop
 # macro index \Cr "<shell-escape>mbsync --all --verbose" "sync email"
 
 # Macros for switching accounts
-# bind index,pager i noop
+bind index,pager i noop
 #bind index,pager g noop
 
 macro index,pager i1 '<sync-mailbox><enter-command>source ~/.mutt/macapinlac.com.muttrc<enter><change-folder>!<enter>;<check-stats>' "switch to ritchie@macapinlac.com"
@@ -66,6 +67,6 @@ macro index,pager i2 '<sync-mailbox><enter-command>source ~/.mutt/boogienet.com.
 macro index,pager i3 '<sync-mailbox><enter-command>source ~/.mutt/gmail.com.muttrc<enter><change-folder>!<enter>;<check-stats>' "switch to rsmacapinlac@gmail.com"
 
 
-#set mailcap_path = ~/.mutt/mailcap
-#set header_cache = "~/.cache/mutt"
-#set message_cachedir = "~/.cache/mutt"
+set mailcap_path = ~/.mutt/mailcap
+set header_cache = "~/.cache/mutt"
+set message_cachedir = "~/.cache/mutt"
