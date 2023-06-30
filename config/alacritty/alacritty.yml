@@ -12,6 +12,13 @@ env:
   # available, otherwise `xterm-256color` is used.
   TERM: xterm-256color
 
+import:
+  # uncomment the flavour you want below:
+  - ~/.config/alacritty/catppuccin/catppuccin-mocha.yml
+# - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
+#  - ~/.config/alacritty/catppuccin/catppuccin-frappe.yml
+#  - ~/.config/alacritty/catppuccin/catppuccin-latte.yml
+
 window:
   # Window dimensions (changes require restart)
   #
@@ -45,7 +52,7 @@ window:
   # Window opacity as a floating point number from `0.0` to `1.0`.
   # The value `0.0` is completely transparent and `1.0` is opaque.
   # opacity: 1.0
-  opacity: 0.8
+  opacity: 0.9
 
   # Window decorations
   #
@@ -583,7 +590,8 @@ schemes:
 # *SolarizedDark
 # *TomorrowNight
 
-colors: *SolarizedDark
+# uncomment if you want to use the default themes:
+# colors: *SolarizedDark
 
 #######################################
 ##       END OF COLOR SCHEMES        ##

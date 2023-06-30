@@ -15,4 +15,6 @@ vim.opt.wrap = false
 vim.opt.swapfile = false
 vim.opt.backup = false
 
-vim.opt.colorcolumn = "80"
+-- vim.cmd.colorscheme "catppuccin"
+
+-- vim.opt.colorcolumn = "80"
