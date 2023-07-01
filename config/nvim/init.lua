@@ -1,2 +1,3 @@
-require("ritchie")
+require("plugins");
+require("ritchie");
 
