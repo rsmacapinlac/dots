@@ -19,3 +19,5 @@ alias path='echo $PATH | tr -s ":" "\n"'
 # Mail!
 alias m='neomutt'
 
+# Development stuff
+alias be='bundle exec'
