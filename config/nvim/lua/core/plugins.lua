@@ -15,11 +15,22 @@ return require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
 
   -- My plugins here
-
   use {
     "catppuccin/nvim",
     as = "catppuccin"
   }
+
+  use 'nvim-tree/nvim-tree.lua'
+  use 'nvim-tree/nvim-web-devicons'
+  use 'nvim-treesitter/nvim-treesitter'
+
+  use {
+    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+    requires = { {'nvim-lua/plenary.nvim'} }
+  }
+
+  use 'nvim-lualine/lualine.nvim'
+
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if packer_bootstrap then
