@@ -1,4 +1,6 @@
--- require("plugins");
--- require("ritchie");
+require("core.remap");
+require("core.settings");
+require("core.plugins");
 
-require("core.init");
+-- import any plugin config
+require("core.plugin_config");
