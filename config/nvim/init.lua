@@ -1,2 +1,4 @@
-require("plugins");
-require("ritchie");
+-- require("plugins");
+-- require("ritchie");
+
+require("core.init");
