@@ -31,13 +31,13 @@ return require('packer').startup(function(use)
 
   use 'nvim-lualine/lualine.nvim'
 
+  use  "hrsh7th/nvim-cmp"
+  use  "hrsh7th/cmp-nvim-lsp"
+  use  "glepnir/lspsaga.nvim"
   use {
-    "hrsh7th/nvim-cmp",
-    "hrsh7th/cmp-nvim-lsp",
-:   "williamboman/mason.nvim",
+    "williamboman/mason.nvim",
     "williamboman/mason-lspconfig.nvim",
     "neovim/nvim-lspconfig",
-    "glepnir/lspsaga.nvim",
     run = ":MasonUpdate" -- :MasonUpdate updates registry contents
   }
 
