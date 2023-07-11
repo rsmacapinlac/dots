@@ -2,7 +2,7 @@
 --
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "marksman", "ruby_ls" }
+  ensure_installed = { "lua_ls", "marksman", "solargraph" }
 })
 
 --local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
@@ -47,6 +47,6 @@ require("lspconfig").lua_ls.setup {
 require("lspconfig").marksman.setup {
   capabilities = capabilities,
 }
-require("lspconfig").ruby_ls.setup {
+require("lspconfig").solargraph.setup {
   capabilities = capabilities,
 }
