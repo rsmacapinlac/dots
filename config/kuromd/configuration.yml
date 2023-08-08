@@ -1,6 +1,10 @@
 ---
 notes:
-  folder: '~/Nextcloud/ICBC/1on1s/INBOX/unprocessed'  
+  folder: '~/Nextcloud/Journal/Inbox'
   one_on_one:
-    url: 'https://rpa.macapinlac.network/webhook-test/c78c6222-a883-4685-913e-a1652cb7a82b'
+    resource_folders: '~/Nextcloud/ICBC/Resources'
+    url: 'https://rpa.macapinlac.network/webhook/c78c6222-a883-4685-913e-a1652cb7a82b'
+journal:
+  inbox: '~/Nextcloud/Journal/Inbox'
+  base_folder: '~/Nextcloud/Journal'
 
