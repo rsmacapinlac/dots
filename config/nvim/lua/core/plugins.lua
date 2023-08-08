@@ -15,6 +15,9 @@ return require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
 
   -- My plugins here
+
+  use 'johnfrankmorgan/whitespace.nvim'
+
   use {
     "catppuccin/nvim",
     as = "catppuccin"
