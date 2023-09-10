@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+	# -no-drun-show-actions \
+	# -terminal kitty \
+	# -kb-cancel Alt-F1 \
+
+echo $HOME
+rofi \
+	-show drun \
+	-modi run,drun,ssh \
+	-scroll-method 0 \
+	-drun-match-fields all \
+	-drun-display-format "{name}" \
+  -no-drun-show-actions \
+	-theme "$HOME/.config/rofi/catppucin/launcher.rasi"
