@@ -132,7 +132,8 @@ font:
     # family: Monofur Nerd Font
     # family: TerminessTTF Nerd Font
     # family: Mononoki Nerd Font
-    family: Inconsolata Nerd Font
+    # family: Inconsolata Nerd Font
+    family: AnonymicePro Nerd Font
 
     # The `style` can be specified to pick a specific face.
     style: Regular
@@ -152,8 +153,8 @@ font:
     # family: Monofur Nerd Font
     # family: TerminessTTF Nerd Font
     # family: Mononoki Nerd Font
-    # family: Inconsolata
-    family: Inconsolata Nerd Font
+    # family: Inconsolata Nerd Font
+    family: AnonymicePro Nerd Font
 
     # The `style` can be specified to pick a specific face.
     style: Bold
@@ -173,8 +174,8 @@ font:
     # family: Monofuritalic Nerd Font Mono
     # family: TerminessTTF Nerd Font
     # family: Mononoki Nerd Font
-    # family: Inconsolata
-    family: Inconsolata Nerd Font
+    # family: Inconsolata Nerd Font
+    family: AnonymicePro Nerd Font
 
     # The `style` can be specified to pick a specific face.
     style: Italic
@@ -194,8 +195,8 @@ font:
     # family: Monofuritalic Nerd Font Mono
     # family: TerminessTTF Nerd Font
     # family: Mononoki Nerd Font
-    # family: Inconsolata
-    family: Inconsolata Nerd Font
+    # family: Inconsolata Nerd Font
+    family: AnonymicePro Nerd Font
 
     # The `style` can be specified to pick a specific face.
     style: Bold Italic
