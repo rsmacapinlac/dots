@@ -169,11 +169,11 @@ root.buttons(gears.table.join(
 -- {{{ Key bindings
 globalkeys = gears.table.join(
     awful.key({ "Control", "Shift"}, "w", function() awful.util.spawn(wallpaper_cmd) end,
-              {description="Change wallpaper", group="Ritchie"}),
+              {description="Change wallpaper", group="Customizations"}),
     awful.key({ "Control" }, "space", function() awful.util.spawn(launcher_cmd) end,
-              {description="Change wallpaper", group="Ritchie"}),
+              {description="Change wallpaper", group="Customizations"}),
     -- awful.key({ modkey }, "b", function () awful.util.spawn("firefox") end,
-    --          {description = "run Firefox", group = "Ritchie"}),
+    --          {description = "run Firefox", group = "Customizations"}),
     -- End Ritchie's stuff
     --
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
