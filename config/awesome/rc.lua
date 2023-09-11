@@ -148,7 +148,7 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "Main", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
     -- local names = { "Main", "Browsing", "IM", "4", "5", "6", "7", "8", "9" }
     -- local l = awful.layout.suit  -- Just to save some typing: use an alias.
     -- local layouts = { l.tile, l.tile, l.tile, l.tile, l.tile,
@@ -185,13 +185,14 @@ globalkeys = gears.table.join(
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
               {description = "go back", group = "tag"}),
 
-    awful.key({ modkey,           }, "j",
+    -- changes the focus
+    awful.key({ "Control",           }, "Left",
         function ()
             awful.client.focus.byidx( 1)
         end,
         {description = "focus next by index", group = "client"}
     ),
-    awful.key({ modkey,           }, "k",
+    awful.key({ "Control", Mod1          }, "Right",
         function ()
             awful.client.focus.byidx(-1)
         end,
@@ -201,9 +202,9 @@ globalkeys = gears.table.join(
               {description = "show main menu", group = "awesome"}),
 
     -- Layout manipulation
-    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end,
+    awful.key({ "Control", "Shift"   }, "Left", function () awful.client.swap.byidx(  1)    end,
               {description = "swap with next client by index", group = "client"}),
-    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end,
+    awful.key({ "Control", "Shift"   }, "Right", function () awful.client.swap.byidx( -1)    end,
               {description = "swap with previous client by index", group = "client"}),
     awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
               {description = "focus the next screen", group = "screen"}),
@@ -283,7 +284,7 @@ clientkeys = gears.table.join(
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
-    awful.key({ "Control", "Shift"}, "w",      function (c) c:kill()                         end,
+    awful.key({ "Control", "Shift"}, "q",      function (c) c:kill()                         end,
               {description = "close", group = "client"}),
     awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
               {description = "toggle floating", group = "client"}),
@@ -471,10 +472,11 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 --
 
-beautiful.useless_gap = 5
+beautiful.useless_gap = 3
 
 -- Autostart applications
 -- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
+awful.spawn.with_shell("compton")
 awful.spawn.with_shell(wallpaper_cmd)
 awful.spawn.with_shell("nextcloud")
 awful.spawn.with_shell(polybar_cmd)
