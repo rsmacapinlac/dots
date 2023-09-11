@@ -1,0 +1,7 @@
+output XWAYLAND1
+crtc 0
+mode 2560x1440
+pos 0x0
+primary
+rate 60.01
+x-prop-non_desktop 0
