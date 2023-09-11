@@ -476,6 +476,7 @@ beautiful.useless_gap = 3
 
 -- Autostart applications
 -- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
+awful.spawn.with_shell("autorandr --change")
 awful.spawn.with_shell("compton")
 awful.spawn.with_shell(wallpaper_cmd)
 awful.spawn.with_shell("nextcloud")
