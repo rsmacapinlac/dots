@@ -26,7 +26,8 @@ local has_fdo, freedesktop = pcall(require, "freedesktop")
 --
 local wallpaper_cmd = os.getenv("HOME") .. "/workspace/wallpapers/bin/switch_wallpapers"
 local polybar_cmd = os.getenv("HOME") .. "/.config/polybar/launch.sh"
-local launcher_cmd = os.getenv("HOME") .. "/.config/rofi/bin/launcher"
+local launcher_cmd = "rofi -show combi -combi-modes 'window,run,ssh' -modes combi"
+
 -- Test variables
 --naughty.notify({ preset = naughty.config.presets.critical,
 --                 title = "ugh",
