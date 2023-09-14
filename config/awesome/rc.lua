@@ -25,7 +25,7 @@ local has_fdo, freedesktop = pcall(require, "freedesktop")
 -- {{ Ritchie's customizations
 --
 local wallpaper_cmd = os.getenv("HOME") .. "/workspace/wallpapers/bin/switch_wallpapers"
-local launcher_cmd = "rofi -show combi -combi-modes 'window,run,ssh' -modes combi"
+local launcher_cmd = "rofi -show drun -combi-modes 'window,run,ssh' -modes combi"
 
 -- Test variables
 --naughty.notify({ preset = naughty.config.presets.critical,
@@ -476,6 +476,7 @@ beautiful.useless_gap = 3
 
 -- Autostart applications
 -- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
-local autorun_cmd  = os.getenv("HOME") .. "/.config/awesom/autorun.sh"
-awful.spawn.with_shell(autorun_cmd)
+
+awful.spawn.with_shell("autorandr --change")
+awful.spawn.with_shell(os.getenv("HOME") .. "/.config/awesome/autorun.sh")
 awful.spawn.with_shell(wallpaper_cmd)
