@@ -25,7 +25,6 @@ local has_fdo, freedesktop = pcall(require, "freedesktop")
 -- {{ Ritchie's customizations
 --
 local wallpaper_cmd = os.getenv("HOME") .. "/workspace/wallpapers/bin/switch_wallpapers"
-local polybar_cmd = os.getenv("HOME") .. "/.config/polybar/launch.sh"
 local launcher_cmd = "rofi -show combi -combi-modes 'window,run,ssh' -modes combi"
 
 -- Test variables
@@ -477,8 +476,6 @@ beautiful.useless_gap = 3
 
 -- Autostart applications
 -- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
-awful.spawn.with_shell("autorandr --change")
-awful.spawn.with_shell("compton")
-awful.spawn.with_shell(polybar_cmd)
+local autorun_cmd  = os.getenv("HOME") .. "/.config/awesom/autorun.sh"
+awful.spawn.with_shell(autorun_cmd)
 awful.spawn.with_shell(wallpaper_cmd)
--- awful.spawn.with_shell("nextcloud")
