@@ -171,7 +171,7 @@ globalkeys = gears.table.join(
     awful.key({ "Control", "Shift"}, "w", function() awful.util.spawn(wallpaper_cmd) end,
               {description="Change wallpaper", group="Customizations"}),
     awful.key({ "Control" }, "space", function() awful.util.spawn(launcher_cmd) end,
-              {description="Change wallpaper", group="Customizations"}),
+              {description="Launch rofi", group="Customizations"}),
     -- awful.key({ modkey }, "b", function () awful.util.spawn("firefox") end,
     --          {description = "run Firefox", group = "Customizations"}),
     -- End Ritchie's stuff
@@ -186,29 +186,29 @@ globalkeys = gears.table.join(
               {description = "go back", group = "tag"}),
 
     -- changes the focus
-    awful.key({ "Control",           }, "Left",
-        function ()
-            awful.client.focus.byidx( 1)
-        end,
-        {description = "focus next by index", group = "client"}
-    ),
-    awful.key({ "Control", Mod1          }, "Right",
-        function ()
-            awful.client.focus.byidx(-1)
-        end,
-        {description = "focus previous by index", group = "client"}
-    ),
+    --awful.key({ "Control",           }, "Left",
+    --    function ()
+    --        awful.client.focus.byidx( 1)
+    --    end,
+    --    {description = "focus next by index", group = "client"}
+    --),
+    --awful.key({ "Control", Mod1          }, "Right",
+    --    function ()
+    --        awful.client.focus.byidx(-1)
+    --    end,
+    --    {description = "focus previous by index", group = "client"}
+    --),
     awful.key({ modkey,           }, "w", function () mymainmenu:show() end,
               {description = "show main menu", group = "awesome"}),
 
     -- Layout manipulation
-    awful.key({ "Control", "Shift"   }, "Left", function () awful.client.swap.byidx(  1)    end,
+    awful.key({ "Mod1", "Shift"   }, "Left", function () awful.client.swap.byidx(  1)    end,
               {description = "swap with next client by index", group = "client"}),
-    awful.key({ "Control", "Shift"   }, "Right", function () awful.client.swap.byidx( -1)    end,
+    awful.key({ "Mod1", "Shift"   }, "Right", function () awful.client.swap.byidx( -1)    end,
               {description = "swap with previous client by index", group = "client"}),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
+    awful.key({ "Mod1", "Shift" }, "J", function () awful.screen.focus_relative( 1) end,
               {description = "focus the next screen", group = "screen"}),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
+    awful.key({ "Mod1", "Shift" }, "K", function () awful.screen.focus_relative(-1) end,
               {description = "focus the previous screen", group = "screen"}),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
               {description = "jump to urgent client", group = "client"}),
