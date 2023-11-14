@@ -478,5 +478,5 @@ beautiful.useless_gap = 3
 -- awful.spawn.with_shell("feh --bg-scale --bg-fill --randomize ~/Nextcloud/Wallpapers")
 
 awful.spawn.with_shell("autorandr --change")
-awful.spawn.with_shell(os.getenv("HOME") .. "/.config/awesome/autorun.sh")
 awful.spawn.with_shell(wallpaper_cmd)
+awful.spawn.with_shell(os.getenv("HOME") .. "/.config/awesome/autorun.sh")
