@@ -75,6 +75,7 @@ ZSH_THEME="robbyrussell"
 plugins=(
   # zsh-autosuggestions
   ssh-agent
+  dotenv
 )
 
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
