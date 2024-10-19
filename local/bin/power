@@ -15,4 +15,4 @@ set -u
 rofi \
   -show p \
   -modi p:'rofi-power-menu --symbols-font "Symbols Nerd Font Mono"' \
-  -font "JetBrains Mono NF 16" \
+  -font "Inconsolata Nerd Font:style=Regular;size=24;2" \

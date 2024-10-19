@@ -7,5 +7,5 @@ run() {
   fi
 }
 
-run "$HOME/.config/polybar/launch.sh"
+~/.config/polybar/launch.sh
 run "compton"
