@@ -63,7 +63,7 @@ beautiful.init(gears.filesystem.get_themes_dir() .. "zenburn/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 -- terminal = "x-terminal-emulator"
-terminal = "alacritty"
+terminal = "kitty"
 editor = os.getenv("EDITOR") or "editor"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -129,31 +129,32 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 local function set_wallpaper(s)
-    -- Wallpaper
-    if beautiful.wallpaper then
-        local wallpaper = beautiful.wallpaper
-        -- If wallpaper is a function, call it with the screen
-        if type(wallpaper) == "function" then
-            wallpaper = wallpaper(s)
-        end
-        gears.wallpaper.maximized(wallpaper, s, true)
-    end
+  -- Wallpaper
+  --if beautiful.wallpaper then
+  --  local wallpaper = beautiful.wallpaper
+    -- If wallpaper is a function, call it with the screen
+  --  if type(wallpaper) == "function" then
+  --    wallpaper = wallpaper(s)
+  --  end
+  --  gears.wallpaper.maximized(wallpaper, s, true)
+  --end
+  awful.spawn.with_shell(wallpaper_cmd)
 end
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
 awful.screen.connect_for_each_screen(function(s)
-    -- Wallpaper
-    set_wallpaper(s)
+  -- Wallpaper
+  set_wallpaper(s)
 
-    -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
-    -- local names = { "Main", "Browsing", "IM", "4", "5", "6", "7", "8", "9" }
-    -- local l = awful.layout.suit  -- Just to save some typing: use an alias.
-    -- local layouts = { l.tile, l.tile, l.tile, l.tile, l.tile,
-    --     l.tile, l.tile, l.tile, l.tile}
-    -- awful.tag(names, s, layouts)
+  -- Each screen has its own tag table.
+  awful.tag({ "1", "2", "3", "4", "5" }, s, awful.layout.layouts[1])
+  -- local names = { "Main", "Browsing", "IM", "4", "5", "6", "7", "8", "9" }
+  -- local l = awful.layout.suit  -- Just to save some typing: use an alias.
+  -- local layouts = { l.tile, l.tile, l.tile, l.tile, l.tile,
+  --     l.tile, l.tile, l.tile, l.tile}
+  -- awful.tag(names, s, layouts)
 
 end)
 -- }}}
@@ -480,3 +481,5 @@ beautiful.useless_gap = 3
 awful.spawn.with_shell("autorandr --change")
 awful.spawn.with_shell(wallpaper_cmd)
 awful.spawn.with_shell(os.getenv("HOME") .. "/.config/awesome/autorun.sh")
+--run "$HOME/.config/polybar/launch.sh"
+-- awful.spawn.with_shell(os.getenv("HOME") .. "/.config/polybar/launch.sh")
