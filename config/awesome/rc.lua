@@ -445,6 +445,7 @@ awful.rules.rules = {
     },
 
     -- Floating clients.
+    -- to find the class of a window: xprop WM_CLASS, then click on it
     { rule_any = {
         instance = {
           "DTA",  -- Firefox addon DownThemAll.
@@ -453,7 +454,7 @@ awful.rules.rules = {
         },
         class = {
           "Arandr",
-          "Calculator",
+          "gnome-calculator",
           "Blueman-manager",
           "Gpick",
           "Kruler",
