@@ -235,6 +235,29 @@ globalkeys = gears.table.join(
       {description = "resize window (right)", group = "client"}
     ),
 
+    -- Alt-tabbing
+    awful.key({ "Mod1",           }, "Tab",
+      function ()
+         -- awful.client.focus.history.previous()
+         awful.client.focus.byidx(-1)
+        if client.focus then
+            client.focus:raise()
+        end
+      end,
+      {description = "Switch focus between windows (forward)", group = "client"}
+    ),
+
+    awful.key({ "Mod1", "Shift"   }, "Tab",
+      function ()
+         -- awful.client.focus.history.previous()
+         awful.client.focus.byidx(1)
+         if client.focus then
+             client.focus:raise()
+         end
+      end,
+      {description = "Switch focus between windows (backward)", group = "client"}
+    ),
+
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
               {description = "open a terminal", group = "launcher"}),
@@ -316,6 +339,7 @@ clientkeys = gears.table.join(
             c.minimized = true
         end ,
         {description = "minimize", group = "client"}),
+
     awful.key({ modkey,           }, "m",
         function (c)
             c.maximized = not c.maximized
@@ -429,6 +453,7 @@ awful.rules.rules = {
         },
         class = {
           "Arandr",
+          "Calculator",
           "Blueman-manager",
           "Gpick",
           "Kruler",
