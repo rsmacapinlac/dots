@@ -90,8 +90,8 @@ local editor_cmd   = terminal .. " -e " .. editor
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
     -- awful.layout.suit.floating,
-    -- awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
+    awful.layout.suit.tile,
+    -- awful.layout.suit.tile.left,
     -- awful.layout.suit.tile.bottom,
     -- awful.layout.suit.tile.top,
     -- awful.layout.suit.fair,
@@ -251,7 +251,7 @@ globalkeys = mytable.join(
       end,
       {description = "focus next by index", group = "client"}
     ),
-    awful.key({ modkey, "Shift"   }, "h", function ()
+    awful.key({ modkey, "Control"   }, "h", function ()
         awful.client.swap.byidx(  1)
       end,
       {description = "swap with next client by index", group = "client"}
@@ -261,7 +261,7 @@ globalkeys = mytable.join(
       end,
       {description = "focus previous by index", group = "client"}
     ),
-    awful.key({ modkey, "Shift"   }, "l", function ()
+    awful.key({ modkey, "Control"   }, "l", function ()
         awful.client.swap.byidx( -1)
       end,
       {description = "swap with previous client by index", group = "client"}
@@ -273,12 +273,12 @@ globalkeys = mytable.join(
 
 
     -- client resize
-    awful.key({ modkey, "Control"    }, "h", function ()
+    awful.key({ modkey, "Shift"    }, "h", function ()
         awful.tag.incmwfact( -0.01)
       end,
       {description = "resize window (left)", group = "client"}
     ),
-    awful.key({ modkey, "Control"    }, "j", function ()
+    awful.key({ modkey, "Shift"    }, "j", function ()
         awful.client.incwfact( 0.01)
       end,
       {description = "resize window (down)", group = "client"}
