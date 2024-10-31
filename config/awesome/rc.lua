@@ -283,12 +283,12 @@ globalkeys = mytable.join(
       end,
       {description = "resize window (down)", group = "client"}
     ),
-    awful.key({ modkey, "Control"    }, "k", function ()
+    awful.key({ modkey, "Shift"    }, "k", function ()
         awful.client.incwfact(-0.01)
       end,
       {description = "resize window (up)", group = "client"}
     ),
-    awful.key({ modkey, "Control"    }, "l", function ()
+    awful.key({ modkey, "Shift"    }, "l", function ()
         awful.tag.incmwfact( 0.01)
       end,
       {description = "resize window (right)", group = "client"}
