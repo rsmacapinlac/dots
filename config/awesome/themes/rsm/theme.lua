@@ -243,14 +243,14 @@ function theme.at_screen_connect(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            wibox.widget.systray(),
             first,
-            --theme.mpd.widget,
+            theme.mpd.widget,
             --theme.mail.widget,
             --theme.fs.widget,
             bat.widget,
             theme.volume.widget,
             mytextclock,
+            wibox.widget.systray(),
         },
     }
 end
