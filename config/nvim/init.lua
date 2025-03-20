@@ -5,3 +5,4 @@ require("core.plugins");
 require("core.plugins_config.catppuccin");
 require("core.plugins_config.telescope");
 require("core.plugins_config.treesitter");
+require("core.plugins_config.mason");
