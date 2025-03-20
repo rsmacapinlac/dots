@@ -2,5 +2,6 @@ require("core.remap");
 require("core.settings");
 require("core.plugins");
 
--- import any plugin config
-require("core.plugin_config");
+require("core.plugins_config.catppuccin");
+require("core.plugins_config.telescope");
+require("core.plugins_config.treesitter");

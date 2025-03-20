@@ -1,52 +1,24 @@
-local ensure_packer = function()
-  local fn = vim.fn
-  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    vim.cmd [[packadd packer.nvim]]
-    return true
-  end
-  return false
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
+vim.opt.rtp:prepend(lazypath)
 
-local packer_bootstrap = ensure_packer()
+local opts = {}
+local plugins = {
+  { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+  {
+    'nvim-telescope/telescope.nvim', tag = '0.1.6',
+    dependencies = { 'nvim-lua/plenary.nvim' }
+  },
+  {"nvim-treesitter/nvim-treesitter", build= ":TSUpdate"}
+}
 
-return require('packer').startup(function(use)
-  use 'wbthomason/packer.nvim'
-
-  -- My plugins here
-
-  use 'johnfrankmorgan/whitespace.nvim'
-
-  use {
-    "catppuccin/nvim",
-    as = "catppuccin"
-  }
-
-  use 'nvim-tree/nvim-tree.lua'
-  use 'nvim-tree/nvim-web-devicons'
-  use 'nvim-treesitter/nvim-treesitter'
-
-  use {
-    'nvim-telescope/telescope.nvim', tag = '0.1.3',
-    requires = { {'nvim-lua/plenary.nvim'} }
-  }
-
-  use 'nvim-lualine/lualine.nvim'
-
-  use  "hrsh7th/nvim-cmp"
-  use  "hrsh7th/cmp-nvim-lsp"
-  use  "glepnir/lspsaga.nvim"
-  use {
-    "williamboman/mason.nvim",
-    "williamboman/mason-lspconfig.nvim",
-    "neovim/nvim-lspconfig",
-    run = ":MasonUpdate" -- :MasonUpdate updates registry contents
-  }
-
-  -- Automatically set up your configuration after cloning packer.nvim
-  -- Put this at the end after all plugins
-  if packer_bootstrap then
-    require('packer').sync()
-  end
-end)
+require("lazy").setup(plugins, opts)
