@@ -16,5 +16,3 @@ vim.opt.swapfile = false
 vim.opt.backup = false
 
 vim.opt.mouse = ""
--- vim.cmd.colorscheme "catppuccin"
--- vim.opt.colorcolumn = "80"
