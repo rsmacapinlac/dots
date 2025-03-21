@@ -15,4 +15,6 @@ vim.opt.wrap = false
 vim.opt.swapfile = false
 vim.opt.backup = false
 
+vim.opt.conceallevel = 1
+
 vim.opt.mouse = ""
