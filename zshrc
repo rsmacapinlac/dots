@@ -124,6 +124,17 @@ function g() {
   fi
 }
 
+# Alias function for "bundle exec"
+# This allows running commands with "bundle exec" using a shorter alias.
+# Example: Instead of typing "bundle exec rails server", you can type "be rails server".
+# The "$@" ensures that all arguments passed to "be" are forwarded to "bundle exec".
+# Add this to your ~/.bashrc, ~/.zshrc, or equivalent shell config file.
+
+be() {
+  bundle exec "$@"
+}
+
+
 # Keybindings for fzf
 #source /usr/share/doc/fzf/examples/key-bindings.zsh
 #source /usr/share/doc/fzf/examples/completion.zsh
