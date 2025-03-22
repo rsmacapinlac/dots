@@ -33,19 +33,19 @@ foreground = "#839496"
 TERM = "xterm-256color"
 
 [font.bold]
-family = "AnonymicePro Nerd Font"
+family = "Anonymous Pro"
 style = "Bold"
 
 [font.bold_italic]
-family = "AnonymicePro Nerd Font"
+family = "Anonymous Pro"
 style = "Bold Italic"
 
 [font.italic]
-family = "AnonymicePro Nerd Font"
+family = "Anonymous Pro"
 style = "Italic"
 
 [font.normal]
-family = "AnonymicePro Nerd Font"
+family = "Anonymous Pro"
 style = "Regular"
 
 [font.offset]
