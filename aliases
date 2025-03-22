@@ -4,6 +4,7 @@ alias ln="ln -v"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias r="ranger"
+alias obsidian="cd '$HOME/Nextcloud/Apps/obsidian/Second Brain/' && nvim"
 
 # Ritchie's stuff :)
 
@@ -15,9 +16,6 @@ alias v="echo \"Use 'e'\"! Gawd!"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
-
-# Mail!
-alias m='neomutt'
 
 # Development stuff
 alias be='bundle exec'
