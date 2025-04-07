@@ -18,6 +18,13 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
+-- {{ Ritchie's customizations
+--
+local wallpaper_cmd = os.getenv("HOME") .. "/workspace/wallpapers/bin/switch_wallpapers"
+local launcher_cmd = "rofi -show drun -combi-modes 'window,run,ssh' -modes combi"
+
+beautiful.useless_gap = 3
+
 -- Load Debian menu entries
 local debian = require("debian.menu")
 local has_fdo, freedesktop = pcall(require, "freedesktop")
@@ -247,6 +254,10 @@ root.buttons(gears.table.join(
 
 -- {{{ Key bindings
 globalkeys = gears.table.join(
+    awful.key({ "Control", "Shift"}, "w", function() awful.util.spawn(wallpaper_cmd) end,
+              {description="Change wallpaper", group="Customizations"}),
+    awful.key({ "Control" }, "space", function() awful.util.spawn(launcher_cmd) end,
+              {description="Launch rofi", group="Customizations"}),
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
