@@ -10,6 +10,10 @@ local menubar = require("menubar")
 local modkey = RC.vars.modkey
 local terminal = RC.vars.terminal
 
+-- Ritchie's custom
+wallpaper_cmd = RC.vars.wallpaper_cmd
+launcher      = RC.vars.launcher_cmd
+
 local _M = {}
 
 -- reading
@@ -22,11 +26,17 @@ function _M.get()
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
 
+
+    awful.key({ "Control", "Shift"}, "w", function() awful.util.spawn(wallpaper_cmd) end,
+              {description="Change wallpaper", group="Customizations"}),
+    awful.key({ "Control" }, "space", function() awful.util.spawn(launcher_cmd) end,
+              {description="Launch ROFI", group="Customizations"}),
+
     --   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     -- Tag browsing
-    awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
+    awful.key({ modkey,           }, "h",   awful.tag.viewprev,
               {description = "view previous", group = "tag"}),
-    awful.key({ modkey,           }, "Right",  awful.tag.viewnext,
+    awful.key({ modkey,           }, "l",  awful.tag.viewnext,
               {description = "view next", group = "tag"}),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
               {description = "go back", group = "tag"}),
