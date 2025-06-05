@@ -182,7 +182,10 @@ fi
 # source ~/.cache/wal/colors-tty.sh
 
 # run neofetch
-neofetch
+#neofetch
+
+# run fastfetch
+fastfetch
 
 # Created by `pipx` on 2023-10-10 04:12:28
 export PATH="$PATH:/home/ritchie/.local/bin"
