@@ -16,6 +16,7 @@
        "tray",
        "custom/lock",
        "custom/power"],
+
     "hyprland/workspaces": {
          "disable-scroll": true,
          "sort-by-name": true,
@@ -68,12 +69,12 @@
     },
     "custom/lock": {
         "tooltip": false,
-        "on-click": "sh -c '(sleep 0.5s; swaylock --grace 0)' & disown",
+        "on-click": "hyprlock",
         "format": "",
     },
     "custom/power": {
         "tooltip": false,
-        "on-click": "wlogout &",
-        "format": "襤"
+        "on-click": "hyprctl dispatch exit",
+        "format": "󰐥"
     }
 }
