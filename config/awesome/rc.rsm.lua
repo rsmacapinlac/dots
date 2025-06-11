@@ -20,7 +20,7 @@ require("awful.hotkeys_popup.keys")
 
 -- {{ Ritchie's customizations
 --
-local wallpaper_cmd = os.getenv("HOME") .. "/workspace/wallpapers/bin/switch_wallpapers"
+local wallpaper_cmd = os.getenv("HOME") .. "/.config/wallpapers/bin/set_wallpaper"
 local launcher_cmd = "rofi -show drun -combi-modes 'window,run,ssh' -modes combi"
 
 beautiful.useless_gap = 3
