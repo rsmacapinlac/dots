@@ -1,8 +1,8 @@
 @import "mocha.css";
 
 * {
-  font-family: FantasqueSansMono;
-  font-size: 16px;
+  font-family: "FantasqueSansMono", "Font Awesome 6 Free Regular", "Symbols Nerd Font Mono", monospace;
+  font-size: 13px;
   min-height: 0;
 }
 
