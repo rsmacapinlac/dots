@@ -8,7 +8,7 @@ local _M = {
   modkey = "Mod4",
 
   -- My customizations
-  wallpaper_cmd = home .. "/workspace/wallpapers/bin/switch_wallpapers",
+  wallpaper_cmd = home .. "/.config/wallpapers/bin/set_wallpaper",
   launcher_cmd = "rofi -show drun -combi-modes 'window,run,ssh' -modes combi",
 }
 
