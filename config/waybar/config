@@ -74,7 +74,7 @@
     },
     "custom/power": {
         "tooltip": false,
-        "on-click": "hyprctl dispatch exit",
+        "on-click": "~/.config/waybar/scripts/powermenu.sh",
         "format": "󰐥"
     }
 }

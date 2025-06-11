@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+filename="$HOME/.wallpaper"
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Check if swww-daemon is running, if not start it
+if ! pgrep -x "swww-daemon" > /dev/null; then
+    swww-daemon &
+    # Wait for the daemon to start
+    sleep 1
+fi
+
+# create the filename if it doesn't exist
+if [[ ! -e $filename ]]
+then
+  touch $filename
+fi
+
+cd $SCRIPT_DIR && cd ..
+
+# Get current month for monthly wallpapers
+month=$( date '+%Y-%m' )
+monthly_wallpaper="Monthly/$month*"
+
+# Collect all wallpapers
+declare -a wallpapers
+wallpapers=( Generic/* $monthly_wallpaper)
+wallpaper_count=${#wallpapers[*]}
+
+# Select random wallpaper
+index=$( shuf -i 0-"$wallpaper_count" -n 1 )
+if [[ $index != $wallpaper_count ]]
+then
+  current_wallpaper=${wallpapers[$index]}
+  
+  # Use swww to set the wallpaper with proper scaling
+  swww img "$current_wallpaper" --transition-type any --transition-step 90 --resize stretch
+  
+  # Optional: Generate color scheme using wal if available
+  if command -v wal &> /dev/null; then
+    wal -c
+    wal -i "$current_wallpaper" -q
+  fi
+fi 
