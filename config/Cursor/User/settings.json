@@ -1,0 +1,6 @@
+{
+    "window.commandCenter": true,
+    "workbench.colorTheme": "Catppuccin Mocha",
+    "editor.lineNumbers": "relative",
+    "workbench.iconTheme": "catppuccin-mocha"
+}
