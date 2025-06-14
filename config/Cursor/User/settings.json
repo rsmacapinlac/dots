@@ -2,5 +2,9 @@
     "window.commandCenter": true,
     "workbench.colorTheme": "Catppuccin Mocha",
     "editor.lineNumbers": "relative",
-    "workbench.iconTheme": "catppuccin-mocha"
+    "workbench.iconTheme": "catppuccin-mocha",
+    "git.confirmSync": false,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    }
 }
