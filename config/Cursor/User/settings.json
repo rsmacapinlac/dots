@@ -6,5 +6,6 @@
     "git.confirmSync": false,
     "extensions.experimental.affinity": {
         "asvetliakov.vscode-neovim": 1
-    }
+    },
+    "git.enableSmartCommit": true
 }
