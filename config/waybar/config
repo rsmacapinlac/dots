@@ -20,7 +20,7 @@
     "hyprland/workspaces": {
          "disable-scroll": true,
          "sort-by-name": true,
-         "format": "{icon} ",
+         "format": "{name} {icon}",
          "format-icons": {
             //"default": "",
             "urgent": "",
