@@ -1,6 +1,6 @@
 {
     "window.commandCenter": true,
-    "workbench.colorTheme": "Catppuccin Mocha",
+    "workbench.colorTheme": "Cursor Dark Midnight",
     "editor.lineNumbers": "relative",
     "workbench.iconTheme": "catppuccin-mocha",
     "git.confirmSync": false,
