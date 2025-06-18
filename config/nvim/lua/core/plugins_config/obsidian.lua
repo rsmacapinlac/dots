@@ -3,12 +3,12 @@ local function folder_exist(path)
   return attr:match("^d")
 end
 
-if folder_exist("~/Nextcloud/Apps/Obsidian/Second Brain") then
+if folder_exist("~/Second Brain") then
   require("obsidian").setup({
     workspaces = {
       {
         name = "Second Brain",
-        path = "~/Nextcloud/Apps/obsidian/Second Brain",
+        path = "~/Second Brain",
       },
     },
     -- see below for full list of options 👇
