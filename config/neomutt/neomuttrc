@@ -1,0 +1,59 @@
+# vim: filetype=muttrc
+
+# Essential settings only
+set editor = "nvim"
+
+# Basic UI settings
+unset help
+set sort = threads
+set charset = "utf-8"
+
+# Sidebar settings
+set sidebar_visible = "yes"
+set sidebar_width = 30
+set sidebar_folder_indent = "yes"
+set sidebar_short_path = "yes"
+set sidebar_delim_chars = "/"
+set sidebar_sort_method = "alpha"
+
+# Sidebar folder list
+set sidebar_format = "%D%*  %n"
+set sidebar_new_mail_only = "no"
+
+# Status bar with email address indicator
+set status_format = "[ %f ] [%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]%>─%?p?( %p postponed )? ─ [ %F ]"
+
+# Message formatting improvements
+set index_format = "%4C %Z %{%b %d} %-15.15L (%?l?%4l&%4c?) %s"
+set date_format = "%a, %b %d, %Y at %I:%M %p"
+set time_inc = 60
+set timeout = 300
+set sleep_time = 1
+
+# Pager formatting
+set pager_index_lines = 10
+set pager_context = 3
+set pager_stop
+set menu_scroll
+set tilde
+unset markers
+
+# Email composition settings
+set envelope_from
+set edit_headers
+set fast_reply
+set include
+set forward_quote
+set attribution = "On %d, %n wrote:"
+
+# Load colors and mappings
+source ~/.config/neomutt/colors
+source ~/.config/neomutt/mappings
+
+# Load default account (macapinlac) only
+source ~/.config/neomutt/accounts/macapinlac
+
+# Account switching macros
+macro index,pager <f2> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>'
+macro index,pager <f3> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>'
+macro index,pager <f4> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>' 
