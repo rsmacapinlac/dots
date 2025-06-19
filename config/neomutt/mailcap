@@ -1,0 +1,26 @@
+# MS Word documents
+application/msword; libreoffice --headless --convert-to pdf %s
+application/vnd.ms-excel; libreoffice --headless --convert-to pdf %s
+application/vnd.openxmlformats-officedocument.presentationml.presentation; libreoffice --headless --convert-to pdf %s
+application/vnd.oasis.opendocument.text; libreoffice --headless --convert-to pdf %s
+
+# HTML
+text/html; w3m -I %{charset} -T text/html; copiousoutput;
+text/plain; nvim %s
+
+# PDFs
+application/pdf; zathura %s
+
+# Images
+image/png; feh %s
+image/jpeg; feh %s
+image/gif; feh %s
+image/webp; feh %s
+
+# Archives
+application/zip; unzip -l %s
+application/x-rar; unrar l %s
+application/x-7z-compressed; 7z l %s
+application/x-tar; tar -tf %s
+application/gzip; tar -tzf %s
+application/x-bzip2; tar -tjf %s 

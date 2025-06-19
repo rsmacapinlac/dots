@@ -1,0 +1,28 @@
+# vim: filetype=muttrc
+
+# Gmail IMAP settings
+set realname = "Ritchie Macapinlac"
+set from = "rsmacapinlac@gmail.com"
+set folder = "imaps://rsmacapinlac@gmail.com@imap.gmail.com:993"
+set imap_pass = "`pass email/gmail.com`"
+set spoolfile = "+INBOX"
+
+# SMTP configuration using msmtp
+set sendmail = "/usr/bin/msmtp -a gmail"
+
+# Gmail-specific folders
+set record = "+[Gmail]/Sent Mail"
+set trash = "+[Gmail]/Trash"
+set postponed = "+[Gmail]/Drafts"
+
+# Connection settings
+set mail_check = 6
+unset imap_passive
+set imap_keepalive = 300
+
+# Clear existing mailboxes and initialize sidebar with folder list
+unmailboxes *
+mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
+
+# Use this GPG key for signing
+set pgp_sign_as = F5CB0D752D686F53511E0CA41136D8FFA5E99E61 
