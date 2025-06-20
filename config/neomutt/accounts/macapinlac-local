@@ -1,0 +1,21 @@
+# Google Workspace local maildir settings for macapinlac.com
+unmailboxes *
+
+set realname = "Ritchie Macapinlac"
+set from = "ritchie@macapinlac.com"
+set folder = "~/.mail/macapinlac"
+set spoolfile = "+INBOX"
+
+# SMTP configuration using msmtp
+set sendmail = "/usr/bin/msmtp -a macapinlac"
+
+# Gmail-specific folders (local maildir)
+set record = "+[Gmail]/Sent Mail"
+set trash = "+[Gmail]/Trash"
+set postponed = "+[Gmail]/Drafts"
+
+# Clear existing mailboxes and initialize sidebar with folder list
+mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
+
+# Use this GPG key for signing
+set pgp_sign_as = C97E2AC7D265B84973A76D9E015F854E5F4A850F 

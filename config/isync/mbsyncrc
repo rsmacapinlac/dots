@@ -1,0 +1,79 @@
+# isync configuration for Ritchie Macapinlac's email accounts
+# This file should be placed at ~/.mbsyncrc
+
+# Global settings
+IMAPAccount boogienet
+Host mail.hostedemail.com
+User rsmacapinlac@boogienet.com
+PassCmd "pass email/boogienet.com | head -1 | tr -d '\n'"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore boogienet-remote
+Account boogienet
+
+MaildirStore boogienet-local
+Path ~/.mail/boogienet/
+Inbox ~/.mail/boogienet/INBOX
+
+Channel boogienet
+Far :boogienet-remote:
+Near :boogienet-local:
+Patterns "INBOX" "Sent Items" "Drafts" "Trash" "Spam"
+Create Near
+Expunge Near
+SyncState *
+
+# Gmail account
+IMAPAccount gmail
+Host imap.gmail.com
+User rsmacapinlac@gmail.com
+PassCmd "pass email/gmail.com"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-remote
+Account gmail
+
+MaildirStore gmail-local
+Path ~/.mail/gmail/
+Inbox ~/.mail/gmail/INBOX
+SubFolders Verbatim
+
+Channel gmail
+Far :gmail-remote:
+Near :gmail-local:
+Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+Create Near
+Expunge Near
+SyncState *
+
+# Macapinlac.com (Google Workspace) account
+IMAPAccount macapinlac
+Host imap.gmail.com
+User ritchie@macapinlac.com
+PassCmd "pass email/macapinlac.com"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore macapinlac-remote
+Account macapinlac
+
+MaildirStore macapinlac-local
+Path ~/.mail/macapinlac/
+Inbox ~/.mail/macapinlac/INBOX
+SubFolders Verbatim
+
+Channel macapinlac
+Far :macapinlac-remote:
+Near :macapinlac-local:
+Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+Create Near
+Expunge Near
+SyncState *
+
+# Group all channels together for easy synchronization
+Group all
+Channel boogienet
+Channel gmail
+Channel macapinlac 
