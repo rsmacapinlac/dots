@@ -9,6 +9,7 @@
     ],
     // "modules-center": ["custom/music"],
     "modules-right": [
+       "custom/music",
        "pulseaudio",
        "battery",
        "clock",
@@ -76,5 +77,14 @@
         "tooltip": false,
         "on-click": "~/.config/waybar/scripts/powermenu.sh",
         "format": "󰐥"
+    },
+    "custom/music": {
+        "exec": "~/.config/waybar/scripts/music.sh",
+        "interval": 1,
+        "tooltip": true,
+        "tooltip-format": "Click to open ncmpcpp",
+        "on-click": "kitty ncmpcpp",
+        "format": "{}",
+        "max-length": 50
     }
 }
