@@ -1,10 +1,29 @@
 #!/bin/sh
 
+# Check if notify-send is available
+# Note: You may need to install libnotify: sudo pacman -S libnotify
+if ! command -v notify-send >/dev/null 2>&1; then
+    exit 0
+fi
+
 music_dir="$HOME/Music"
 previewdir="$XDG_CONFIG_HOME/ncmpcpp/previews"
-filename="$(mpc --format "$music_dir"/%file% current)"
-previewname="$previewdir/$(mpc --format %album% current | base64).png"
 
-[ -e "$previewname" ] || ffmpeg -y -i "$filename" -an -vf scale=128:128 "$previewname" > /dev/null 2>&1
+# Create preview directory if it doesn't exist
+mkdir -p "$previewdir"
 
-notify-send -r 27072 "Now Playing" "$(mpc --format '%title% \n%artist% - %album%' current)" -i "$previewname"
+filename="$(mpc --format "$music_dir"/%file% current 2>/dev/null)"
+if [ -z "$filename" ]; then
+    exit 0
+fi
+
+previewname="$previewdir/$(mpc --format %album% current 2>/dev/null | base64).png"
+
+# Generate preview if it doesn't exist and filename is valid
+if [ ! -e "$previewname" ] && [ -f "$filename" ]; then
+    ffmpeg -y -i "$filename" -an -vf scale=128:128 "$previewname" >/dev/null 2>&1
+fi
+
+# Send notification with error handling
+# notify-send works with mako notification daemon
+notify-send -r 27072 "Now Playing" "$(mpc --format '%title% \n%artist% - %album%' current 2>/dev/null)" -i "$previewname" 2>/dev/null || true
