@@ -26,4 +26,5 @@ fi
 
 # Send notification with error handling
 # notify-send works with mako notification daemon
-notify-send -r 27072 "Now Playing" "$(mpc --format '%title% \n%artist% - %album%' current 2>/dev/null)" -i "$previewname" 2>/dev/null || true
+# -t 3000: timeout after 3 seconds (3000ms) to make notification transient
+notify-send -r 27072 -t 3000 "Now Playing" "$(mpc --format '%title% \n%artist% - %album%' current 2>/dev/null)" -i "$previewname" 2>/dev/null || true
