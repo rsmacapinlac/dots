@@ -1,7 +1,27 @@
+# Character encoding for proper display of special characters
+system_encoding = "UTF-8"
+
+# Visualizer settings
 visualizer_data_source = "/tmp/mpd.fifo"
 visualizer_output_name = "my_fifo"
 visualizer_in_stereo = "yes"
 visualizer_type = "spectrum"
 visualizer_look = "+|"
 
+# Song change notification
 execute_on_song_change = songinfo
+
+# Catppuccin Mocha Color Scheme
+# Use terminal colors for Catppuccin Mocha theme
+# These work with the terminal's color palette
+
+# Current song highlighting
+current_item_prefix = "$(blue)[ "
+current_item_suffix = " ]"
+current_item_inactive_column_prefix = "$(white)[ "
+current_item_inactive_column_suffix = " ]"
+
+# Song list format
+song_list_format = "%a - %t"
+song_status_format = "%a - %t"
+song_library_format = "%n %t"
