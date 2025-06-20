@@ -46,14 +46,32 @@ set include
 set forward_quote
 set attribution = "On %d, %n wrote:"
 
+# HTML email viewing preferences
+set mailcap_path = "~/.config/neomutt/mailcap"
+set mailcap_sanitize = "yes"
+
+# Prefer HTML over plain text when available
+auto_view text/html
+set mime_forward = "yes"
+set mime_forward_decode = "yes"
+
+# Threading configuration (standard options)
+set sort = threads
+set sort_aux = reverse-last-date-received
+
 # Load colors and mappings
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings
 
 # Load default account (macapinlac) only
-source ~/.config/neomutt/accounts/macapinlac
+source ~/.config/neomutt/accounts/macapinlac-local
 
-# Account switching macros
-macro index,pager <f2> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>'
-macro index,pager <f3> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>'
-macro index,pager <f4> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>' 
+# Account switching macros - Local maildir accounts
+macro index,pager <f2> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac-local<enter><change-folder>!<enter>'
+macro index,pager <f3> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail-local<enter><change-folder>!<enter>'
+macro index,pager <f4> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet-local<enter><change-folder>!<enter>' 
+
+# Account switching macros - IMAP accounts
+macro index,pager <f5> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>'
+macro index,pager <f6> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>'
+macro index,pager <f7> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>'

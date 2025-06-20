@@ -4,8 +4,8 @@ application/vnd.ms-excel; libreoffice --headless --convert-to pdf %s
 application/vnd.openxmlformats-officedocument.presentationml.presentation; libreoffice --headless --convert-to pdf %s
 application/vnd.oasis.opendocument.text; libreoffice --headless --convert-to pdf %s
 
-# HTML
-text/html; w3m -I %{charset} -T text/html; copiousoutput;
+# HTML - using lynx for better text rendering
+text/html; lynx -dump -force_html -width=80 %s; copiousoutput;
 text/plain; nvim %s
 
 # PDFs
