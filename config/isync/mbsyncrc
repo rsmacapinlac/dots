@@ -19,7 +19,8 @@ Inbox ~/.mail/boogienet/INBOX
 Channel boogienet
 Far :boogienet-remote:
 Near :boogienet-local:
-Patterns "INBOX" "Sent Items" "Drafts" "Trash" "Spam"
+#Patterns "INBOX" "Sent Items" "Drafts" "Trash" "Spam"
+Patterns *
 Create Near
 Expunge Near
 SyncState *
@@ -43,7 +44,8 @@ SubFolders Verbatim
 Channel gmail
 Far :gmail-remote:
 Near :gmail-local:
-Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+#Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+Patterns *
 Create Near
 Expunge Near
 SyncState *
@@ -67,7 +69,8 @@ SubFolders Verbatim
 Channel macapinlac
 Far :macapinlac-remote:
 Near :macapinlac-local:
-Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+#Patterns "INBOX" "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail" "[Gmail]/Spam"
+Patterns *
 Create Near
 Expunge Near
 SyncState *

@@ -12,6 +12,12 @@ set record = "+[Gmail]/Sent Mail"
 set trash = "+[Gmail]/Trash"
 set postponed = "+[Gmail]/Drafts"
 
+# Remove INBOX label when moving emails to subfolders
+# This ensures that when you move an email from INBOX to a subfolder,
+# it removes the INBOX label (Gmail behavior) rather than keeping both labels
+set move = "no"
+set copy = "no"
+
 # Clear existing mailboxes and initialize sidebar with folder list
 unmailboxes *
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
