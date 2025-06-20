@@ -1,24 +1,16 @@
-# vim: filetype=muttrc
-
-# Gmail IMAP settings
+# Gmail local maildir settings
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@gmail.com"
-set folder = "imaps://rsmacapinlac@gmail.com@imap.gmail.com:993"
-set imap_pass = "`pass email/gmail.com`"
+set folder = "~/.mail/gmail"
 set spoolfile = "+INBOX"
 
 # SMTP configuration using msmtp
 set sendmail = "/usr/bin/msmtp -a gmail"
 
-# Gmail-specific folders
+# Gmail-specific folders (local maildir)
 set record = "+[Gmail]/Sent Mail"
 set trash = "+[Gmail]/Trash"
 set postponed = "+[Gmail]/Drafts"
-
-# Connection settings
-set mail_check = 6
-unset imap_passive
-set imap_keepalive = 300
 
 # Clear existing mailboxes and initialize sidebar with folder list
 unmailboxes *

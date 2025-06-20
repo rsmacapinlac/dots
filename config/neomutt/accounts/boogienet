@@ -1,4 +1,4 @@
-# Standalone Neomutt config for boogienet account
+# Standalone Neomutt config for boogienet account (local maildir)
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@boogienet.com"
 set editor = "nvim"
@@ -10,37 +10,25 @@ set sort = threads
 set sidebar_visible = "yes"
 set sidebar_width = 30
 
-# IMAP settings
-set folder = "imaps://mail.hostedemail.com:993"
+# Local maildir settings (no IMAP connection needed)
+set folder = "~/.mail/boogienet"
 set spoolfile = "+INBOX"
-set imap_user = "rsmacapinlac@boogienet.com"
-set imap_pass = "`pass email/boogienet.com | head -1 | tr -d '\n'`"
 
-# SSL/TLS settings
-set ssl_force_tls = "yes"
-set ssl_use_tlsv1_3 = "yes"
-
-# Authentication
-set imap_authenticators = "plain"
-
-# SMTP configuration
+# SMTP configuration using msmtp
 set sendmail = "/usr/bin/msmtp -a boogienet"
 
-# Folder setup
+# Folder setup for local maildir
 unmailboxes *
 mailboxes "+INBOX" "+Sent Items" "+Drafts" "+Trash" "+Spam"
 
-# Connection settings
-set mail_check = 6
-unset imap_passive
-set imap_keepalive = 300
+# Connection settings (not needed for local maildir)
+# set mail_check = 6
+# unset imap_passive
+# set imap_keepalive = 300
 
 # GPG signing configuration
 set pgp_sign_as = DDEB0A12FCA5A6365A7B4CED189263CB686965BD
 set pgp_autosign = "yes"
 set pgp_replysign = "yes"
 set pgp_replyencrypt = "yes"
-set pgp_verify_sig = "yes"
-
-# Account hook
-account-hook $folder "set imap_user=rsmacapinlac@boogienet.com; set imap_pass=`pass email/boogienet.com | head -1 | tr -d '\n'`" 
+set pgp_verify_sig = "yes" 

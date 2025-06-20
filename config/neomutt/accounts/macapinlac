@@ -1,31 +1,21 @@
-# vim: filetype=muttrc
+# Google Workspace local maildir settings for macapinlac.com
 unmailboxes *
 
-# Google Workspace IMAP settings for macapinlac.com
 set realname = "Ritchie Macapinlac"
 set from = "ritchie@macapinlac.com"
-set folder = "imaps://ritchie@macapinlac.com@imap.gmail.com:993"
-set imap_pass = "`pass email/macapinlac.com`"
+set folder = "~/.mail/macapinlac"
 set spoolfile = "+INBOX"
 
 # SMTP configuration using msmtp
 set sendmail = "/usr/bin/msmtp -a macapinlac"
 
-# Gmail-specific folders
+# Gmail-specific folders (local maildir)
 set record = "+[Gmail]/Sent Mail"
 set trash = "+[Gmail]/Trash"
 set postponed = "+[Gmail]/Drafts"
 
-# Connection settings
-set mail_check = 6
-unset imap_passive
-set imap_keepalive = 300
-
 # Clear existing mailboxes and initialize sidebar with folder list
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
-
-## Hook -- IMPORTANT!
-account-hook $folder "set imap_pass=`pass email/macapinlac.com`"
 
 # Use this GPG key for signing
 set pgp_sign_as = C97E2AC7D265B84973A76D9E015F854E5F4A850F 

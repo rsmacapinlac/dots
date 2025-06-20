@@ -63,15 +63,17 @@ set sort_aux = reverse-last-date-received
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings
 
-# Load default account (macapinlac) only
-source ~/.config/neomutt/accounts/macapinlac-local
-
-# Account switching macros - Local maildir accounts
-macro index,pager <f2> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac-local<enter><change-folder>!<enter>'
-macro index,pager <f3> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail-local<enter><change-folder>!<enter>'
-macro index,pager <f4> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet-local<enter><change-folder>!<enter>' 
-
-# Account switching macros - IMAP accounts
-macro index,pager <f5> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>'
-macro index,pager <f6> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>'
-macro index,pager <f7> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>'
+# Note: Account switching is now handled by the neomutt-accounts script
+# Usage: neomutt-accounts [account-name]
+# 
+# Available local maildir accounts:
+#   macapinlac  - Macapinlac local maildir
+#   gmail       - Gmail local maildir
+#   boogienet   - Boogienet local maildir
+#
+# Examples:
+#   neomutt-accounts gmail        # Start with Gmail local maildir
+#   neomutt-accounts macapinlac   # Start with Macapinlac local maildir
+#
+# This neomutt instance was started without a specific account configuration.
+# Please use the neomutt-accounts script to start neomutt with the desired local account.
