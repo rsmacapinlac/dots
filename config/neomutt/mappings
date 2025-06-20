@@ -44,13 +44,12 @@ bind index,pager D purge-message
 bind index <tab> sync-mailbox
 bind index <space> collapse-thread
 
+# Mail synchronization macro (Ctrl+R) - Simplified for local accounts
+# Since we're using local maildir accounts, this just refreshes the mailbox
+macro index,pager \Cr '<sync-mailbox>'
+
 # URL extraction using pipe-message
 macro index,pager u '<pipe-message>urlscan<enter>'
-
-# Account switching shortcuts - simplified and more reliable
-macro index,pager <f2> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>'
-macro index,pager <f3> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>'
-macro index,pager <f4> '<sync-mailbox><enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>'
 
 # Email completion bindings
 bind editor <Tab> complete-query
