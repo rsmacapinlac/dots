@@ -36,8 +36,8 @@
     "clock": {
         "timezone": "America/Vancouver",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "format-alt": " {:%Y-%m-%d}",
-        "format": " {:%H:%M}"
+        "format-alt": " {:%Y-%m-%d}",
+        "format": " {:%Y-%m-%d %H:%M}"
     },
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
