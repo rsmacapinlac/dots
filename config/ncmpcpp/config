@@ -1,6 +1,13 @@
 # Character encoding for proper display of special characters
 system_encoding = "UTF-8"
 
+# Disable ncmpcpp's internal playlist database - use only M3U files
+playlist_display_mode = "classic"
+playlist_show_mpd_host = "no"
+playlist_show_remaining_time = "no"
+mpd_host = "127.0.0.1"
+mpd_port = "6600"
+
 # Visualizer settings
 visualizer_data_source = "/tmp/mpd.fifo"
 visualizer_output_name = "my_fifo"
