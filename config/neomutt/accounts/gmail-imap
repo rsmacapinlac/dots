@@ -1,13 +1,24 @@
-# Gmail local maildir settings
+# Gmail IMAP settings (direct IMAP connection)
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@gmail.com"
-set folder = "~/.mail/gmail"
+
+# IMAP connection settings
+set imap_user = "rsmacapinlac@gmail.com"
+set imap_pass = "`pass email/gmail.com`"
+set folder = "imaps://imap.gmail.com:993"
 set spoolfile = "+INBOX"
+
+# Connection behavior
+set mail_check = 60
+set imap_keepalive = 300
+set imap_idle = "yes"
+set imap_peek = "yes"
+set imap_condstore = "yes"
 
 # SMTP configuration using msmtp
 set sendmail = "/usr/bin/msmtp -a gmail"
 
-# Gmail-specific folders (local maildir)
+# Gmail-specific folders (IMAP)
 set record = "+[Gmail]/Sent Mail"
 set trash = "+[Gmail]/Trash"
 set postponed = "+[Gmail]/Drafts"

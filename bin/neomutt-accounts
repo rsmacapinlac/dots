@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# neomutt-accounts - Start neomutt with different local maildir account configurations
-# Usage: neomutt-accounts [account-name] [--no-sync]
+# neomutt-accounts - Start neomutt with different local maildir or IMAP account configurations
+# Usage: neomutt-accounts [account-name] [--no-sync] [--imap]
 # Available accounts: macapinlac, gmail, boogienet
+# Use --imap flag for direct IMAP connections (no local maildir)
 
 set -e
 
@@ -39,42 +40,58 @@ print_error() {
 
 # Function to show usage
 show_usage() {
-    echo "Usage: $0 [account-name] [--no-sync]"
+    echo "Usage: $0 [account-name] [--no-sync] [--imap]"
     echo ""
-    echo "Available local maildir accounts:"
-    echo "  macapinlac  - Macapinlac local maildir"
-    echo "  gmail       - Gmail local maildir"
-    echo "  boogienet   - Boogienet local maildir"
+    echo "Available accounts:"
+    echo "  macapinlac  - Macapinlac account"
+    echo "  gmail       - Gmail account"
+    echo "  boogienet   - Boogienet account"
     echo ""
     echo "Options:"
     echo "  --no-sync   - Skip mail synchronization (default: sync before starting)"
+    echo "  --imap      - Use direct IMAP connection (default: local maildir)"
     echo ""
     echo "If no account is specified, defaults to: $DEFAULT_ACCOUNT"
     echo ""
     echo "Examples:"
-    echo "  $0                # Start with default account (sync first)"
-    echo "  $0 gmail          # Start with Gmail (sync first)"
-    echo "  $0 macapinlac     # Start with Macapinlac (sync first)"
-    echo "  $0 --no-sync      # Start with default account (no sync)"
-    echo "  $0 gmail --no-sync # Start with Gmail (no sync)"
+    echo "  $0                # Start with default account (local maildir, sync first)"
+    echo "  $0 gmail          # Start with Gmail (local maildir, sync first)"
+    echo "  $0 --imap         # Start with default account (IMAP, no sync)"
+    echo "  $0 gmail --imap   # Start with Gmail (IMAP, no sync)"
+    echo "  $0 gmail --imap --no-sync # Start with Gmail (IMAP, no sync - same as above)"
+    echo "  $0 gmail --no-sync # Start with Gmail (local maildir, no sync)"
 }
 
 # Function to validate account exists
 validate_account() {
     local account="$1"
-    local account_file="$ACCOUNTS_DIR/$account"
+    local use_imap="$2"
+    local account_file=""
+    
+    if [[ "$use_imap" == true ]]; then
+        account_file="$ACCOUNTS_DIR/${account}-imap"
+    else
+        account_file="$ACCOUNTS_DIR/$account"
+    fi
     
     if [[ ! -f "$account_file" ]]; then
-        echo "Error: Account configuration '$account' not found at $account_file" >&2
+        echo "Error: Account configuration '$account_file' not found" >&2
         echo "Available accounts:" >&2
         ls -1 "$ACCOUNTS_DIR" | sed 's/^/  /' >&2
         exit 1
     fi
 }
 
-# Function to sync mail for specific account
+# Function to sync mail for specific account (only for local maildir)
 sync_mail() {
     local account="$1"
+    local use_imap="$2"
+    
+    # Skip sync for IMAP connections
+    if [[ "$use_imap" == true ]]; then
+        print_status "Skipping mail synchronization (IMAP mode)"
+        return 0
+    fi
     
     print_status "Syncing mail for account: $account"
     
@@ -106,9 +123,17 @@ sync_mail() {
 # Function to start neomutt with specific account
 start_neomutt() {
     local account="$1"
-    local account_file="$ACCOUNTS_DIR/$account"
+    local use_imap="$2"
+    local account_file=""
     
-    echo "Starting neomutt with local account: $account"
+    if [[ "$use_imap" == true ]]; then
+        account_file="$ACCOUNTS_DIR/${account}-imap"
+        echo "Starting neomutt with IMAP account: $account"
+    else
+        account_file="$ACCOUNTS_DIR/$account"
+        echo "Starting neomutt with local maildir account: $account"
+    fi
+    
     echo "Configuration: $account_file"
     echo ""
     
@@ -120,6 +145,7 @@ start_neomutt() {
 main() {
     local account=""
     local should_sync=true  # Default to syncing
+    local use_imap=false    # Default to local maildir
     
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -130,6 +156,10 @@ main() {
                 ;;
             --no-sync)
                 should_sync=false
+                shift
+                ;;
+            --imap)
+                use_imap=true
                 shift
                 ;;
             -* )
@@ -174,17 +204,21 @@ main() {
     fi
     
     # Validate the account exists
-    validate_account "$account"
+    validate_account "$account" "$use_imap"
     
-    # Sync mail by default (unless --no-sync is specified)
-    if [[ "$should_sync" == true ]]; then
-        sync_mail "$account"
+    # Sync logic:
+    # - If --imap is selected: never sync (IMAP doesn't need local sync)
+    # - If --imap is NOT selected: sync unless --no-sync is specified
+    if [[ "$use_imap" == true ]]; then
+        print_status "Skipping mail synchronization (IMAP mode - no local maildir)"
+    elif [[ "$should_sync" == true ]]; then
+        sync_mail "$account" "$use_imap"
     else
         print_status "Skipping mail synchronization (--no-sync specified)"
     fi
     
     # Start neomutt with the specified account
-    start_neomutt "$account"
+    start_neomutt "$account" "$use_imap"
 }
 
 # Run main function with all arguments
