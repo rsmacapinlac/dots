@@ -1,0 +1,19 @@
+{
+  "shares": {
+    "downloads": {
+      "mount_point": "~/mnt/ArrsDownloadShare",
+      "share_path": "//vcr.int.macapinlac.network/ArrsDownloadShare",
+      "display_name": "ArrsDownloadShare"
+    },
+    "localmedia": {
+      "mount_point": "~/mnt/LocalMediaLibraryShare",
+      "share_path": "//vcr.int.macapinlac.network/LocalMediaLibraryShare",
+      "display_name": "LocalMediaLibraryShare"
+    },
+    "savedmedia": {
+      "mount_point": "~/mnt/SavedMedia",
+      "share_path": "//10.1.0.96/SavedMedia",
+      "display_name": "SavedMedia"
+    }
+  }
+} 

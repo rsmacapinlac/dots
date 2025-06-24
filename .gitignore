@@ -1,0 +1,5 @@
+# SMB Shares Configuration (contains sensitive network paths)
+config/ranger/smb_shares.json
+
+# Mount points created by Ranger
+mnt/ 

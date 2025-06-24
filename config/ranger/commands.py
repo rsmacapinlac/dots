@@ -13,6 +13,8 @@ from __future__ import (absolute_import, division, print_function)
 import os
 import subprocess
 import atexit
+import json
+from pathlib import Path
 
 # You always need to import ranger.api.commands here to get the Command class:
 from ranger.api.commands import Command
@@ -20,11 +22,48 @@ from ranger.api.commands import Command
 # Global list to track mounted shares
 mounted_shares = []
 
+# Load shares from external config file
+def load_shares_config():
+    """Load share definitions from external JSON config file."""
+    config_path = Path(__file__).parent / "smb_shares.json"
+    
+    if not config_path.exists():
+        # Fallback to default shares if config doesn't exist
+        return {
+            "downloads": {
+                "mount_point": "~/mnt/ArrsDownloadShare",
+                "share_path": "//vcr.int.macapinlac.network/ArrsDownloadShare",
+                "display_name": "ArrsDownloadShare"
+            },
+            "localmedia": {
+                "mount_point": "~/mnt/LocalMediaLibraryShare", 
+                "share_path": "//vcr.int.macapinlac.network/LocalMediaLibraryShare",
+                "display_name": "LocalMediaLibraryShare"
+            },
+            "savedmedia": {
+                "mount_point": "~/mnt/SavedMedia",
+                "share_path": "//10.1.0.96/SavedMedia", 
+                "display_name": "SavedMedia"
+            }
+        }
+    
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            return config.get("shares", {})
+    except (json.JSONDecodeError, IOError) as e:
+        # Log error and return empty dict if config is invalid
+        print(f"Error loading SMB shares config: {e}")
+        return {}
+
+# Load shares at module import time
+SHARES = load_shares_config()
+
 def cleanup_mounted_shares():
     """Unmount all shares that were mounted during this Ranger session"""
     for share_info in mounted_shares:
         try:
-            mount_point = share_info['mount_point']
+            mount_point = os.path.expanduser(share_info['mount_point'])
             display_name = share_info['display_name']
             
             if os.path.ismount(mount_point):
@@ -100,40 +139,28 @@ class mount_share(Command):
     
     Available shares:
     - downloads: Mounts ArrsDownloadShare
-    - media: Mounts LocalMediaLibraryShare
+    - localmedia: Mounts LocalMediaLibraryShare
+    - savedmedia: Mounts SavedMedia
     
     Examples:
     :mount_share downloads
-    :mount_share media
+    :mount_share localmedia
+    :mount_share savedmedia
     """
 
     def execute(self):
         if not self.arg(1):
-            self.fm.notify("Please specify a share name (downloads or media)", bad=True)
+            self.fm.notify("Please specify a share name (downloads, localmedia, or savedmedia)", bad=True)
             return
 
         share_name = self.arg(1).lower()
         
-        # Define share mappings
-        shares = {
-            'downloads': {
-                'mount_point': os.path.expanduser('~/mnt/ArrsDownloadShare'),
-                'share_path': '//vcr.int.macapinlac.network/ArrsDownloadShare',
-                'display_name': 'ArrsDownloadShare'
-            },
-            'media': {
-                'mount_point': os.path.expanduser('~/mnt/LocalMediaLibraryShare'), 
-                'share_path': '//vcr.int.macapinlac.network/LocalMediaLibraryShare',
-                'display_name': 'LocalMediaLibraryShare'
-            }
-        }
-        
-        if share_name not in shares:
-            self.fm.notify(f"Unknown share: {share_name}. Available: {', '.join(shares.keys())}", bad=True)
+        if share_name not in SHARES:
+            self.fm.notify(f"Unknown share: {share_name}. Available: {', '.join(SHARES.keys())}", bad=True)
             return
             
-        share = shares[share_name]
-        mount_point = share['mount_point']
+        share = SHARES[share_name]
+        mount_point = os.path.expanduser(share['mount_point'])
         share_path = share['share_path']
         display_name = share['display_name']
         
@@ -163,8 +190,10 @@ class mount_share(Command):
             
             if result.returncode == 0:
                 self.fm.notify(f"Successfully mounted {display_name}")
-                # Track this share for cleanup
-                mounted_shares.append(share)
+                # Track this share for cleanup (store with expanded path)
+                share_copy = share.copy()
+                share_copy['mount_point'] = mount_point
+                mounted_shares.append(share_copy)
                 self.fm.cd(mount_point)
             else:
                 self.fm.notify(f"Failed to mount {display_name}: {result.stderr}", bad=True)
@@ -178,8 +207,7 @@ class mount_share(Command):
 
     def tab(self, tabnum):
         # Provide tab completion for available shares
-        shares = ['downloads', 'media']
-        return [share for share in shares if share.startswith(self.rest(1))]
+        return [share for share in SHARES.keys() if share.startswith(self.rest(1))]
 
 
 class unmount_share(Command):
@@ -189,38 +217,29 @@ class unmount_share(Command):
     
     Available shares:
     - downloads: Unmounts ArrsDownloadShare
-    - media: Unmounts LocalMediaLibraryShare
+    - localmedia: Unmounts LocalMediaLibraryShare
+    - savedmedia: Unmounts SavedMedia
     
     Examples:
     :unmount_share downloads
-    :unmount_share media
+    :unmount_share localmedia
+    :unmount_share savedmedia
     """
 
     def execute(self):
         if not self.arg(1):
-            self.fm.notify("Please specify a share name (downloads or media)", bad=True)
+            self.fm.notify("Please specify a share name (downloads, localmedia, or savedmedia)", bad=True)
             return
 
         share_name = self.arg(1).lower()
         
-        # Define share mappings
-        shares = {
-            'downloads': {
-                'mount_point': os.path.expanduser('~/mnt/ArrsDownloadShare'),
-                'display_name': 'ArrsDownloadShare'
-            },
-            'media': {
-                'mount_point': os.path.expanduser('~/mnt/LocalMediaLibraryShare'),
-                'display_name': 'LocalMediaLibraryShare'
-            }
-        }
-        
-        if share_name not in shares:
-            self.fm.notify(f"Unknown share: {share_name}. Available: {', '.join(shares.keys())}", bad=True)
+        if share_name not in SHARES:
+            self.fm.notify(f"Unknown share: {share_name}. Available: {', '.join(SHARES.keys())}", bad=True)
             return
             
-        share = shares[share_name]
-        mount_point = share['mount_point']
+        share = SHARES[share_name]
+        mount_point = os.path.expanduser(share['mount_point'])
+        share_path = share['share_path']
         display_name = share['display_name']
         
         # Check if mounted
@@ -256,8 +275,7 @@ class unmount_share(Command):
 
     def tab(self, tabnum):
         # Provide tab completion for available shares
-        shares = ['downloads', 'media']
-        return [share for share in shares if share.startswith(self.rest(1))]
+        return [share for share in SHARES.keys() if share.startswith(self.rest(1))]
 
 
 class list_mounted_shares(Command):

@@ -1,114 +1,105 @@
-# SMB Share Mounting in Ranger
+# Ranger SMB Share Mounting
 
-This document describes the custom SMB share mounting functionality integrated into Ranger for easy access to network shares.
+This document describes how to mount and navigate SMB shares directly from Ranger file manager.
 
 ## Overview
 
-The SMB mounting system provides seamless integration with Ranger file manager, allowing you to mount and access SMB shares directly from within Ranger without needing separate scripts or manual mount commands.
+Ranger can mount SMB shares on-demand and automatically unmount them when you exit. This provides seamless access to network shares without cluttering your system with permanent mounts.
 
-## Features
+## Configuration
 
-- **Integrated Commands**: Mount, unmount, and list shares directly in Ranger
-- **Automatic Cleanup**: Shares are automatically unmounted when Ranger exits
-- **Tab Completion**: Quick share name completion
-- **User-Friendly**: No elevated access required for directory creation
-- **Session Tracking**: Keeps track of mounted shares during the session
+### External Share Configuration
+
+Share definitions are stored in an external JSON file that is **not tracked in version control** for security:
+
+1. **Copy the example configuration:**
+   ```bash
+   cp ~/.config/ranger/smb_shares.json.example ~/.config/ranger/smb_shares.json
+   ```
+
+2. **Edit the configuration file** with your own share definitions:
+   ```json
+   {
+     "shares": {
+       "downloads": {
+         "mount_point": "~/mnt/ArrsDownloadShare",
+         "share_path": "//your-server/your-share",
+         "display_name": "Your Share Name"
+       }
+     }
+   }
+   ```
+
+3. **Configuration fields:**
+   - `mount_point`: Local directory where the share will be mounted (use `~` for home directory)
+   - `share_path`: SMB path to the share (e.g., `//server/share`)
+   - `display_name`: Human-readable name for the share
+
+### Security Note
+
+The `smb_shares.json` file is excluded from version control via `.gitignore` because it may contain sensitive network information. Always use the example file as a template.
 
 ## Usage
 
-### Key Mappings
-- `gM` - Mount a share (prompts for share name)
-- `gU` - Unmount a share (prompts for share name)
-- `gS` - List all mounted shares in this session
+### Key Bindings
 
-### Available Shares
-- `downloads` - Mounts ArrsDownloadShare at `~/mnt/ArrsDownloadShare`
-- `media` - Mounts LocalMediaLibraryShare at `~/mnt/LocalMediaLibraryShare`
+- `gM` - Mount a share and navigate to it
+- `gU` - Unmount a share
+- `gS` - List currently mounted shares
+
+### Commands
+
+- `:mount_share <share_name>` - Mount a specific share
+- `:unmount_share <share_name>` - Unmount a specific share  
+- `:list_mounted_shares` - Show all currently mounted shares
 
 ### Examples
-1. **Mount a share**: Press `gM`, type `downloads`, press Enter
-2. **Unmount a share**: Press `gU`, type `downloads`, press Enter
-3. **List mounted shares**: Press `gS` to see all shares mounted in this session
 
-## Automatic Cleanup
+```bash
+# Mount the downloads share
+:mount_share downloads
 
-**Shares are automatically unmounted when Ranger is closed!**
+# Unmount the localmedia share
+:unmount_share localmedia
 
-The system tracks all shares mounted during the current Ranger session and automatically unmounts them when you exit Ranger. This ensures no orphaned mounts are left behind.
+# List all mounted shares
+:list_mounted_shares
+```
 
-**Mount point directories are also removed** if they are empty after unmounting.
+## Features
 
-## How It Works
+### Automatic Cleanup
 
-### Mount Command (`gM`)
-1. Prompts for a share name
-2. Checks if the share is already mounted
-3. Creates the mount point if it doesn't exist
-4. Mounts the share using `sudo mount -t cifs`
-5. Tracks the share for automatic cleanup
-6. Navigates to the mounted directory
+When you exit Ranger, all shares mounted during the session are automatically unmounted and their mount point directories are cleaned up.
 
-### Unmount Command (`gU`)
-1. Prompts for a share name
-2. Checks if the share is mounted
-3. Unmounts the share using `sudo umount`
-4. Removes the share from tracking
-5. Removes the mount point directory if empty
+### Tab Completion
 
-### List Command (`gS`)
-1. Shows all shares mounted in the current session
-2. Indicates which shares are still mounted vs. already unmounted
+All commands support tab completion for share names based on your configuration file.
+
+### Error Handling
+
+- Graceful handling of mount/unmount failures
+- Clear error messages for troubleshooting
+- Fallback to default shares if configuration file is missing
 
 ## Requirements
 
 - `cifs-utils` package installed
-- Sudo privileges for mounting/unmounting (but not for directory creation)
-- Network connectivity to `vcr.int.macapinlac.network`
-
-## Mount Points
-
-Shares are mounted in `~/mnt/` (your home directory) to avoid requiring elevated access for directory creation. The mount points are:
-- `~/mnt/ArrsDownloadShare` for downloads
-- `~/mnt/LocalMediaLibraryShare` for media
-
-## Configuration
-
-The functionality is implemented through custom Ranger commands in:
-- `config/ranger/commands.py` - Contains the mount/unmount commands
-- `config/ranger/rc.conf` - Contains the key mappings
+- Sudo access for mount/unmount operations
+- Network access to the SMB shares
 
 ## Troubleshooting
 
-### Mounting Issues
-If mounting fails:
-1. Check network connectivity to `vcr.int.macapinlac.network`
-2. Verify sudo privileges are configured
-3. Ensure `cifs-utils` package is installed
-4. Check if the share is accessible from the network
+### Mount Permission Denied
+Ensure you have sudo access and the `cifs-utils` package is installed:
+```bash
+sudo pacman -S cifs-utils  # Arch Linux
+```
 
-### Unmounting Issues
-If unmounting fails:
-1. Check if any processes are using the mount
-2. Verify sudo privileges
-3. Try forcing unmount with `sudo umount -f`
+### Configuration File Not Found
+The system will fall back to default shares if `smb_shares.json` doesn't exist. Copy the example file to get started.
 
-### General Issues
-- **Permission denied**: Ensure sudo is configured for mount/umount commands
-- **Network unreachable**: Check network connectivity and firewall settings
-- **Share not found**: Verify the share names and network paths
-
-## Tab Completion
-
-All commands support tab completion for share names:
-- Type `gM` then `d` and press Tab to complete `downloads`
-- Type `gM` then `m` and press Tab to complete `media`
-- Same applies for `gU` (unmount) command
-
-## Integration with Existing Workflow
-
-This system replaces the previous standalone mount scripts (`mount_house.sh` and `umount_house.sh`) with a more integrated solution that:
-- Works directly within Ranger
-- Provides better user experience
-- Includes automatic cleanup
-- Supports tab completion
-- Tracks session state 
+### Share Not Accessible
+- Verify network connectivity to the server
+- Check that the share path is correct
+- Ensure the share is accessible with guest credentials (current implementation uses guest access)
