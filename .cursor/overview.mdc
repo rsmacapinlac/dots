@@ -16,8 +16,9 @@ This repository contains personal dotfiles and configuration files for various a
 - Configure themes and appearance
 
 ## Structure
-- `config/`: Application configurations (e.g., Hyprland, Alacritty)
+- `config/`: Application configurations (e.g., Hyprland, Alacritty, Ranger)
 - `bin/`: Custom scripts and utilities
+- `docs/`: Detailed documentation for specific configurations
 - `zshrc`, `vimrc`, `aliases`: Shell and editor configurations
 
 ## Testing

@@ -55,6 +55,7 @@ These repositories work together in the following way:
 For detailed information about specific configurations, see the [docs/](docs/) directory:
 
 - **[Email Setup (isync)](docs/isync.md)**: Complete guide for setting up email synchronization using isync/mbsync with Neomutt
+- **[Ranger SMB Mounting](docs/ranger-smb-mounting.md)**: Guide for mounting and managing SMB shares directly within Ranger file manager
 
 ## Usage
 
