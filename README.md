@@ -47,6 +47,14 @@ These repositories work together in the following way:
   - `hypr/`: Hyprland window manager configuration
   - `alacritty/`: Terminal emulator configuration
   - And more...
+- `docs/`: Documentation for specific configurations
+  - `isync.md`: Email synchronization setup and usage guide
+
+## Documentation
+
+For detailed information about specific configurations, see the [docs/](docs/) directory:
+
+- **[Email Setup (isync)](docs/isync.md)**: Complete guide for setting up email synchronization using isync/mbsync with Neomutt
 
 ## Usage
 

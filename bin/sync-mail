@@ -53,20 +53,11 @@ setup_config() {
     print_status "Setting up isync configuration..."
     
     if [ ! -f "$MBSYNCRC" ]; then
-        if [ -f "$HOME/workspace/dots/config/isync/mbsyncrc" ]; then
-            cp "$HOME/workspace/dots/config/isync/mbsyncrc" "$MBSYNCRC"
-            print_success "Configuration copied to $MBSYNCRC"
-        else
-            print_error "Configuration file not found at $HOME/workspace/dots/config/isync/mbsyncrc"
-            exit 1
-        fi
+        print_error "Configuration file not found at $MBSYNCRC"
+        print_error "Please run 'rcup' to set up your dotfiles configuration first"
+        exit 1
     else
-        print_warning "Configuration already exists at $MBSYNCRC"
-        # Update the configuration if it exists
-        if [ -f "$HOME/workspace/dots/config/isync/mbsyncrc" ]; then
-            cp "$HOME/workspace/dots/config/isync/mbsyncrc" "$MBSYNCRC"
-            print_success "Configuration updated at $MBSYNCRC"
-        fi
+        print_success "Configuration found at $MBSYNCRC"
     fi
     
     # Set proper permissions

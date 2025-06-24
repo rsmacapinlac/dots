@@ -17,7 +17,7 @@ set spoolfile = "+INBOX"
 # SMTP configuration using msmtp
 set sendmail = "/usr/bin/msmtp -a boogienet"
 
-# Folder setup for local maildir
+# Folder setup for local maildir - key folders
 unmailboxes *
 mailboxes "+INBOX" "+Sent Items" "+Drafts" "+Trash" "+Spam"
 
