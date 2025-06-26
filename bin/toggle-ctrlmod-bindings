@@ -1,0 +1,25 @@
+#!/bin/bash
+
+ENABLED="$HOME/.config/hypr/keybinds_enabled.conf"
+DISABLED="$HOME/.config/hypr/keybinds_disabled.conf"
+CURRENT="$HOME/.config/hypr/keybinds_current.conf"
+
+if [ -L "$CURRENT" ]; then
+    TARGET=$(readlink "$CURRENT")
+else
+    TARGET=""
+fi
+
+if [[ "$TARGET" == "$ENABLED" ]]; then
+    ln -sf "$DISABLED" "$CURRENT"
+    notify-send -t 3000 "Hyprland: Control key bindings DISABLED (for Citrix)"
+else
+    ln -sf "$ENABLED" "$CURRENT"
+    notify-send -t 3000 "Hyprland: Control key bindings ENABLED"
+fi
+
+# Reload Hyprland config
+y=$(pgrep -x Hyprland)
+if [ -n "$y" ]; then
+    hyprctl reload
+fi 
