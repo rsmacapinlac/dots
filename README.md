@@ -47,6 +47,8 @@ These repositories work together in the following way:
   - `hypr/`: Hyprland window manager configuration
   - `alacritty/`: Terminal emulator configuration
   - And more...
+- `bin/`: Scripts and utilities
+  - `toggle-ctrlmod-bindings`: Script to toggle Ctrl key binding in Hyprland
 - `docs/`: Documentation for specific configurations
   - `isync.md`: Email synchronization setup and usage guide
 
@@ -56,6 +58,7 @@ For detailed information about specific configurations, see the [docs/](docs/) d
 
 - **[Email Setup (isync)](docs/isync.md)**: Complete guide for setting up email synchronization using isync/mbsync with Neomutt
 - **[Ranger SMB Mounting](docs/ranger-smb-mounting.md)**: Guide for mounting and managing SMB shares directly within Ranger file manager
+- **[Hyprland Ctrl Key Toggle](bin/toggle-ctrlmod-bindings)**: Script for toggling Ctrl key binding in Hyprland configuration
 
 ## Usage
 
