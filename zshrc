@@ -187,5 +187,23 @@ fi
 # run fastfetch
 fastfetch
 
+# study stream aliases
+# Requires https://github.com/caarlos0/timer to be installed. spd-say should ship with your distro
+
+declare -A pomo_options
+pomo_options["test"]="1"
+pomo_options["work"]="20"
+pomo_options["break"]="10"
+
+pomodoro () {
+  if [ -n "$1" -a -n "${pomo_options["$1"]}" ]; then
+  val=$1
+  #echo $val | lolcat
+  timer ${pomo_options["$val"]}m
+  #spd-say "'$val' session done"
+  notify-send --app-name=Pomodoro -t 30 "'$val' session done"
+  fi
+}
+
 # Created by `pipx` on 2023-10-10 04:12:28
 export PATH="$PATH:/home/ritchie/.local/bin"
