@@ -8,5 +8,6 @@
         "asvetliakov.vscode-neovim": 1
     },
     "git.enableSmartCommit": true,
-    "git.autofetch": true
+    "git.autofetch": true,
+    "diffEditor.maxComputationTime": 0
 }
