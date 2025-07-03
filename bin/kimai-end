@@ -125,6 +125,21 @@ stop_timesheet() {
     local exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
+        # Check if the response contains an error
+        if echo "$response" | grep -q '"code":[0-9]*'; then
+            local error_code=$(echo "$response" | grep -o '"code":[0-9]*' | cut -d':' -f2)
+            local error_message=$(echo "$response" | grep -o '"message":"[^"]*"' | cut -d'"' -f4)
+            
+            if [ "$error_code" = "404" ]; then
+                print_error "Timesheet not found (ID: $timesheet_id)"
+                print_error "API Error: $error_message"
+                exit 1
+            else
+                print_error "API Error: $error_code - $error_message"
+                exit 1
+            fi
+        fi
+        
         # Try to extract end time from response
         local end_time=$(echo "$response" | grep -o '"end":"[^"]*"' | head -1 | cut -d'"' -f4)
         
