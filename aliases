@@ -8,6 +8,8 @@ alias obsidian="cd '$HOME/Nextcloud/Apps/obsidian/Second Brain/' && nvim"
 
 # Ritchie's stuff :)
 
+alias p="$HOME/.bin/pomodoro"
+
 # Change wallpaper
 alias w="$HOME/.config/wallpapers/bin/set_wallpaper"
 

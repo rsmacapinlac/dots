@@ -1,0 +1,181 @@
+#!/bin/bash
+
+# Pomodoro timer with Kimai integration
+# This script provides pomodoro functionality with automatic time tracking
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+KIMAI_SCRIPT_DIR="$HOME/.bin"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Pomodoro session options
+declare -A pomo_options
+pomo_options["test"]="1"
+pomo_options["ecomm-cvd"]="20"
+pomo_options["ecomm-consultation"]="20"
+pomo_options["workstation-enhancements"]="20"
+pomo_options["homelab-enhancements"]="20"
+pomo_options["break"]="10"
+
+# Kimai project and activity mappings for pomodoro sessions
+declare -A kimai_mappings
+kimai_mappings["ecomm-cvd"]="1:3"  # project_id:activity_id for work sessions
+kimai_mappings["ecomm-consultation"]="1:1"  # project_id:activity_id for work sessions
+kimai_mappings["workstation-enhancements"]="3:6"  # project_id:activity_id for work sessions
+kimai_mappings["homelab-enhancements"]="3:6"  # project_id:activity_id for work sessions
+# kimai_mappings["test"]="1:1"  # uncomment if you want to see the integration with kimai 
+# kimai_mappings["break"]=""  # breaks don't get tracked in Kimai
+
+# Function to show usage
+show_usage() {
+    echo "Usage: $0 <session_type>"
+    echo ""
+    echo "Available session types:"
+    for session in "${!pomo_options[@]}"; do
+        local duration=${pomo_options["$session"]}
+        local kimai_mapping=${kimai_mappings["$session"]}
+        local kimai_info=""
+        
+        if [ -n "$kimai_mapping" ]; then
+            kimai_info=" (Kimai: project $(echo "$kimai_mapping" | cut -d':' -f1), activity $(echo "$kimai_mapping" | cut -d':' -f2))"
+        else
+            kimai_info=" (no Kimai tracking)"
+        fi
+        
+        echo "  $session: ${duration} minutes$kimai_info"
+    done
+    echo ""
+    echo "Examples:"
+    echo "  $0 workstation-enhancements"
+    echo "  $0 ecomm-cvd"
+    echo "  $0 break"
+}
+
+# Function to check if timer is available
+check_timer() {
+    if ! command -v timer &> /dev/null; then
+        print_error "timer command not found. Please install it first:"
+        echo "  https://github.com/caarlos0/timer"
+        exit 1
+    fi
+}
+
+# Function to check if notify-send is available
+check_notify() {
+    if ! command -v notify-send &> /dev/null; then
+        print_warning "notify-send not found. Notifications will be skipped."
+        return 1
+    fi
+    return 0
+}
+
+# Main pomodoro function
+pomodoro() {
+    local session_type="$1"
+    
+    # Validate session type
+    if [ -z "$session_type" ]; then
+        print_error "Session type is required"
+        show_usage
+        exit 1
+    fi
+    
+    if [ -z "${pomo_options["$session_type"]}" ]; then
+        print_error "Unknown session type: $session_type"
+        show_usage
+        exit 1
+    fi
+    
+    local duration=${pomo_options["$session_type"]}
+    local kimai_mapping=${kimai_mappings["$session_type"]}
+    
+    print_status "Starting $session_type session (${duration} minutes)"
+    
+    # Start Kimai timesheet if mapping exists and it's not a break
+    if [ -n "$kimai_mapping" ] && [ "$session_type" != "break" ]; then
+        local project_id=$(echo "$kimai_mapping" | cut -d':' -f1)
+        local activity_id=$(echo "$kimai_mapping" | cut -d':' -f2)
+        
+        print_status "Starting Kimai timesheet for $session_type session..."
+        local timesheet_response=$("$KIMAI_SCRIPT_DIR/kimai-start" --project-id "$project_id" --activity-id "$activity_id" --description "Pomodoro: $session_type session")
+        
+        # Extract timesheet ID from response for later stopping
+        local timesheet_id=$(echo "$timesheet_response" | grep -o "ID: [0-9]*" | head -1 | cut -d' ' -f2)
+        
+        if [ -n "$timesheet_id" ] && [[ "$timesheet_id" =~ ^[0-9]+$ ]]; then
+            print_success "Kimai timesheet started with ID: $timesheet_id"
+            # Store timesheet ID in a temporary file for later retrieval
+            echo "$timesheet_id" > /tmp/last_pomodoro_timesheet
+        else
+            print_warning "Could not extract valid timesheet ID from response"
+        fi
+    fi
+    
+    # Start the timer
+    print_status "Starting timer for ${duration} minutes..."
+    timer ${duration}m
+    
+    # Stop Kimai timesheet if one was started
+    if [ -n "$kimai_mapping" ] && [ "$session_type" != "break" ] && [ -f /tmp/last_pomodoro_timesheet ]; then
+        local timesheet_id=$(cat /tmp/last_pomodoro_timesheet | tr -d '\n' | tr -d '\r')
+        if [ -n "$timesheet_id" ] && [[ "$timesheet_id" =~ ^[0-9]+$ ]]; then
+            print_status "Stopping Kimai timesheet ID: $timesheet_id"
+            "$KIMAI_SCRIPT_DIR/kimai-end" --timesheet-id "$timesheet_id"
+            rm -f /tmp/last_pomodoro_timesheet
+        else
+            print_warning "Invalid timesheet ID found: '$timesheet_id'"
+            rm -f /tmp/last_pomodoro_timesheet
+        fi
+    fi
+    
+    # Send notification
+    if check_notify; then
+        notify-send --app-name=Pomodoro "'$session_type' session done"
+    else
+        print_success "'$session_type' session done"
+    fi
+}
+
+# Main execution
+main() {
+    # Check dependencies
+    check_timer
+    
+    # Parse arguments
+    case "${1:-}" in
+        -h|--help|help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            pomodoro "$@"
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@" 
