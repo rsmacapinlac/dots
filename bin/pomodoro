@@ -123,13 +123,18 @@ pomodoro() {
         print_status "Starting Kimai timesheet for $session_type session..."
         local timesheet_response=$("$KIMAI_SCRIPT_DIR/kimai-start" --project-id "$project_id" --activity-id "$activity_id" --description "Pomodoro: $session_type session")
         
-        # Extract timesheet ID from response for later stopping
-        local timesheet_id=$(echo "$timesheet_response" | grep -o "ID: [0-9]*" | head -1 | cut -d' ' -f2)
+        # Debug: print the full response
+        echo "[DEBUG] Kimai start response: $timesheet_response" >&2
+        
+        # Extract timesheet ID from the correct line using awk
+        local timesheet_id=$(echo "$timesheet_response" | awk '/Timesheet started successfully with ID:/ {print $NF}' | tail -1)
         
         if [ -n "$timesheet_id" ] && [[ "$timesheet_id" =~ ^[0-9]+$ ]]; then
             print_success "Kimai timesheet started with ID: $timesheet_id"
             # Store timesheet ID in a temporary file for later retrieval
             echo "$timesheet_id" > /tmp/last_pomodoro_timesheet
+            # Set global variable for cleanup
+            TIMESHEET_ID="$timesheet_id"
         else
             print_warning "Could not extract valid timesheet ID from response"
         fi
@@ -159,6 +164,54 @@ pomodoro() {
         print_success "'$session_type' session done"
     fi
 }
+
+# Global variable to store timesheet ID for cleanup
+TIMESHEET_ID=""
+
+# Function to cleanup on exit
+cleanup() {
+    local timesheet_id_to_stop=""
+    
+    # First try to get ID from global variable
+    if [ -n "$TIMESHEET_ID" ] && [[ "$TIMESHEET_ID" =~ ^[0-9]+$ ]]; then
+        timesheet_id_to_stop="$TIMESHEET_ID"
+    # Fallback to temp file
+    elif [ -f /tmp/last_pomodoro_timesheet ]; then
+        local stored_id=$(cat /tmp/last_pomodoro_timesheet | tr -d '\n' | tr -d '\r')
+        if [ -n "$stored_id" ] && [[ "$stored_id" =~ ^[0-9]+$ ]]; then
+            timesheet_id_to_stop="$stored_id"
+        fi
+    fi
+    
+    if [ -n "$timesheet_id_to_stop" ]; then
+        print_warning "Interrupted! Stopping Kimai timesheet ID: $timesheet_id_to_stop"
+        print_status "Running: $KIMAI_SCRIPT_DIR/kimai-end --timesheet-id $timesheet_id_to_stop"
+        
+        # Try to stop with the stored ID first
+        if "$KIMAI_SCRIPT_DIR/kimai-end" --timesheet-id "$timesheet_id_to_stop" 2>/dev/null; then
+            print_success "Timesheet stopped successfully"
+        else
+            # If that fails, try to find and stop any active timesheet
+            print_warning "Stored ID failed, looking for active timesheets..."
+            local active_response=$("$KIMAI_SCRIPT_DIR/kimai" list 2>/dev/null)
+            local active_id=$(echo "$active_response" | grep -o "ID: [0-9]*" | head -1 | cut -d' ' -f2)
+            
+            if [ -n "$active_id" ] && [[ "$active_id" =~ ^[0-9]+$ ]]; then
+                print_status "Found active timesheet ID: $active_id, stopping it..."
+                "$KIMAI_SCRIPT_DIR/kimai-end" --timesheet-id "$active_id" 2>/dev/null || print_error "Failed to stop active timesheet"
+            else
+                print_warning "No active timesheets found"
+            fi
+        fi
+        
+        rm -f /tmp/last_pomodoro_timesheet
+    else
+        print_warning "No timesheet ID found to stop"
+    fi
+}
+
+# Set up signal handlers
+trap cleanup INT TERM EXIT
 
 # Main execution
 main() {
