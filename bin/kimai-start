@@ -1,0 +1,227 @@
+#!/bin/bash
+
+# Kimai timesheet start script
+# This script starts a new timesheet in the self-hosted Kimai service
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+KIMAI_URL="https://time.macapinlac.network"
+PASS_KEY="keys/kimai"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to check if required tools are installed
+check_dependencies() {
+    if ! command -v curl &> /dev/null; then
+        print_error "curl is not installed. Please install it first."
+        exit 1
+    fi
+    
+    if ! command -v pass &> /dev/null; then
+        print_error "pass is not installed. Please install it first."
+        exit 1
+    fi
+}
+
+# Function to get authentication token from pass
+get_auth_token() {
+    if ! pass show "$PASS_KEY" &> /dev/null; then
+        print_error "Authentication key not found in pass at '$PASS_KEY'"
+        print_error "Please add your Kimai API token to pass:"
+        echo "  pass insert $PASS_KEY"
+        exit 1
+    fi
+    
+    pass show "$PASS_KEY"
+}
+
+# Function to show usage
+show_usage() {
+    echo "Usage: $0 --project-id <id> --activity-id <id> [options]"
+    echo ""
+    echo "Options:"
+    echo "  --project-id <id>     Project ID (required)"
+    echo "  --activity-id <id>    Activity ID (required)"
+    echo "  --description <text>  Description for the timesheet"
+    echo "  --tags <tags>         Comma-separated tags"
+    echo "  --help                Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 --project-id 5 --activity-id 3"
+    echo "  $0 --project-id 5 --activity-id 3 --description 'Working on feature X'"
+    echo "  $0 --project-id 5 --activity-id 3 --tags 'development,feature'"
+}
+
+# Function to parse command line arguments
+parse_arguments() {
+    PROJECT_ID=""
+    ACTIVITY_ID=""
+    DESCRIPTION=""
+    TAGS=""
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --project-id)
+                PROJECT_ID="$2"
+                shift 2
+                ;;
+            --activity-id)
+                ACTIVITY_ID="$2"
+                shift 2
+                ;;
+            --description)
+                DESCRIPTION="$2"
+                shift 2
+                ;;
+            --tags)
+                TAGS="$2"
+                shift 2
+                ;;
+
+            --help|-h)
+                show_usage
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Validate required arguments
+    if [ -z "$PROJECT_ID" ]; then
+        print_error "Project ID is required"
+        show_usage
+        exit 1
+    fi
+    
+    if [ -z "$ACTIVITY_ID" ]; then
+        print_error "Activity ID is required"
+        show_usage
+        exit 1
+    fi
+    
+    # Validate that IDs are numbers
+    if ! [[ "$PROJECT_ID" =~ ^[0-9]+$ ]]; then
+        print_error "Project ID must be a number"
+        exit 1
+    fi
+    
+    if ! [[ "$ACTIVITY_ID" =~ ^[0-9]+$ ]]; then
+        print_error "Activity ID must be a number"
+        exit 1
+    fi
+}
+
+# Function to start timesheet
+start_timesheet() {
+    local auth_token="$1"
+    local current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    
+    print_status "Starting timesheet..."
+    print_status "Project ID: $PROJECT_ID"
+    print_status "Activity ID: $ACTIVITY_ID"
+    if [ -n "$DESCRIPTION" ]; then
+        print_status "Description: $DESCRIPTION"
+    fi
+    if [ -n "$TAGS" ]; then
+        print_status "Tags: $TAGS"
+    fi
+    
+    # Build JSON payload with only required fields
+    local json_payload="{
+        \"project\": $PROJECT_ID,
+        \"activity\": $ACTIVITY_ID"
+    
+    if [ -n "$DESCRIPTION" ]; then
+        json_payload="$json_payload,
+        \"description\": \"$DESCRIPTION\""
+    fi
+    
+    if [ -n "$TAGS" ]; then
+        json_payload="$json_payload,
+        \"tags\": \"$TAGS\""
+    fi
+    
+    json_payload="$json_payload
+    }"
+    
+    # Debug: show the JSON payload (uncomment for debugging)
+    # echo "JSON Payload: $json_payload"
+    
+    # Make API request
+    local response=$(curl --silent --show-error \
+        --request POST \
+        --url "$KIMAI_URL/api/timesheets" \
+        --header "Accept: application/json" \
+        --header "Authorization: Bearer $auth_token" \
+        --header "Content-Type: application/json" \
+        --data "$json_payload" \
+        2>&1)
+    
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        # Try to extract timesheet ID from response
+        local timesheet_id=$(echo "$response" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
+        
+        if [ -n "$timesheet_id" ]; then
+            print_success "Timesheet started successfully with ID: $timesheet_id"
+            print_status "Started at: $current_time"
+        else
+            print_success "Timesheet started successfully"
+            print_status "Response: $response"
+        fi
+    else
+        print_error "Failed to start timesheet"
+        print_error "curl error: $response"
+        exit 1
+    fi
+}
+
+# Main execution
+main() {
+    print_status "Kimai Timesheet Start Script"
+    echo ""
+    
+    # Check dependencies
+    check_dependencies
+    
+    # Parse arguments
+    parse_arguments "$@"
+    
+    # Get authentication token
+    print_status "Retrieving authentication token..."
+    local auth_token=$(get_auth_token)
+    
+    # Start timesheet
+    start_timesheet "$auth_token"
+}
+
+# Run main function with all arguments
+main "$@" 

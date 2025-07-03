@@ -9,5 +9,6 @@
     },
     "git.enableSmartCommit": true,
     "git.autofetch": true,
-    "diffEditor.maxComputationTime": 0
+    "diffEditor.maxComputationTime": 0,
+    "window.confirmSaveUntitledWorkspace": false
 }

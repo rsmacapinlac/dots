@@ -1,0 +1,223 @@
+#!/bin/bash
+
+# Kimai timesheet end script
+# This script stops an existing timesheet in the self-hosted Kimai service
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+KIMAI_URL="https://time.macapinlac.network"
+PASS_KEY="keys/kimai"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to check if required tools are installed
+check_dependencies() {
+    if ! command -v curl &> /dev/null; then
+        print_error "curl is not installed. Please install it first."
+        exit 1
+    fi
+    
+    if ! command -v pass &> /dev/null; then
+        print_error "pass is not installed. Please install it first."
+        exit 1
+    fi
+}
+
+# Function to get authentication token from pass
+get_auth_token() {
+    if ! pass show "$PASS_KEY" &> /dev/null; then
+        print_error "Authentication key not found in pass at '$PASS_KEY'"
+        print_error "Please add your Kimai API token to pass:"
+        echo "  pass insert $PASS_KEY"
+        exit 1
+    fi
+    
+    pass show "$PASS_KEY"
+}
+
+# Function to show usage
+show_usage() {
+    echo "Usage: $0 --timesheet-id <id> [options]"
+    echo ""
+    echo "Options:"
+    echo "  --timesheet-id <id>   Timesheet ID to stop (required)"
+    echo "  --help                Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 --timesheet-id 5"
+    echo "  $0 --timesheet-id 123"
+}
+
+# Function to parse command line arguments
+parse_arguments() {
+    TIMESHEET_ID=""
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --timesheet-id)
+                TIMESHEET_ID="$2"
+                shift 2
+                ;;
+            --help|-h)
+                show_usage
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Validate required arguments
+    if [ -z "$TIMESHEET_ID" ]; then
+        print_error "Timesheet ID is required"
+        show_usage
+        exit 1
+    fi
+    
+    # Validate that ID is a number
+    if ! [[ "$TIMESHEET_ID" =~ ^[0-9]+$ ]]; then
+        print_error "Timesheet ID must be a number"
+        exit 1
+    fi
+}
+
+# Function to stop timesheet
+stop_timesheet() {
+    local auth_token="$1"
+    local timesheet_id="$2"
+    
+    print_status "Stopping timesheet ID: $timesheet_id"
+    
+    # Make API request
+    local response=$(curl --silent --show-error \
+        --request PATCH \
+        --url "$KIMAI_URL/api/timesheets/$timesheet_id/stop" \
+        --header "Authorization: Bearer $auth_token" \
+        --header "Content-Type: application/json" \
+        2>&1)
+    
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        # Try to extract end time from response
+        local end_time=$(echo "$response" | grep -o '"end":"[^"]*"' | head -1 | cut -d'"' -f4)
+        
+        if [ -n "$end_time" ]; then
+            print_success "Timesheet stopped successfully"
+            print_status "Ended at: $end_time"
+        else
+            print_success "Timesheet stopped successfully"
+            if [ -n "$response" ]; then
+                print_status "Response: $response"
+            fi
+        fi
+    else
+        print_error "Failed to stop timesheet"
+        print_error "curl error: $response"
+        exit 1
+    fi
+}
+
+# Function to list active timesheets
+list_active_timesheets() {
+    local auth_token="$1"
+    
+    print_status "Fetching active timesheets..."
+    
+    local response=$(curl --silent --show-error \
+        --request GET \
+        --url "$KIMAI_URL/api/timesheets?active=1" \
+        --header "Accept: application/json" \
+        --header "Authorization: Bearer $auth_token" \
+        2>&1)
+    
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        # Try to extract timesheet information
+        local timesheet_count=$(echo "$response" | grep -o '"id":[0-9]*' | wc -l)
+        
+        if [ "$timesheet_count" -gt 0 ]; then
+            print_status "Found $timesheet_count active timesheet(s):"
+            echo ""
+            
+            # Extract and display timesheet details
+            echo "$response" | grep -o '"id":[0-9]*' | while read -r line; do
+                local id=$(echo "$line" | cut -d':' -f2)
+                local project=$(echo "$response" | grep -A 10 "\"id\":$id" | grep '"project":' | head -1 | cut -d':' -f2 | tr -d ' ,')
+                local activity=$(echo "$response" | grep -A 10 "\"id\":$id" | grep '"activity":' | head -1 | cut -d':' -f2 | tr -d ' ,')
+                local begin=$(echo "$response" | grep -A 10 "\"id\":$id" | grep '"begin":' | head -1 | cut -d'"' -f4)
+                local description=$(echo "$response" | grep -A 10 "\"id\":$id" | grep '"description":' | head -1 | cut -d'"' -f4)
+                
+                echo "  ID: $id"
+                if [ -n "$project" ]; then
+                    echo "    Project: $project"
+                fi
+                if [ -n "$activity" ]; then
+                    echo "    Activity: $activity"
+                fi
+                if [ -n "$begin" ]; then
+                    echo "    Started: $begin"
+                fi
+                if [ -n "$description" ]; then
+                    echo "    Description: $description"
+                fi
+                echo ""
+            done
+        else
+            print_warning "No active timesheets found"
+        fi
+    else
+        print_error "Failed to fetch active timesheets"
+        print_error "curl error: $response"
+        exit 1
+    fi
+}
+
+# Main execution
+main() {
+    print_status "Kimai Timesheet End Script"
+    echo ""
+    
+    # Check dependencies
+    check_dependencies
+    
+    # Parse arguments
+    parse_arguments "$@"
+    
+    # Get authentication token
+    print_status "Retrieving authentication token..."
+    local auth_token=$(get_auth_token)
+    
+    # Stop timesheet
+    stop_timesheet "$auth_token" "$TIMESHEET_ID"
+}
+
+# Run main function with all arguments
+main "$@" 
