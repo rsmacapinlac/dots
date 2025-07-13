@@ -1,0 +1,34 @@
+directory: ~/Music
+library: ~/.config/beets/musiclibrary.blb
+
+# Import settings
+import:
+    copy: no
+    move: yes
+    write: yes
+    resume: ask
+
+# Path format for organizing files
+paths:
+    default: $albumartist/$album%aunique{}/$track $title
+    singleton: Non-Album/$artist/$title
+    comp: Compilations/$album%aunique{}/$track $title
+
+# Plugins
+plugins: [fetchart, embedart]
+
+# Album art settings
+fetchart:
+    auto: yes
+    store_source: yes
+    sources: filesystem, coverart
+    quality: 0
+    maxwidth: 0
+    enforce_ratio: no
+    cautious: no
+    cover_names: cover front album art folder
+
+embedart:
+    auto: yes
+    remove_art_file: no
+    quality: 85 
