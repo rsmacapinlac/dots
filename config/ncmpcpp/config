@@ -32,3 +32,5 @@ execute_on_song_change = songinfo
 song_list_format = "%a - %t"
 song_status_format = "%a - %t"
 song_library_format = "%n %t"
+
+
