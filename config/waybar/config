@@ -82,8 +82,8 @@
         "exec": "~/.config/waybar/scripts/music.sh",
         "interval": 1,
         "tooltip": true,
-        "tooltip-format": "Click to open ncmpcpp",
-        "on-click": "kitty ncmpcpp",
+        "tooltip-format": "Click to open rmpc",
+        "on-click": "kitty rmpc",
         "format": "{}",
         "max-length": 50
     }
