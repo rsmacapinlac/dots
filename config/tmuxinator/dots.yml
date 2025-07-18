@@ -1,0 +1,11 @@
+# Tmuxinator configuration for dots repository
+name: dots
+root: ~/workspace/dots
+
+windows:
+  - main:
+      root: ~/workspace/dots
+      layout: main-horizontal
+      panes:
+        - nvim
+        - 
