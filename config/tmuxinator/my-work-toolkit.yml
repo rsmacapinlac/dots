@@ -1,0 +1,10 @@
+name: my-work-toolkit
+root: ~/workspace/my-work-toolkit
+
+windows:
+  - nvim:
+      layout: main-vertical
+      panes:
+        - nvim
+        - claude
+  - rmpc: rmpc

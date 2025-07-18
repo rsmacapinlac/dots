@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Attach or create tmux session named the same as current directory.
+# Attach or create tmux session using tmuxinator, fallback to basic tmux.
 
 path_name="$(basename "$PWD" | tr . -)"
 session_name=${1-$path_name}
@@ -10,16 +10,28 @@ not_in_tmux() {
 }
 
 session_exists() {
-  tmux has-session -t "=$session_name"
+  tmux has-session -t "=$session_name" 2>/dev/null
+}
+
+tmuxinator_config_exists() {
+  [ -f "$HOME/.config/tmuxinator/$session_name.yml" ]
 }
 
 create_detached_session() {
-  (TMUX='' tmux new-session -Ad -s "$session_name")
+  if tmuxinator_config_exists; then
+    tmuxinator start "$session_name" --detach
+  else
+    (TMUX='' tmux new-session -Ad -s "$session_name")
+  fi
 }
 
 create_if_needed_and_attach() {
   if not_in_tmux; then
-    tmux new-session -As "$session_name"
+    if tmuxinator_config_exists; then
+      tmuxinator start "$session_name"
+    else
+      tmux new-session -As "$session_name"
+    fi
   else
     if ! session_exists; then
       create_detached_session
