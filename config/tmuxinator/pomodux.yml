@@ -1,0 +1,11 @@
+# Tmuxinator configuration for the pomodux repository
+name: pomodux
+root: ~/workspace/pomodux
+
+windows:
+  - main:
+      root: ~/workspace/pomodux
+      layout: main-horizontal
+      panes:
+        - nvim
+        - 
