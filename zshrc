@@ -176,8 +176,10 @@ fi
 # run neofetch
 #neofetch
 
-# run fastfetch
-fastfetch
+# run fastfetch only in new terminals, not tmux panes
+if [[ -z "$TMUX" ]]; then
+    fastfetch
+fi
 
 # Created by `pipx` on 2023-10-10 04:12:28
 export PATH="$PATH:/home/ritchie/.local/bin"
