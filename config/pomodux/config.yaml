@@ -1,6 +1,6 @@
 timer:
-    default_work_duration: 20m0s
-    default_break_duration: 10m0s
+    default_work_duration: 45m0s
+    default_break_duration: 5m0s
     default_long_break_duration: 15m0s
     auto_start_breaks: false
 tui:
@@ -11,17 +11,17 @@ tui:
         start: s
         stop: q
 notifications:
+    enabled: true
     sound: false
     message: Timer completed!
 plugins:
-    kimai:
-        enabled: true
-    example_tui_plugin:
-        enabled: false
     directory: /home/ritchie/.config/pomodux/plugins
+    enabled:
+        kimai: true
+pluginsraw: {}
 logging:
     level: debug
     format: text
     output: file
-    log_file: ~/.local/share/pomodux/pomodux.log
+    log_file: "/home/ritchie/.local/share/pomodux/pomodux.log"
     show_caller: false
