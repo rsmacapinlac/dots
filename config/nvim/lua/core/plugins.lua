@@ -29,6 +29,16 @@ local plugins = {
     "williamboman/mason.nvim",
     "williamboman/mason-lspconfig.nvim",
     "neovim/nvim-lspconfig",
+    "hrsh7th/nvim-cmp",
+  },
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
   },
   {
     "epwalsh/obsidian.nvim",
@@ -36,6 +46,11 @@ local plugins = {
     lazy = true,
     ft = "markdown",
     dependecies = { "nvim-lua/plenary.nvim" }
+  },
+  {
+    "folke/twilight.nvim",
+    opts = {
+    },
   },
   {
     "folke/zen-mode.nvim",
