@@ -8,8 +8,6 @@ alias obsidian="cd '$HOME/Nextcloud/Apps/obsidian/Second Brain/' && nvim"
 
 # Ritchie's stuff :)
 
-alias p="$HOME/.bin/pomodoro"
-
 # Change wallpaper
 alias w="$HOME/.config/wallpapers/bin/set_wallpaper"
 
@@ -18,10 +16,6 @@ alias v="echo \"Use 'e'\"! Gawd!"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
-
-# Pomodoro stuff (credit bashbunni)
-alias work='pomodoro work'
-alias break='pomodoro break'
 
 # Development stuff
 alias be='bundle exec'
