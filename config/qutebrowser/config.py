@@ -534,7 +534,7 @@ if os.path.exists(config.configdir / "theme.py"):
 ## `colors.webpage.darkmode.policy.images` to `never`.  - "With selective
 ## image inversion": qutebrowser default settings.
 ## Type: Bool
-# c.colors.webpage.darkmode.enabled = False
+c.colors.webpage.darkmode.enabled = True
 
 ## Which images to apply dark mode to.
 ## Type: String
@@ -614,7 +614,7 @@ if os.path.exists(config.configdir / "theme.py"):
 ##   - bookmarks
 ##   - history
 ##   - filesystem
-# c.completion.open_categories = ['searchengines', 'quickmarks', 'bookmarks', 'history', 'filesystem']
+c.completion.open_categories = ['searchengines', 'quickmarks', 'bookmarks', 'history', 'filesystem']
 
 ## Move on to the next part when there's only one possible completion
 ## left.
@@ -1782,7 +1782,7 @@ if os.path.exists(config.configdir / "theme.py"):
 ##   - never: Never show the scrollbar.
 ##   - when-searching: Show the scrollbar when searching for text in the webpage. With the QtWebKit backend, this is equal to `never`.
 ##   - overlay: Show an overlay scrollbar. On macOS, this is unavailable and equal to `when-searching`; with the QtWebKit backend, this is equal to `never`. Enabling/disabling overlay scrollbars requires a restart.
-# c.scrolling.bar = 'overlay'
+c.scrolling.bar = 'always'
 
 ## Enable smooth scrolling for web pages. Note smooth scrolling does not
 ## work with the `:scroll-px` command.
@@ -2150,7 +2150,7 @@ c.url.default_page = 'https://van.macapinlac.network/'
 ## Open base URL of the searchengine if a searchengine shortcut is
 ## invoked without parameters.
 ## Type: Bool
-# c.url.open_base_url = False
+c.url.open_base_url = False
 
 ## Search engines which can be used via the address bar.  Maps a search
 ## engine name (such as `DEFAULT`, or `ddg`) to a URL with a `{}`
@@ -2171,11 +2171,14 @@ c.url.default_page = 'https://van.macapinlac.network/'
 ## the search engine name to the search term, e.g. `:open google
 ## qutebrowser`.
 ## Type: Dict
-# c.url.searchengines = {'DEFAULT': 'https://duckduckgo.com/?q={}'}
+c.url.searchengines = {
+  'DEFAULT': 'https://google.com/?q={}',
+  'ddg': 'https://duckduckgo.com/?q={}'
+}
 
 ## Page(s) to open at the start.
 ## Type: List of FuzzyUrl, or FuzzyUrl
-# c.url.start_pages = ['https://start.duckduckgo.com']
+c.url.start_pages = ['https://van.macapinlac.network']
 
 ## URL parameters to strip when yanking a URL.
 ## Type: List of String
@@ -2218,8 +2221,8 @@ c.url.default_page = 'https://van.macapinlac.network/'
 
 ## Bindings for normal mode
 # config.bind("'", 'mode-enter jump_mark')
-# config.bind('+', 'zoom-in')
-# config.bind('-', 'zoom-out')
+config.bind('<Ctrl-=>', 'zoom-in')
+config.bind('<Ctrl-->', 'zoom-out')
 # config.bind('.', 'cmd-repeat-last')
 # config.bind('/', 'cmd-set-text /')
 # config.bind(':', 'cmd-set-text :')
@@ -2528,3 +2531,7 @@ c.url.default_page = 'https://van.macapinlac.network/'
 # config.bind('Y', 'prompt-accept --save yes', mode='yesno')
 # config.bind('n', 'prompt-accept no', mode='yesno')
 # config.bind('y', 'prompt-accept yes', mode='yesno')
+
+## YT
+config.bind(',m', 'spawn mpv {url}')
+config.bind(',M', 'hint links spawn mpv {hint-url}')

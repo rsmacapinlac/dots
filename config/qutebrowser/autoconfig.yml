@@ -7,11 +7,13 @@
 config_version: 2
 settings:
   content.javascript.clipboard:
+    https://claude.ai: access-paste
     https://github.com: access-paste
     https://workspace.macapinlac.network: access-paste
   content.notifications.enabled:
     https://calendar.google.com: false
     https://jellyfin.media.macapinlac.network: false
+    https://nc.macapinlac.network: false
   content.register_protocol_handler:
     https://calendar.google.com?cid=%25s: false
     https://mail.google.com?extsrc=mailto&url=%25s: false
