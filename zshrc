@@ -176,6 +176,11 @@ fi
 # run neofetch
 #neofetch
 
+# Auto-start tmux session
+if command -v tmux &> /dev/null && [ -z "$TMUX" ]; then
+    tat
+fi
+
 # run fastfetch only in new terminals, not tmux panes
 if [[ -z "$TMUX" ]]; then
     fastfetch

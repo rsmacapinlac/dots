@@ -1,9 +1,13 @@
 #!/bin/sh
 #
-# Attach or create tmux session using tmuxinator, fallback to basic tmux.
+# Attach or create tmux session.
 
 path_name="$(basename "$PWD" | tr . -)"
-session_name=${1-$path_name}
+if [ "$PWD" = "$HOME" ]; then
+  session_name=${1-"home"}
+else
+  session_name=${1-$path_name}
+fi
 
 not_in_tmux() {
   [ -z "$TMUX" ]
@@ -13,30 +17,20 @@ session_exists() {
   tmux has-session -t "=$session_name" 2>/dev/null
 }
 
-tmuxinator_config_exists() {
-  [ -f "$HOME/.config/tmuxinator/$session_name.yml" ]
-}
-
 create_detached_session() {
-  if tmuxinator_config_exists; then
-    tmuxinator start "$session_name" --detach
-  else
-    (TMUX='' tmux new-session -Ad -s "$session_name")
-  fi
+  (TMUX='' tmux new-session -Ad -s "$session_name" -c "$PWD")
 }
 
 create_if_needed_and_attach() {
   if not_in_tmux; then
-    if tmuxinator_config_exists; then
-      tmuxinator start "$session_name"
-    else
-      tmux new-session -As "$session_name"
-    fi
+    tmux new-session -As "$session_name" -c "$PWD"
   else
-    if ! session_exists; then
+    if session_exists; then
+      tmux switch-client -t "$session_name"
+    else
       create_detached_session
+      tmux switch-client -t "$session_name"
     fi
-    tmux switch-client -t "$session_name"
   fi
 }
 
