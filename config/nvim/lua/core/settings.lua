@@ -22,6 +22,10 @@ vim.opt.mouse = ""
 vim.o.wrap = true
 vim.o.linebreak = true
 
+-- Auto-reload files when changed externally
+vim.opt.autoread = true
+vim.opt.updatetime = 100
+
 -- autocmds
 vim.api.nvim_create_autocmd('BufWinEnter', {
   pattern = { '*.md' },
@@ -37,4 +41,9 @@ vim.api.nvim_create_autocmd({ 'BufWinLeave' }, {
     vim.opt.colorcolumn = '120'
     vim.opt.textwidth = 120
   end,
+})
+
+-- Auto-reload on focus/buffer changes
+vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHoldI"}, {
+  command = "checktime"
 })
