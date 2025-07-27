@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Wrapper script for rmpc to prevent hanging in tmux popups
+# Set resource limits to prevent runaway processes
+ulimit -t 30  # CPU time limit: 30 seconds
+ulimit -v 1048576  # Virtual memory limit: 1GB
+
+# Set trap to cleanup on exit
+cleanup() {
+    pkill -f "rmpc" 2>/dev/null
+    exit 0
+}
+
+trap cleanup EXIT INT TERM
+
+# Run rmpc with timeout
+timeout 30 rmpc || {
+    echo "rmpc failed or timed out"
+    sleep 2
+}
