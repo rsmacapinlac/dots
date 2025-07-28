@@ -7,29 +7,28 @@ require("obsidian").setup({
   },
   
   -- Template configuration
-  templates = {
-    subdir = "core/templates",
-    date_format = "%Y-%m-%d",
-    time_format = "%H:%M",
+  --templates = {
+  --  subdir = "core/templates",
+  --  date_format = "%Y-%m-%d",
+  --  time_format = "%H:%M",
     -- Custom substitutions
-    substitutions = {},
-  },
+  --  substitutions = {},
+  --},
 
-  -- Note ID function - customize note naming based on title
+  -- Note ID function - preserve spaces and only remove filesystem-invalid characters
   note_id_func = function(title)
     if title ~= nil then
-      -- Transform title into a valid filename
-      return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+      -- Only remove characters that are invalid on Linux filesystems
+      -- Keep spaces, parentheses, and other valid characters
+      return title:gsub("[/\\:*?\"<>|]", "")
     else
       -- Fallback if no title provided
       return tostring(os.time())
     end
   end,
   
-  -- Customize front matter - only include tags
-  note_frontmatter_func = function(note)
-    return { tags = note.tags }
-  end,
+  -- Completely disable frontmatter management
+  disable_frontmatter = true,
   opts = {
     picker = {
       -- Set your preferred picker. Can be one of 'telescope.nvim', 'fzf-lua', or 'mini.pick'.
