@@ -1,0 +1,16 @@
+/* Custom qutebrowser Qt stylesheet */
+
+/* Left-align URL in statusbar */
+QLabel {
+    qproperty-alignment: AlignLeft;
+}
+
+/* More specific targeting for URL widget */
+*[objectName="url"] {
+    qproperty-alignment: AlignLeft;
+}
+
+/* StatusBar specific styling */
+QWidget[class="StatusBar"] QLabel {
+    qproperty-alignment: AlignLeft;
+}
