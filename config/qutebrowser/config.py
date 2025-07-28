@@ -27,6 +27,9 @@ if os.path.exists(config.configdir / "theme.py"):
     import theme
     theme.setup(c, 'mocha', True)
 
+# Enhanced font styling for better Catppuccin integration
+c.fonts.statusbar = '11pt "BlexMono Nerd Font Mono", "Adwaita Mono", monospace'
+
 ## This is here so configs done via the GUI are still loaded.
 ## Remove it to not load settings done via the GUI.
 # config.load_autoconfig(True)
@@ -1784,6 +1787,40 @@ c.completion.open_categories = ['searchengines', 'quickmarks', 'bookmarks', 'his
 ##   - overlay: Show an overlay scrollbar. On macOS, this is unavailable and equal to `when-searching`; with the QtWebKit backend, this is equal to `never`. Enabling/disabling overlay scrollbars requires a restart.
 c.scrolling.bar = 'always'
 
+# Show statusbar with address bar
+c.statusbar.show = 'always'
+c.statusbar.widgets = ['url', 'keypress', 'scroll', 'progress']
+c.statusbar.padding = {'top': 3, 'bottom': 3, 'left': 5, 'right': 5}
+c.statusbar.position = 'top'
+
+# Enhanced Catppuccin-themed statusbar styling
+# Catppuccin Mocha colors
+c.colors.statusbar.normal.bg = '#1e1e2e'  # Base
+c.colors.statusbar.normal.fg = '#cdd6f4'  # Text
+c.colors.statusbar.url.fg = '#89b4fa'     # Blue
+c.colors.statusbar.url.success.https.fg = '#a6e3a1'  # Green
+c.colors.statusbar.url.success.http.fg = '#f9e2af'   # Yellow
+c.colors.statusbar.url.error.fg = '#f38ba8'          # Pink
+c.colors.statusbar.url.warn.fg = '#fab387'           # Peach
+c.colors.statusbar.url.hover.fg = '#b4befe'          # Lavender
+
+# Additional Catppuccin statusbar enhancements
+c.statusbar.padding = {'top': 5, 'bottom': 5, 'left': 10, 'right': 10}
+c.colors.statusbar.progress.bg = '#313244'  # Surface0 for progress bar background
+
+# Simplified Catppuccin tab styling
+c.tabs.show = 'always'
+c.tabs.position = 'top'
+c.fonts.tabs.selected = '11pt monospace'
+c.fonts.tabs.unselected = '11pt monospace'
+
+# Basic tab colors
+c.colors.tabs.bar.bg = '#181825'
+c.colors.tabs.selected.even.bg = '#1e1e2e'
+c.colors.tabs.selected.odd.bg = '#1e1e2e'
+c.colors.tabs.selected.even.fg = '#cdd6f4'
+c.colors.tabs.selected.odd.fg = '#cdd6f4'
+
 ## Enable smooth scrolling for web pages. Note smooth scrolling does not
 ## work with the `:scroll-px` command.
 ## Type: Bool
@@ -2173,7 +2210,8 @@ c.url.open_base_url = False
 ## Type: Dict
 c.url.searchengines = {
   'DEFAULT': 'https://google.com/?q={}',
-  'ddg': 'https://duckduckgo.com/?q={}'
+  'ddg': 'https://duckduckgo.com/?q={}',
+  'ggl': 'https://www.google.com/search?q={}'
 }
 
 ## Page(s) to open at the start.
