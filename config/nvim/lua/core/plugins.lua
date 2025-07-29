@@ -26,6 +26,14 @@ local plugins = {
   },
   { "nvim-treesitter/nvim-treesitter", build= ":TSUpdate" },
   {
+    "nvim-tree/nvim-tree.lua",
+    version = "*",
+    lazy = false,
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+  },
+  {
     "williamboman/mason.nvim",
     "williamboman/mason-lspconfig.nvim",
     "neovim/nvim-lspconfig",
