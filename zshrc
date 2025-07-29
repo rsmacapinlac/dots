@@ -1,7 +1,10 @@
-#f554  If you come from bash you might have to change your $PATH.
-export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications:$PATH
+# Load RVM into a shell session *as a function* - must be first
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+# Force RVM to set up environment properly
+if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
+    rvm rvmrc warning ignore allGemfiles
+fi
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -91,6 +94,9 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
+# Add custom paths after oh-my-zsh loads, preserving RVM paths
+export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications:$PATH
+
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
@@ -160,8 +166,7 @@ fi
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+# RVM PATH export moved to line 5 to fix tmux warning
 
 if [ -f ~/.imap_passwords ];
 then
