@@ -13,7 +13,7 @@
        "pulseaudio",
        "battery",
        "clock",
-       "network",
+       // "network",
        "tray",
        "custom/lock",
        "custom/power"],
@@ -36,8 +36,7 @@
     "clock": {
         "timezone": "America/Vancouver",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "format-alt": " {:%Y-%m-%d}",
-        "format": " {:%Y-%m-%d %H:%M}"
+        "format": "{:%Y-%m-%d %H:%M}"
     },
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface

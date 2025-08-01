@@ -26,10 +26,10 @@ create_if_needed_and_attach() {
     tmux new-session -As "$session_name" -c "$PWD"
   else
     if session_exists; then
-      tmux switch-client -t "$session_name"
+      tmux switch-client -t "=$session_name"
     else
       create_detached_session
-      tmux switch-client -t "$session_name"
+      tmux switch-client -t "=$session_name"
     fi
   fi
 }

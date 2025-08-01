@@ -84,11 +84,13 @@ precmd_functions+=(set_terminal_title)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   # zsh-autosuggestions
-  ssh-agent
   dotenv
 )
 
-zstyle :omz:plugins:ssh-agent agent-forwarding yes
+# GNOME Keyring SSH agent integration
+if [ -n "$DESKTOP_SESSION" ]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
+fi
 
 source $ZSH/oh-my-zsh.sh
 
@@ -136,9 +138,6 @@ function g() {
     git status
   fi
 }
-
-
-
 
 # Keybindings for fzf
 #source /usr/share/doc/fzf/examples/key-bindings.zsh
