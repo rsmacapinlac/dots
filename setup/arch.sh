@@ -192,9 +192,6 @@ configure_system_services() {
         pipewire-pulse \
         wireplumber
     
-    # Enable and start bluetooth service
-    sudo systemctl enable --now bluetooth
-    
     log_success "System services configured"
 }
 
@@ -370,7 +367,7 @@ install_media_apps() {
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/environment
     sudo locale-gen en_US.UTF-8
     
-    # Stop system mpd service
+    # Disable system MPD service in favor of user service
     sudo systemctl stop mpd.service 2>/dev/null || true
     sudo systemctl disable mpd.service 2>/dev/null || true
     
@@ -393,9 +390,7 @@ RestartSec=5
 WantedBy=default.target
 EOF
     
-    # Reload user systemd daemon and enable MPD service
-    systemctl --user daemon-reload
-    systemctl --user enable --now mpd.service 2>/dev/null || true
+    # User MPD service will be enabled at end of installation
     
     log_success "Media applications installed"
 }
@@ -494,9 +489,7 @@ install_hyprland() {
         brightnessctl \
         pavucontrol
     
-    # Enable services
-    sudo systemctl enable --now sddm
-    sudo systemctl enable --now NetworkManager
+    # Services will be enabled at the end of installation
     
     # Install Hyprland ecosystem
     sudo pacman -S --needed --noconfirm \
@@ -583,6 +576,27 @@ install_work_tools() {
     log_success "Work tools installed"
 }
 
+# Enable system services
+enable_services() {
+    log_info "Enabling system services..."
+    
+    # Enable NetworkManager (needed for network connectivity)
+    sudo systemctl enable --now NetworkManager
+    
+    # Enable bluetooth service
+    sudo systemctl enable --now bluetooth
+    
+    # Enable user MPD service
+    systemctl --user daemon-reload
+    systemctl --user enable --now mpd.service 2>/dev/null || true
+    
+    # Enable SDDM last (this will start the GUI login screen)
+    sudo systemctl enable sddm
+    
+    log_success "System services enabled"
+    log_warning "SDDM display manager will start on next boot. Reboot to enter GUI environment."
+}
+
 # Main installation function
 main() {
     log_info "Starting Workstation Builder installation..."
@@ -633,6 +647,9 @@ main() {
     
     # work
     install_work_tools
+    
+    # Enable all services at the end
+    enable_services
     
     log_success "Workstation Builder installation completed successfully!"
     log_info "Please reboot your system to ensure all changes take effect."
