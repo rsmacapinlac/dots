@@ -1,7 +1,7 @@
 @import "mocha.css";
 
 * {
-  font-family: "FantasqueSansMono", "Font Awesome 6 Free Regular", "Symbols Nerd Font Mono", monospace;
+  font-family: "BlexMono Nerd Font", monospace;
   font-size: 13px;
   min-height: 0;
 }
@@ -57,7 +57,7 @@
 
 #clock {
   color: @blue;
-  border-radius: 0px 1rem 1rem 0px;
+  border-radius: 1rem;
   margin-right: 1rem;
 }
 
@@ -82,7 +82,12 @@
   color: @yellow;
 }
 
-#backlight, #battery {
+#battery {
+    border-radius: 0px 1rem 1rem 0px;
+    margin-right: 1rem;
+}
+
+#backlight {
     border-radius: 0;
 }
 
