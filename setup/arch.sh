@@ -230,7 +230,7 @@ install_aur_helper() {
     
     # Build and install Yay package
     cd /tmp/yay
-    makepkg -f --noconfirm
+    makepkg -f -s --noconfirm
     sudo pacman -U --noconfirm yay-*.pkg.tar.zst
     
     # Remove temporary directory
