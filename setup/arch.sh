@@ -71,8 +71,8 @@ initial_setup() {
     
     # Setup GPG if needed
     if [[ "$GPG_SETUP_NEEDED" == true ]]; then
-        gpg --import "$GPG_SOURCE/public.pgp"
-        gpg --allow-secret-key-import --import "$GPG_SOURCE/private.pgp"
+        gpg --batch --import "$GPG_SOURCE/public.pgp"
+        gpg --batch --pinentry-mode loopback --import "$GPG_SOURCE/private.pgp"
         
         # Trust the imported key(s) automatically
         # Get the key fingerprint(s) and set ultimate trust
@@ -199,8 +199,8 @@ configure_system_services() {
 }
 
 # Security configuration (system/security/pass)
-configure_security() {
-    log_info "Configuring security (pass)..."
+configure_pass() {
+    log_info "Configuring pass..."
     
     # Install pass password manager and extensions
     sudo pacman -S --needed --noconfirm \
@@ -606,7 +606,7 @@ main() {
     configure_system_services
     
     # system/security  
-    configure_security
+    configure_pass
     
     # workstation
     install_aur_helper
