@@ -289,7 +289,9 @@ install_development_editors() {
     
     # Install editors from AUR
     yay -S --needed --noconfirm \
-        cursor-bin
+        cursor-bin \
+        claude-code
+
     
     log_success "Development editors installed"
 }
@@ -589,6 +591,9 @@ enable_services() {
     # Enable user MPD service
     systemctl --user daemon-reload
     systemctl --user enable --now mpd.service 2>/dev/null || true
+    
+    # Enable Syncthing user service
+    systemctl --user enable --now syncthing@$USER.service 2>/dev/null || true
     
     # Enable SDDM last (this will start the GUI login screen)
     sudo systemctl enable sddm
