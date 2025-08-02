@@ -2,4 +2,34 @@
 config/ranger/smb_shares.json
 
 # Mount points created by Ranger
-mnt/ 
+mnt/
+
+# New computer setup folder (contains sensitive SSH keys, GPG keys, and setup scripts)
+newcomputer/
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+.viminfo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Local environment files
+.env
+.env.local 

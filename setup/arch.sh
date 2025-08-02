@@ -159,6 +159,12 @@ install_base_packages() {
         syncthing \
         seahorse
     
+    # Configure SSH askpass to use Seahorse GUI
+    if [[ ! -L /usr/lib/ssh/ssh-askpass ]]; then
+        sudo ln -sf /usr/lib/seahorse/ssh-askpass /usr/lib/ssh/ssh-askpass
+        log_success "SSH askpass configured to use Seahorse"
+    fi
+    
     log_success "Base system packages installed"
 }
 
