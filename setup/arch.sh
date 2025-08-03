@@ -601,6 +601,9 @@ enable_services() {
     # Enable Syncthing user service
     systemctl --user enable --now syncthing@$USER.service 2>/dev/null || true
     
+    # Enable hypridle service (screen lock and idle management)
+    systemctl --user enable --now hypridle.service 2>/dev/null || true
+    
     # Enable SDDM last (this will start the GUI login screen)
     sudo systemctl enable sddm
     

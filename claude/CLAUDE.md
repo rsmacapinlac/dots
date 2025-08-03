@@ -1,0 +1,6 @@
+- Do not create files for documentation unless explicitly stated.
+- If I ask for documentation to be created, do not assume where to save the files. Clarify if file location and format are unclear.
+- Assume that I want a multi-shot prompt unless explictly stated or confirmed. 
+- I will explicitly add action words to the beginning of the statement. Actions are mandatory. It will be bolded. 
+  - **Report Back** - Use the chat to summarize and inform.
+  - **Seek Approval** - Request approval via conversation.
