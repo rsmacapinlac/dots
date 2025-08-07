@@ -157,13 +157,21 @@ install_base_packages() {
         fastfetch \
         autorandr \
         syncthing \
-        seahorse
+        seahorse \
+        cups \
+        cups-pdf \
+        system-config-printer \
+        avahi \
+        nss-mdns
     
     # Configure SSH askpass to use Seahorse GUI
     if [[ ! -L /usr/lib/ssh/ssh-askpass ]]; then
         sudo ln -sf /usr/lib/seahorse/ssh-askpass /usr/lib/ssh/ssh-askpass
         log_success "SSH askpass configured to use Seahorse"
     fi
+    
+    # Add user to lp group for printer access
+    sudo usermod -a -G lp "$USER"
     
     log_success "Base system packages installed"
 }
@@ -593,6 +601,10 @@ enable_services() {
     
     # Enable bluetooth service
     sudo systemctl enable --now bluetooth
+    
+    # Enable CUPS printing services
+    sudo systemctl enable --now cups.service
+    sudo systemctl enable --now avahi-daemon.service
     
     # Enable user MPD service
     systemctl --user daemon-reload
