@@ -23,3 +23,11 @@ alias path='echo $PATH | tr -s ":" "\n"'
 
 # Development stuff
 alias be='bundle exec'
+
+# Go development aliases
+alias gob='go build'
+alias gor='go run'
+alias got='go test'  
+alias gom='go mod'
+alias gof='go fmt'
+alias gol='golangci-lint run'

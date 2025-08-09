@@ -287,9 +287,19 @@ install_development_packages() {
         fd \
         xclip \
         python-pynvim \
-        lazygit
+        lazygit \
+        go \
+        make
     
-    log_success "Development packages installed"
+    # Install Go development tools
+    log_info "Installing Go development tools..."
+    
+    # Install essential Go tools
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    go install golang.org/x/tools/cmd/goimports@latest  
+    go install golang.org/x/tools/cmd/godoc@latest
+    
+    log_success "Development packages and Go tools installed"
 }
 
 # Install development editors (development/editors)

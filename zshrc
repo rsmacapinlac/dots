@@ -200,7 +200,10 @@ fi
 # Created by `pipx` on 2023-10-10 04:12:28
 export PATH="$PATH:/home/ritchie/.local/bin"
 
-# Go configuration
+# Modern Go configuration
+export GO111MODULE=on
+export GOPROXY=direct,https://proxy.golang.org
+export GOSUMDB=sum.golang.org
 export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
 export GOROOT="/usr/lib/go"
+export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
