@@ -620,6 +620,9 @@ enable_services() {
     systemctl --user daemon-reload
     systemctl --user enable --now mpd.service 2>/dev/null || true
     
+    # Enable gnome-keyring 
+    systemctl --user enable gnome-keyring-daemon 2>/dev/null || true
+
     # Enable Syncthing user service
     systemctl --user enable --now syncthing@$USER.service 2>/dev/null || true
     

@@ -207,3 +207,6 @@ export GOSUMDB=sum.golang.org
 export GOPATH="$HOME/go"
 export GOROOT="/usr/lib/go"
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
