@@ -655,9 +655,6 @@ main() {
     # maybe standardize on yay?
     install_aur_helper
     
-    # system/security  
-    configure_pass
-
     # system/base
     install_base_packages
     configure_user_shell
@@ -679,6 +676,9 @@ main() {
     install_mail_client
     # setup_flatpak
     
+    # system/security  
+    configure_pass
+
     # desktop
     install_hyprland
     install_greeter
