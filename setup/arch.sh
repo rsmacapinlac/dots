@@ -431,7 +431,6 @@ install_hyprland() {
     
     # Install core Hyprland packages
     yay -S --needed --noconfirm \
-        sddm \
         hyprland \
         mako \
         libnotify \
@@ -461,6 +460,41 @@ install_hyprland() {
         ttf-fantasque-nerd
     
     log_success "Hyprland desktop environment installed"
+}
+
+# Install greeter (desktop/greeter)
+install_greeter() {
+    log_info "Installing and configuring greetd..."
+    
+    # Disable and uninstall sddm if present
+    sudo systemctl disable sddm 2>/dev/null || true
+    sudo systemctl stop sddm 2>/dev/null || true
+    yay -Rns --noconfirm sddm 2>/dev/null || true
+    
+    # Install greetd
+    yay -S --needed --noconfirm greetd
+    
+    # Create greetd configuration directory
+    sudo mkdir -p /etc/greetd
+    
+    # Configure greetd to boot directly into Hyprland
+    sudo tee /etc/greetd/config.toml > /dev/null << EOF
+[terminal]
+vt = 1
+
+[default_session]
+command = "uwsm start hyprland"
+user = "greeter"
+
+[initial_session]
+command = "uwsm start hyprland"
+user = "$USER"
+EOF
+    
+    # Enable greetd service
+    sudo systemctl enable greetd
+    
+    log_success "greetd installed and configured"
 }
 
 # Install desktop - fonts (desktop/fonts)
@@ -557,11 +591,8 @@ enable_services() {
     # Enable hypridle service (screen lock and idle management)
     systemctl --user enable --now hypridle.service 2>/dev/null || true
     
-    # Enable SDDM last (this will start the GUI login screen)
-    sudo systemctl enable sddm
-    
     log_success "System services enabled"
-    log_warning "SDDM display manager will start on next boot. Reboot to enter GUI environment."
+    log_warning "greetd display manager will start on next boot. Reboot to enter GUI environment."
 }
 
 # Main installation function
@@ -608,6 +639,7 @@ main() {
     
     # desktop
     install_hyprland
+    install_greeter
     install_fonts
     install_terminals
     install_file_manager
