@@ -1,21 +1,24 @@
 #!/bin/bash
 #
-# Workstation Builder - Unified Installation Script
-# Replaces the Ansible-based workflow with a direct bash script
-# Usage: curl -fsSL https://raw.githubusercontent.com/USER/workstation-builder/main/install.sh | bash
+# Workstation Builder - RSM's Unified Installation Script
 #
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# make the assumption that this always here
+# shared stuff, goes in here...
+source ~/workspace/dots/setup/shared.sh
 
 # Initial setup function for SSH and GPG
 initial_setup() {
+    log_info "Update system and install minimal packages required for initial setup..."
+
+    # Update system first
+    sudo pacman -Sy --noconfirm
+
+    # Install minimal packages needed for initial setup
+    sudo pacman -Sy --noconfirm openssh git
+
     log_info "Setting up SSH and GPG keys..."
     
     # Check for SSH setup
@@ -66,9 +69,6 @@ initial_setup() {
     eval $(ssh-agent -s)
     ssh-add ~/.ssh/id_rsa
     
-    # Install minimal packages needed for initial setup
-    sudo pacman -Sy --noconfirm git
-    
     # Setup GPG if needed
     if [[ "$GPG_SETUP_NEEDED" == true ]]; then
         gpg --batch --import "$GPG_SOURCE/public.pgp"
@@ -83,74 +83,22 @@ initial_setup() {
         log_success "GPG keys setup and trusted"
     fi
     
-    # Setup password repository 
-    mkdir -p ~/workspace && cd ~/workspace
-    if [[ ! -d ~/.password-store ]]; then
-        git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
-        log_success "Password store repository cloned"
-    else
-        log_info "Password store already exists, skipping clone"
-    fi
     
     log_success "Initial setup completed"
-}
-
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if running as root
-check_not_root() {
-    if [[ $EUID -eq 0 ]]; then
-        log_error "This script should not be run as root. Run as a regular user with sudo privileges."
-        exit 1
-    fi
-}
-
-# Detect Linux distribution
-detect_distro() {
-    if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        DISTRO=${ID:-}
-        DISTRO_VERSION=${VERSION_ID:-}
-        log_info "Detected distribution: ${PRETTY_NAME:-$DISTRO}"
-    else
-        log_error "Cannot detect Linux distribution"
-        exit 1
-    fi
 }
 
 # Install base system packages (system/base/packages)
 install_base_packages() {
     log_info "Installing base system packages..."
     
-    # Update system first
-    sudo pacman -Sy --noconfirm
-    
     # Remove conflicting polkit packages
-    sudo pacman -Rns --noconfirm ksshaskpass polkit-gnome 2>/dev/null || true
+    yay -Rns --noconfirm ksshaskpass polkit-gnome 2>/dev/null || true
     
     # Install base system packages
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         polkit-kde-agent \
         curl \
-        vim \
         base-devel \
-        git \
-        openssh \
         zsh \
         nodejs \
         npm \
@@ -198,7 +146,7 @@ configure_system_services() {
     log_info "Configuring system services..."
     
     # Install system services packages
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         blueman \
         bluez \
         bluez-utils \
@@ -213,8 +161,17 @@ configure_system_services() {
 configure_pass() {
     log_info "Configuring pass..."
     
+    # Setup password repository 
+    mkdir -p ~/workspace && cd ~/workspace
+    if [[ ! -d ~/.password-store ]]; then
+        git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
+        log_success "Password store repository cloned"
+    else
+        log_info "Password store already exists, skipping clone"
+    fi
+
     # Install pass password manager and extensions
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         pass \
         pass-otp \
         wl-clipboard \
@@ -232,6 +189,14 @@ configure_pass() {
 # Install AUR helper (workstation/aur)
 install_aur_helper() {
     log_info "Installing AUR helper (yay)..."
+    
+    # Check if yay is already installed
+    if command -v yay &> /dev/null; then
+        log_info "yay is already installed..."
+        return 0 
+    else
+        log_info "yay not found, installing..."
+    fi
     
     # Remove any existing yay build directory
     rm -rf /tmp/yay
@@ -279,8 +244,7 @@ setup_dotfiles() {
 install_development_packages() {
     log_info "Installing development packages..."
     
-    sudo pacman -S --needed --noconfirm \
-        tmux \
+    yay -S --needed --noconfirm \
         ruby \
         ruby-erb \
         ripgrep \
@@ -292,12 +256,12 @@ install_development_packages() {
         make
     
     # Install Go development tools
-    log_info "Installing Go development tools..."
+    #log_info "Installing Go development tools..."
     
     # Install essential Go tools
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-    go install golang.org/x/tools/cmd/goimports@latest  
-    go install golang.org/x/tools/cmd/godoc@latest
+    #go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    #go install golang.org/x/tools/cmd/goimports@latest  
+    #go install golang.org/x/tools/cmd/godoc@latest
     
     log_success "Development packages and Go tools installed"
 }
@@ -307,16 +271,14 @@ install_development_editors() {
     log_info "Installing development editors..."
     
     # Install editors from official repos
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         neovim \
-        vim
     
     # Install editors from AUR
     yay -S --needed --noconfirm \
         cursor-bin \
         claude-code
 
-    
     log_success "Development editors installed"
 }
 
@@ -324,6 +286,9 @@ install_development_editors() {
 setup_development_tools() {
     log_info "Setting up development tools..."
     
+    yay -S --needed --noconfirm \
+        tmux 
+
     # Install RVM
     if [[ ! -d "$HOME/.rvm" ]]; then
         curl -sSL https://get.rvm.io | bash
@@ -341,7 +306,7 @@ setup_development_tools() {
 install_browsers() {
     log_info "Installing browsers..."
     
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         firefox \
         qutebrowser \
         yt-dlp \
@@ -354,13 +319,10 @@ install_browsers() {
 install_productivity_apps() {
     log_info "Installing productivity applications..."
     
-    # Install from official repos
-    sudo pacman -S --needed --noconfirm \
-        gnucash \
-        krdc
-    
     # Install from AUR
     yay -S --needed --noconfirm \
+        gnucash \
+        krdc \
         nextcloud-client \
         obsidian \
         todoist-appimage \
@@ -375,13 +337,10 @@ install_media_apps() {
     log_info "Installing media applications..."
     
     # Remove conflicting packages
-    sudo pacman -Rns --noconfirm totem totem-plugins 2>/dev/null || true
+    yay -Rns --noconfirm totem totem-plugins 2>/dev/null || true
     
-    # Install media tools
-    sudo pacman -S --needed --noconfirm vlc
-    
-    # Install music tools
     sudo pacman -S --needed --noconfirm \
+        vlc \
         mpd \
         ncmpcpp \
         mpc \
@@ -393,30 +352,9 @@ install_media_apps() {
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/environment
     sudo locale-gen en_US.UTF-8
     
-    # Disable system MPD service in favor of user service
+    # Disable system MPD service in favor of user service (already in the dot files)
     sudo systemctl stop mpd.service 2>/dev/null || true
     sudo systemctl disable mpd.service 2>/dev/null || true
-    
-    # Create MPD user service directory
-    mkdir -p ~/.config/systemd/user
-    
-    # Create MPD user service file
-    cat > ~/.config/systemd/user/mpd.service << 'EOF'
-[Unit]
-Description=Music Player Daemon
-After=network.target sound.target
-
-[Service]
-Type=simple
-ExecStart=/usr/bin/mpd --no-daemon
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=default.target
-EOF
-    
-    # User MPD service will be enabled at end of installation
     
     log_success "Media applications installed"
 }
@@ -428,11 +366,11 @@ install_steam() {
     # Enable multilib repository
     if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
         echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-        sudo pacman -Sy --noconfirm
+        yay -Sy --noconfirm
     fi
     
     # Install Steam and dependencies
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         steam \
         ttf-liberation \
         lib32-mesa \
@@ -451,7 +389,7 @@ install_mail_client() {
     log_info "Installing terminal mail client..."
     
     # Install mail client packages
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         neomutt \
         isync \
         msmtp \
@@ -471,30 +409,28 @@ install_mail_client() {
         libreoffice-still \
         unzip \
         unrar \
-        p7zip
-    
-    # Install lbdb from AUR
-    yay -S --needed --noconfirm lbdb
+        p7zip \
+        lbdb
     
     log_success "Terminal mail client installed"
 }
 
 # Setup flatpak (applications/flatpak)
-setup_flatpak() {
-    log_info "Setting up Flatpak..."
-    
-    sudo pacman -S --needed --noconfirm flatpak
-    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    
-    log_success "Flatpak setup completed"
-}
+#setup_flatpak() {
+#    log_info "Setting up Flatpak..."
+#    
+#    sudo pacman -S --needed --noconfirm flatpak
+#    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+#    
+#    log_success "Flatpak setup completed"
+#}
 
 # Install desktop - Hyprland (desktop/hyprland)
 install_hyprland() {
     log_info "Installing Hyprland desktop environment..."
     
     # Install core Hyprland packages
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         sddm \
         hyprland \
         mako \
@@ -513,22 +449,14 @@ install_hyprland() {
         networkmanager \
         network-manager-applet \
         brightnessctl \
-        pavucontrol
-    
-    # Services will be enabled at the end of installation
-    
-    # Install Hyprland ecosystem
-    sudo pacman -S --needed --noconfirm \
+        pavucontrol \
         waybar \
         hyprpaper \
         hyprpicker \
         hypridle \
         hyprlock \
         hyprcursor \
-        hyprpolkitagent
-    
-    # Install theme dependencies
-    sudo pacman -S --needed --noconfirm \
+        hyprpolkitagent \
         ttf-fantasque-sans-mono \
         ttf-fantasque-nerd
     
@@ -539,7 +467,7 @@ install_hyprland() {
 install_fonts() {
     log_info "Installing fonts..."
     
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         ttf-font-awesome \
         ttf-ibmplex-mono-nerd \
         ttf-nerd-fonts-symbols \
@@ -554,7 +482,7 @@ install_fonts() {
 install_terminals() {
     log_info "Installing terminals..."
     
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         alacritty \
         kitty
     
@@ -566,7 +494,7 @@ install_file_manager() {
     log_info "Installing file managers..."
     
     # Install Ranger and dependencies
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         ranger \
         mc \
         atool \
@@ -581,7 +509,7 @@ install_file_manager() {
         w3m
     
     # Install Thunar and network browsing support
-    sudo pacman -S --needed --noconfirm \
+    yay -S --needed --noconfirm \
         thunar \
         thunar-volman \
         gvfs \
@@ -651,18 +579,18 @@ main() {
     # Run initial setup first
     initial_setup
     
-    # Execute roles in the same order as core.yml
+    # maybe standardize on yay?
+    install_aur_helper
     
+    # system/security  
+    configure_pass
+
     # system/base
     install_base_packages
     configure_user_shell
     configure_system_services
     
-    # system/security  
-    configure_pass
-    
     # workstation
-    install_aur_helper
     setup_dotfiles
     
     # development
@@ -676,7 +604,7 @@ main() {
     install_media_apps
     install_steam
     install_mail_client
-    setup_flatpak
+    # setup_flatpak
     
     # desktop
     install_hyprland
