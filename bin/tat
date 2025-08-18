@@ -23,7 +23,7 @@ create_detached_session() {
 
 setup_dev_environment() {
   tmux send-keys -t "$session_name:1" 'nvim' Enter
-  tmux split-window -h -t "$session_name:1" -c "$PWD"
+  tmux split-window -h -l 15% -t "$session_name:1" -c "$PWD"
   sleep 0.1
   tmux send-keys -t "$session_name:1.right" 'claude' Enter
   tmux select-pane -t "$session_name:1.0"
