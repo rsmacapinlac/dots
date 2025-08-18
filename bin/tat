@@ -21,23 +21,35 @@ create_detached_session() {
   (TMUX='' tmux new-session -Ad -s "$session_name" -c "$PWD")
 }
 
+setup_dev_environment() {
+  tmux send-keys -t "$session_name:1" 'nvim' Enter
+  tmux split-window -h -t "$session_name:1" -c "$PWD"
+  sleep 0.1
+  tmux send-keys -t "$session_name:1.right" 'claude' Enter
+  tmux select-pane -t "$session_name:1.0"
+}
+
 create_dev_session() {
+  session_already_exists=false
+  
+  if session_exists; then
+    session_already_exists=true
+  fi
+  
   if not_in_tmux; then
-    tmux new-session -d -s "$session_name" -c "$PWD"
-    tmux send-keys -t "$session_name:0" 'nvim' Enter
-    tmux split-window -h -t "$session_name:0" -c "$PWD"
-    tmux send-keys -t "$session_name:0.1" 'claude' Enter
-    tmux select-pane -t "$session_name:0.0"
-    tmux attach-session -t "$session_name"
+    if [ "$session_already_exists" = true ]; then
+      tmux attach-session -t "$session_name"
+    else
+      tmux new-session -d -s "$session_name" -c "$PWD"
+      setup_dev_environment
+      tmux attach-session -t "$session_name"
+    fi
   else
-    if session_exists; then
+    if [ "$session_already_exists" = true ]; then
       tmux switch-client -t "=$session_name"
     else
-      (TMUX='' tmux new-session -d -s "$session_name" -c "$PWD")
-      tmux send-keys -t "$session_name:0" 'nvim' Enter
-      tmux split-window -h -t "$session_name:0" -c "$PWD"
-      tmux send-keys -t "$session_name:0.1" 'claude' Enter
-      tmux select-pane -t "$session_name:0.0"
+      create_detached_session
+      setup_dev_environment
       tmux switch-client -t "=$session_name"
     fi
   fi
@@ -58,25 +70,36 @@ create_if_needed_and_attach() {
 
 if [ $# -gt 0 ]; then
   # Argument provided
-  if session_exists; then
-    # Session exists, just use it
-    if not_in_tmux; then
-      tmux attach-session -t "$session_name"
-    else
-      tmux switch-client -t "=$session_name"
-    fi
-  else
-    # No session exists, use function for argument
-    case "$1" in
-      "dev")
+  case "$1" in
+    "dev")
+      # For dev mode, always use folder name as session name
+      session_name="$path_name"
+      if session_exists; then
+        # Session exists, just use it
+        if not_in_tmux; then
+          tmux attach-session -t "$session_name"
+        else
+          tmux switch-client -t "=$session_name"
+        fi
+      else
         create_dev_session
-        ;;
-      *)
+      fi
+      ;;
+    *)
+      # For other arguments, use the argument as session name
+      if session_exists; then
+        # Session exists, just use it
+        if not_in_tmux; then
+          tmux attach-session -t "$session_name"
+        else
+          tmux switch-client -t "=$session_name"
+        fi
+      else
         # Default behavior for other arguments
         create_if_needed_and_attach
-        ;;
-    esac
-  fi
+      fi
+      ;;
+  esac
 else
   # No argument provided
   create_if_needed_and_attach
