@@ -228,6 +228,22 @@ configure_pass() {
     log_warning "NOTE: Pass requires manual GPG key setup - run 'gpg --full-gen-key' then 'pass init <email>'"
 }
 
+# Configure Timeshift snapshots (system/snapshots)
+configure_timeshift() {
+    log_info "Configuring Timeshift integration..."
+    
+    # Install timeshift and related packages
+    yay -S --needed --noconfirm \
+        timeshift \
+        timeshift-gtk \
+        grub-btrfs \
+        grub-btrfsd \
+        inotify-tools \
+        timeshift-autosnap 
+    
+    log_success "Timeshift integration configured"
+}
+
 # Install AUR helper (workstation/aur)
 install_aur_helper() {
     log_info "Installing AUR helper (yay)..."
@@ -611,24 +627,24 @@ enable_services() {
     log_info "Enabling system services..."
     
     # Enable NetworkManager (needed for network connectivity)
-    sudo systemctl enable --now NetworkManager
+    sudo systemctl enable NetworkManager
     
     # Enable bluetooth service
-    sudo systemctl enable --now bluetooth
+    sudo systemctl enable bluetooth
     
     # Enable CUPS printing services
-    sudo systemctl enable --now cups.service
-    sudo systemctl enable --now avahi-daemon.service
+    sudo systemctl enable cups.service
+    sudo systemctl enable avahi-daemon.service
     
     # Enable user MPD service
     systemctl --user daemon-reload
-    systemctl --user enable --now mpd.service 2>/dev/null || true
+    systemctl --user enable mpd.service 2>/dev/null || true
     
     # Enable gnome-keyring 
     systemctl --user enable gnome-keyring-daemon 2>/dev/null || true
 
     # Enable Syncthing user service
-    systemctl --user enable --now syncthing@$USER.service 2>/dev/null || true
+    systemctl --user enable syncthing.service 2>/dev/null || true
     
     # Enable hypridle service (screen lock and idle management)
     systemctl --user enable --now hypridle.service 2>/dev/null || true
@@ -678,6 +694,9 @@ main() {
     
     # system/security  
     configure_pass
+    
+    # system/snapshots
+    configure_timeshift
 
     # desktop
     install_hyprland
