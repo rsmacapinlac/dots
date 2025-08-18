@@ -4,7 +4,7 @@ alias ln="ln -v"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias r="ranger"
-alias brain="cd '$HOME/Second Brain/' && nvim"
+alias brain="cd '$HOME/Obsidian/Second Brain/' && nvim"
 
 
 # pomodoro app

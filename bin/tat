@@ -21,6 +21,28 @@ create_detached_session() {
   (TMUX='' tmux new-session -Ad -s "$session_name" -c "$PWD")
 }
 
+create_dev_session() {
+  if not_in_tmux; then
+    tmux new-session -d -s "$session_name" -c "$PWD"
+    tmux send-keys -t "$session_name:0" 'nvim' Enter
+    tmux split-window -h -t "$session_name:0" -c "$PWD"
+    tmux send-keys -t "$session_name:0.1" 'claude' Enter
+    tmux select-pane -t "$session_name:0.0"
+    tmux attach-session -t "$session_name"
+  else
+    if session_exists; then
+      tmux switch-client -t "=$session_name"
+    else
+      (TMUX='' tmux new-session -d -s "$session_name" -c "$PWD")
+      tmux send-keys -t "$session_name:0" 'nvim' Enter
+      tmux split-window -h -t "$session_name:0" -c "$PWD"
+      tmux send-keys -t "$session_name:0.1" 'claude' Enter
+      tmux select-pane -t "$session_name:0.0"
+      tmux switch-client -t "=$session_name"
+    fi
+  fi
+}
+
 create_if_needed_and_attach() {
   if not_in_tmux; then
     tmux new-session -As "$session_name" -c "$PWD"
@@ -34,4 +56,28 @@ create_if_needed_and_attach() {
   fi
 }
 
-create_if_needed_and_attach
+if [ $# -gt 0 ]; then
+  # Argument provided
+  if session_exists; then
+    # Session exists, just use it
+    if not_in_tmux; then
+      tmux attach-session -t "$session_name"
+    else
+      tmux switch-client -t "=$session_name"
+    fi
+  else
+    # No session exists, use function for argument
+    case "$1" in
+      "dev")
+        create_dev_session
+        ;;
+      *)
+        # Default behavior for other arguments
+        create_if_needed_and_attach
+        ;;
+    esac
+  fi
+else
+  # No argument provided
+  create_if_needed_and_attach
+fi
