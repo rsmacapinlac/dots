@@ -199,9 +199,9 @@ configure_system_services() {
     log_success "System services configured"
 }
 
-# Security configuration (system/security/pass)
-configure_pass() {
-    log_info "Configuring pass..."
+# Security configuration (system/security)
+configure_security() {
+    log_info "Configuring security tools..."
     
     # Setup password repository 
     mkdir -p ~/workspace && cd ~/workspace
@@ -217,7 +217,9 @@ configure_pass() {
         pass \
         pass-otp \
         wl-clipboard \
-        zbar
+        zbar \
+        wireguard-tools \
+        openresolv
     
     # Install PassFF host app for Firefox integration
     if [[ ! -f "$HOME/.mozilla/native-messaging-hosts/passff.json" ]]; then
@@ -279,6 +281,8 @@ setup_dotfiles() {
     log_info "Setting up dotfiles..."
     
     # Install rcm from AUR first (needed for workstation role)
+    # Remove conflicting rcm-git package if present
+    yay -Rns --noconfirm rcm-git 2>/dev/null || true
     yay -S --needed --noconfirm rcm
     
     # Ensure workspace directory exists
@@ -693,7 +697,7 @@ main() {
     # setup_flatpak
     
     # system/security  
-    configure_pass
+    configure_security
     
     # system/snapshots
     configure_timeshift
