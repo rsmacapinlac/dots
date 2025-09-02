@@ -627,42 +627,105 @@ install_work_tools() {
     log_success "Work tools installed"
 }
 
-# Install VirtualBox (virtualization)
-install_virtualization() {
-    log_info "Installing VirtualBox virtualization..."
+# Hardware Verification Function
+verify_virtualization_support() {
+    log_info "Verifying virtualization support on T480s..."
     
-    # Check if VirtualBox is already installed with DKMS modules
-    if pacman -Q virtualbox-host-dkms &>/dev/null; then
-        log_info "Switching from DKMS to arch modules (better for standard kernel)..."
-        # Remove VirtualBox and DKMS modules completely
-        sudo pacman -Rs --noconfirm virtualbox virtualbox-host-dkms 2>/dev/null || true
+    # T480s i7-8650U has confirmed VT-x support
+    if ! grep -q "vmx" /proc/cpuinfo; then
+        log_error "Intel VT-x not detected - this should not happen on T480s"
+        log_error "Check BIOS settings: Security > Virtualization > Intel VT-x"
+        return 1
+    else
+        log_success "Intel VT-x virtualization support confirmed"
     fi
     
-    # Install VirtualBox packages with arch modules
-    yay -S --needed --noconfirm \
-        virtualbox \
-        virtualbox-host-modules-arch \
-        virtualbox-guest-iso
+    # Check KVM module availability
+    if ! lsmod | grep -q kvm; then
+        log_info "Loading KVM modules for Intel processor..."
+        sudo modprobe kvm
+        sudo modprobe kvm_intel
+    else
+        log_success "KVM modules already loaded"
+    fi
     
-    log_success "VirtualBox installed"
+    # Verify hardware TPM 2.0 (T480s has hardware TPM)
+    if [[ -e /dev/tpm0 ]] || [[ -e /dev/tpmrm0 ]]; then
+        log_success "Hardware TPM detected on T480s"
+    else
+        log_warning "Hardware TPM not accessible - may need BIOS configuration"
+        log_info "Check BIOS: Security > Security Chip > TPM 2.0"
+    fi
+    
+    # Check available memory (T480s has 16GB)
+    local total_mem=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+    local total_gb=$((total_mem / 1024 / 1024))
+    log_info "Total system memory: ${total_gb}GB"
+    
+    if [ "$total_gb" -ge 12 ]; then
+        log_success "Sufficient memory for Windows 11 VM (recommended: 6-8GB allocation)"
+    else
+        log_warning "Less than 16GB detected - VM performance may be limited"
+    fi
+    
+    log_success "T480s virtualization verification completed"
 }
 
-# Configure VirtualBox (virtualization) 
+# Install QEMU/KVM/libvirt (virtualization)
+install_virtualization() {
+    log_info "Installing virtualization software..."
+    
+    # Core virtualization packages
+    yay -S --needed --noconfirm \
+        qemu-full \
+        libvirt \
+        virt-manager \
+        edk2-ovmf \
+        dnsmasq \
+        bridge-utils \
+        openbsd-netcat \
+        swtpm \
+        swtpm-tools \
+        spice-vdagent \
+        qemu-guest-agent \
+        spice-gtk3 \
+        usbredir \
+        spice-protocol
+    
+    log_success "Virtualization packages installed"
+}
+
+# Configure QEMU/KVM/libvirt (virtualization) 
 configure_virtualization() {
-    log_info "Configuring VirtualBox..."
+    log_info "Configuring virtualization environment for T480s..."
     
-    # Add user to vboxusers group (for USB device access)
-    sudo usermod -a -G vboxusers "$USER"
+    # Add user to required groups
+    sudo usermod -a -G libvirt "$USER"
+    sudo usermod -a -G kvm "$USER"
     
-    # Load VirtualBox kernel modules manually (they will auto-load on next boot)
-    log_info "Loading VirtualBox kernel modules..."
-    sudo modprobe vboxdrv || true
-    sudo modprobe vboxnetadp || true
-    sudo modprobe vboxnetflt || true
-    sudo modprobe vboxpci || true
+    # Configure Intel nested virtualization (T480s supports this)
+    log_info "Enabling Intel nested virtualization..."
+    echo "options kvm_intel nested=1" | sudo tee /etc/modprobe.d/kvm.conf
     
-    log_success "VirtualBox configured"
-    log_info "Modules will automatically load on boot via systemd-modules-load.service"
+    # Configure libvirt network with T480s-appropriate settings
+    sudo virsh net-autostart default 2>/dev/null || true
+    
+    # T480s-specific optimizations
+    log_info "Applying T480s-specific optimizations..."
+    
+    # Configure CPU governor for better VM performance
+    if [[ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ]]; then
+        echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null 2>&1 || true
+    fi
+    
+    # Configure memory settings for 16GB system
+    # Enable memory overcommit for better VM memory management
+    echo 1 | sudo tee /proc/sys/vm/overcommit_memory
+    
+    # Set swappiness for better VM performance (T480s has NVMe SSD)
+    echo 'vm.swappiness = 10' | sudo tee -a /etc/sysctl.d/99-vm-performance.conf
+    
+    log_success "T480s virtualization environment configured"
     log_info "Please log out and back in for group membership changes to take effect"
 }
 
@@ -692,6 +755,11 @@ enable_services() {
     
     # Enable hypridle service (screen lock and idle management)
     systemctl --user enable --now hypridle.service 2>/dev/null || true
+    
+    # Enable virtualization services
+    sudo systemctl enable libvirtd.service
+    sudo systemctl enable virtlogd.service
+    sudo systemctl enable virtlockd.service
     
     log_success "System services enabled"
     log_warning "greetd display manager will start on next boot. Reboot to enter GUI environment."
@@ -753,6 +821,7 @@ main() {
     install_work_tools
     
     # virtualization
+    verify_virtualization_support
     install_virtualization
     configure_virtualization
     
