@@ -403,6 +403,7 @@ install_media_apps() {
     
     sudo pacman -S --needed --noconfirm \
         vlc \
+        vlc-plugins-all \
         mpd \
         ncmpcpp \
         mpc \
