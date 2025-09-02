@@ -627,6 +627,45 @@ install_work_tools() {
     log_success "Work tools installed"
 }
 
+# Install VirtualBox (virtualization)
+install_virtualization() {
+    log_info "Installing VirtualBox virtualization..."
+    
+    # Check if VirtualBox is already installed with DKMS modules
+    if pacman -Q virtualbox-host-dkms &>/dev/null; then
+        log_info "Switching from DKMS to arch modules (better for standard kernel)..."
+        # Remove VirtualBox and DKMS modules completely
+        sudo pacman -Rs --noconfirm virtualbox virtualbox-host-dkms 2>/dev/null || true
+    fi
+    
+    # Install VirtualBox packages with arch modules
+    yay -S --needed --noconfirm \
+        virtualbox \
+        virtualbox-host-modules-arch \
+        virtualbox-guest-iso
+    
+    log_success "VirtualBox installed"
+}
+
+# Configure VirtualBox (virtualization) 
+configure_virtualization() {
+    log_info "Configuring VirtualBox..."
+    
+    # Add user to vboxusers group (for USB device access)
+    sudo usermod -a -G vboxusers "$USER"
+    
+    # Load VirtualBox kernel modules manually (they will auto-load on next boot)
+    log_info "Loading VirtualBox kernel modules..."
+    sudo modprobe vboxdrv || true
+    sudo modprobe vboxnetadp || true
+    sudo modprobe vboxnetflt || true
+    sudo modprobe vboxpci || true
+    
+    log_success "VirtualBox configured"
+    log_info "Modules will automatically load on boot via systemd-modules-load.service"
+    log_info "Please log out and back in for group membership changes to take effect"
+}
+
 # Enable system services
 enable_services() {
     log_info "Enabling system services..."
@@ -712,6 +751,10 @@ main() {
     
     # work
     install_work_tools
+    
+    # virtualization
+    install_virtualization
+    configure_virtualization
     
     # Enable all services at the end
     enable_services
