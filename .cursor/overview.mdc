@@ -3,31 +3,40 @@ alwaysApply: true
 ---
 # Dots Repository Overview
 
-> **Note:** Always consult the latest `README.md` file in this repository for the most up-to-date and authoritative information about setup, structure, and usage.
+> **Note:** For comprehensive information about this repository's architecture, commands, and usage patterns, see `CLAUDE.md` - the authoritative source of truth.
 
-This repository contains personal dotfiles and configuration files for various applications and tools. It is designed to work in conjunction with the `workstation-builder` repository for a complete Linux workstation setup.
+This repository contains personal dotfiles and configuration files for a complete Arch Linux workstation featuring Hyprland desktop environment with consistent Catppuccin theming.
 
-## Purpose
-- Manage user-specific configurations
-- Store application-specific dotfiles
-- Provide personal preferences and settings
-- Configure themes and appearance
+## Quick Reference
 
-## Structure
-- `config/`: Application configurations (e.g., Hyprland, Alacritty, Ranger)
-- `bin/`: Custom scripts and utilities
+### Essential Commands
+See `CLAUDE.md` for complete command reference including:
+- Dotfiles management (`rcup`, `rcdown`)
+- Hyprland window manager operations
+- Email synchronization commands
+- Music and media utilities
+
+### Key Documentation
+- `CLAUDE.md` - Complete repository guide and architecture
+- `README.md` - Setup instructions and feature overview
+- `docs/isync.md` - Email synchronization setup
+- `docs/ranger-smb-mounting.md` - SMB share integration
+
+### Configuration Structure
+- `config/`: Application-specific configurations (see `CLAUDE.md` for details)
+- `bin/`: Custom scripts and utilities (documented in `CLAUDE.md`)
 - `docs/`: Detailed documentation for specific configurations
-- `zshrc`, `vimrc`, `aliases`: Shell and editor configurations
+- Root level: Shell and editor configurations
 
-## Testing
-To test dotfiles configuration:
+## Testing Configuration
 ```bash
 cd ~/workspace/dots
-rcup -v
+rcup -v  # Apply dotfiles with verbose output
 ```
-- Use `rcup -v` for verbose output to see what's being applied
 
 ## Relationship to workstation-builder
 - `workstation-builder` handles system-level setup and package installation
 - `dots` manages user-level and application-specific configuration
 - Together, they provide a modular, reproducible workstation environment
+
+For complete details on architecture, special features, development workflow, and all available commands, refer to `CLAUDE.md`.

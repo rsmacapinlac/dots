@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a personal dotfiles repository containing configuration files for various Linux applications and window managers. It works in conjunction with the `workstation-builder` repository to provide a complete workstation setup.
+This is a personal dotfiles repository containing configuration files for various Linux applications and window managers.
 
 ## Common Commands
 
@@ -23,7 +23,14 @@ This is a personal dotfiles repository containing configuration files for variou
 
 ### Email Setup
 - `mbsync -a` - Sync all email accounts (requires setup per docs/isync.md)
+- `bin/sync-mail` - Custom email sync script with error handling
+- `bin/neomutt-accounts` - Account management utility
 - Email configuration is in `mbsyncrc` and `msmtprc`
+
+### Music & Media
+- `bin/rmpc-popup` - Music player popup interface
+- `bin/songinfo` - Display current song information
+- Music ecosystem: MPD daemon with ncmpcpp/rmpc clients
 
 ## Architecture and Structure
 
@@ -51,14 +58,24 @@ This is a personal dotfiles repository containing configuration files for variou
 - Multiple monitor setups supported via autorandr
 
 ### Special Features
-- Hyprland Ctrl key toggle for Citrix compatibility
-- SMB share mounting integration in Ranger
-- Email synchronization with multiple accounts
-- Custom wallpaper management
-- Theme consistency across applications
+- Hyprland Ctrl key toggle for Citrix compatibility (`bin/toggle-ctrlmod-bindings`)
+- SMB share mounting integration in Ranger (see docs/ranger-smb-mounting.md)
+- Email synchronization with multiple accounts (boogienet, gmail, macapinlac)
+- Custom wallpaper management with monthly/generic collections
+- Theme consistency across applications using Catppuccin
+- Tmux session templates via tmuxinator
+- Development workflow integration (aliases for Go, Ruby, Git)
 
 ## Important Notes
-- Uses `rcm` (rcup/rcdown) for dotfiles management
+- Uses `rcm` (rcup/rcdown) for dotfiles management via `rcrc` configuration
 - Configurations assume Linux environment with systemd
-- Email setup requires manual configuration per documentation
-- Some configurations are hardware-specific (monitor layouts)
+- Email setup requires manual configuration per docs/isync.md
+- Some configurations are hardware-specific (monitor layouts, autorandr profiles)
+- Custom scripts in `bin/` directory provide workflow automation
+- Shell aliases defined in root-level `aliases` file (loaded by zshrc)
+
+## Development Workflow
+- `bin/tat` - Tmux session management script
+- `aliases` file contains development shortcuts (gob, gor, got for Go; be for Ruby)
+- Tmuxinator templates in `config/tmuxinator/` for project sessions
+- Git configuration with custom aliases and settings
