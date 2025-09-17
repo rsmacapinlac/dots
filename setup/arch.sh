@@ -138,6 +138,7 @@ install_base_packages() {
     
     # Install base system packages
     yay -S --needed --noconfirm \
+        htop \
         polkit-kde-agent \
         curl \
         base-devel \
