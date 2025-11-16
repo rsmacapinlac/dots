@@ -148,18 +148,12 @@ install_base_packages() {
         fastfetch \
         autorandr \
         syncthing \
-        seahorse \
         cups \
         cups-pdf \
         system-config-printer \
         avahi \
-        nss-mdns
-    
-    # Configure SSH askpass to use Seahorse GUI
-    if [[ ! -L /usr/lib/ssh/ssh-askpass ]]; then
-        sudo ln -sf /usr/lib/seahorse/ssh-askpass /usr/lib/ssh/ssh-askpass
-        log_success "SSH askpass configured to use Seahorse"
-    fi
+        nss-mdns \
+        pinentry-qt
     
     # Add user to lp group for printer access
     sudo usermod -a -G lp "$USER"
@@ -215,6 +209,7 @@ configure_security() {
 
     # Install pass password manager and extensions
     yay -S --needed --noconfirm \
+        bitwarden \
         pass \
         pass-otp \
         wl-clipboard \
@@ -408,7 +403,6 @@ install_media_apps() {
         mpd \
         ncmpcpp \
         mpc \
-        beets \
         python-requests \
         rmpc
     

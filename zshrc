@@ -1,11 +1,3 @@
-# Load RVM into a shell session *as a function* - must be first
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-
-# Force RVM to set up environment properly
-if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
-    rvm rvmrc warning ignore allGemfiles
-fi
-
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -87,17 +79,18 @@ plugins=(
   dotenv
 )
 
-# GNOME Keyring SSH agent integration
-if [ -n "$DESKTOP_SESSION" ]; then
-    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
-fi
+# GPG Agent SSH support
+# Use GPG agent for SSH authentication
+# This works with pinentry-qt for graphical password prompts
+export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+gpgconf --launch gpg-agent 2>/dev/null
 
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
-# Add custom paths after oh-my-zsh loads, preserving RVM paths
-export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications:$PATH
+# Add custom paths after oh-my-zsh loads
+export PATH=$PATH:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -165,8 +158,6 @@ fi
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# RVM PATH export moved to line 5 to fix tmux warning
-
 if [ -f ~/.imap_passwords ];
 then
   source ~/.imap_passwords
@@ -208,5 +199,11 @@ export GOPATH="$HOME/go"
 export GOROOT="/usr/lib/go"
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+# Load RVM into a shell session *as a function*
+# This must be the LAST thing in the file to ensure RVM paths are at the front
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+
+# Force RVM to set up environment properly
+if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
+    rvm rvmrc warning ignore allGemfiles
+fi
