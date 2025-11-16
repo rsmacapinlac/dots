@@ -1,0 +1,211 @@
+# Mako Notification Daemon Configuration
+# See man 5 mako for complete documentation
+
+# === BEHAVIOR ===
+
+# Default timeout in milliseconds (0 = no timeout, requires manual dismiss)
+default-timeout=45000
+
+# Ignore application-requested timeouts and use default-timeout instead
+# Default: 0
+#ignore-timeout=1
+
+# Maximum number of visible notifications (-1 for unlimited)
+# Default: 5
+#max-visible=5
+
+# Maximum number of expired notifications to keep in history
+# Default: 5
+#max-history=5
+
+# Add expired notifications to history buffer
+# Default: 1
+#history=1
+
+# Sort notifications by criteria: time and/or priority with +/- for ascending/descending
+# Default: -time
+#sort=-time
+
+# Group notifications by specified criteria fields (comma-separated)
+# Available: app-name, summary, urgency, category, desktop-entry
+# Default: none
+#group-by=none
+
+
+# === APPEARANCE ===
+
+# Font family and size (Pango format)
+# Default: monospace 10
+#font=monospace 10
+
+# Background color (#RRGGBB or #RRGGBBAA)
+# Default: #285577FF
+#background-color=#285577FF
+
+# Text color
+# Default: #FFFFFFFF
+#text-color=#FFFFFFFF
+
+# Border color
+# Default: #4C7899FF
+#border-color=#4C7899FF
+
+# Progress indicator color (use "over" prefix for overlay mode)
+# Default: over #5588AAFF
+#progress-color=over #5588AAFF
+
+
+# === DIMENSIONS ===
+
+# Notification width in pixels
+# Default: 300
+#width=300
+
+# Maximum notification height in pixels
+# Default: 100
+#height=100
+
+# Outer margin (space around notification area)
+# CSS-style: single value, or top,right,bottom,left
+# Default: 0
+#outer-margin=0
+
+# Margin between notifications
+# Default: 10
+#margin=10
+
+# Internal padding within notification
+# Default: 5
+#padding=5
+
+# Border thickness in pixels
+# Default: 2
+#border-size=2
+
+# Corner radius for rounded corners
+# CSS-style values supported
+# Default: 0
+#border-radius=0
+
+
+# === ICONS ===
+
+# Show icons in notifications (1=enabled, 0=disabled)
+# Default: 1
+#icons=1
+
+# Maximum icon size in pixels
+# Default: 64
+#max-icon-size=64
+
+# Icon search paths (colon-delimited)
+# Default: empty (uses system defaults)
+#icon-path=
+
+# Icon position: left, right, top, bottom
+# Default: left
+#icon-location=left
+
+# Icon corner radius
+# Default: 0
+#icon-border-radius=0
+
+
+# === FORMATTING ===
+
+# Enable Pango markup in notification text (1=enabled, 0=disabled)
+# Default: 1
+#markup=1
+
+# Format string for notification text
+# %a = app name, %s = summary, %b = body, %g = group count, %i = ID
+# Default: <b>%s</b>\n%b
+#format=<b>%s</b>\n%b
+
+# Format string when notifications are hidden
+# %h = hidden count, %t = total count
+# Default: (%h more)
+#hidden-format=(%h more)
+
+# Text alignment: left, center, right
+# Default: left
+#text-alignment=left
+
+
+# === ACTIONS ===
+
+# Enable notification actions (1=enabled, 0=disabled)
+# Default: 1
+#actions=1
+
+
+# === POSITIONING ===
+
+# Position on screen
+# Options: top-left, top-center, top-right, bottom-left, bottom-center, bottom-right,
+#          left-center, right-center, center
+# Default: top-right
+#anchor=top-right
+
+# Display output name (monitor) to show notifications on
+# Empty = follow focus
+# Default: empty
+#output=
+
+# Layer to display notifications on
+# Options: background, bottom, top, overlay
+# Default: top
+#layer=top
+
+
+# === MOUSE/TOUCH BINDINGS ===
+
+# Left click action
+# Default: invoke-default-action
+#on-button-left=invoke-default-action
+
+# Middle click action
+# Default: none
+#on-button-middle=none
+
+# Right click action
+# Default: dismiss
+#on-button-right=dismiss
+
+# Touch action
+# Default: dismiss
+#on-touch=dismiss
+
+# Action when notification is created
+# Default: none
+#on-notify=none
+
+# Available actions:
+# - none: do nothing
+# - dismiss: close notification
+# - dismiss-all: close all notifications
+# - dismiss-group: close grouped notifications
+# - invoke-action <name>: execute specific action
+# - invoke-default-action: execute default action
+# - exec <command>: run shell command ($id = notification ID)
+
+
+# === CRITERIA SECTIONS ===
+# Apply settings based on notification properties
+# Format: [field=value field2=value2]
+# Available criteria: app-name, app-icon, summary, urgency, category, desktop-entry, etc.
+
+# Example: Custom styling for critical notifications
+#[urgency=critical]
+#border-color=#FF0000FF
+#default-timeout=0
+#text-color=#FFFFFFFF
+#background-color=#900000FF
+
+# Example: Never timeout notifications from specific app
+#[app-name="Important App"]
+#ignore-timeout=1
+
+# Example: Different position for low priority
+#[urgency=low]
+#anchor=bottom-right
