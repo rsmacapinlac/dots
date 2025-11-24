@@ -5,10 +5,6 @@
         "command": "composerMode.agent"
     },
     {
-        "key": "ctrl+e",
-        "command": "composerMode.background"
-    },
-    {
         "key": "shift+enter",
         "command": "workbench.action.terminal.sendSequence",
         "args": {
