@@ -59,6 +59,9 @@ set mime_forward_decode = "yes"
 set sort = threads
 set sort_aux = reverse-last-date-received
 
+# Contact management with notmuch
+set query_command = "notmuch address --output=sender --output=recipients %s"
+
 # Load colors and mappings
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings

@@ -44,9 +44,9 @@ bind index,pager D purge-message
 bind index <tab> sync-mailbox
 bind index <space> collapse-thread
 
-# Mail synchronization macro (Ctrl+R) - Simplified for local accounts
-# Since we're using local maildir accounts, this just refreshes the mailbox
-macro index,pager \Cr '<sync-mailbox>'
+# Mail synchronization macro (Ctrl+R)
+# Account-specific macros are defined in each account config file
+# This allows multiple neomutt sessions in tmux without conflicts
 
 # URL extraction using pipe-message
 macro index,pager u '<pipe-message>urlscan<enter>'

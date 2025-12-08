@@ -109,6 +109,11 @@ sync_account() {
             print_success "Dry-run completed for $account"
         else
             print_success "Synchronization completed for $account"
+            # Update notmuch database if installed
+            if command -v notmuch &> /dev/null; then
+                print_status "Updating notmuch database..."
+                notmuch new --quiet 2>&1 | grep -v "^Processed\|^Added\|^No new mail" || true
+            fi
         fi
     else
         if [ "$dry_run" = "true" ]; then
@@ -137,6 +142,11 @@ sync_all() {
             print_success "Dry-run completed for all accounts"
         else
             print_success "All accounts synchronized successfully"
+            # Update notmuch database if installed
+            if command -v notmuch &> /dev/null; then
+                print_status "Updating notmuch database..."
+                notmuch new --quiet 2>&1 | grep -v "^Processed\|^Added\|^No new mail" || true
+            fi
         fi
     else
         if [ "$dry_run" = "true" ]; then
