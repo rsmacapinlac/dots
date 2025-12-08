@@ -1,4 +1,5 @@
 # Standalone Neomutt config for boogienet account (local maildir)
+set my_account = "boogienet"
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@boogienet.com"
 set editor = "nvim"
@@ -20,6 +21,9 @@ set sendmail = "/usr/bin/msmtp -a boogienet"
 # Folder setup for local maildir - key folders
 unmailboxes *
 mailboxes "+INBOX" "+Sent Items" "+Drafts" "+Trash" "+Spam"
+
+# Account-specific sync macro
+macro index,pager \Cr "!sync-mail boogienet\n" "Sync boogienet account"
 
 # Connection settings (not needed for local maildir)
 # set mail_check = 6

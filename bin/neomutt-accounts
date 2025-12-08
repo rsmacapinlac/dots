@@ -136,7 +136,11 @@ start_neomutt() {
     
     echo "Configuration: $account_file"
     echo ""
-    
+
+    # Save current account to cache for sync wrapper script
+    mkdir -p "$HOME/.cache/neomutt"
+    echo "$account" > "$HOME/.cache/neomutt/current_account"
+
     # Start neomutt with the specified account configuration
     neomutt -F "$CONFIG_DIR/neomuttrc" -e "source $account_file"
 }

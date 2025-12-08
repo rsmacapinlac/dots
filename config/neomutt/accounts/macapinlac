@@ -1,6 +1,7 @@
 # Google Workspace local maildir settings for macapinlac.com
 unmailboxes *
 
+set my_account = "macapinlac"
 set realname = "Ritchie Macapinlac"
 set from = "ritchie@macapinlac.com"
 set folder = "~/.mail/macapinlac"
@@ -22,6 +23,9 @@ set copy = "no"
 
 # Clear existing mailboxes and initialize sidebar with folder list
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
+
+# Account-specific sync macro
+macro index,pager \Cr "!sync-mail macapinlac\n" "Sync macapinlac account"
 
 # Use this GPG key for signing
 set pgp_sign_as = C97E2AC7D265B84973A76D9E015F854E5F4A850F 

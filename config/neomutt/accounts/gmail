@@ -1,4 +1,5 @@
 # Gmail local maildir settings
+set my_account = "gmail"
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@gmail.com"
 set folder = "~/.mail/gmail"
@@ -21,5 +22,8 @@ set copy = "no"
 # Clear existing mailboxes and initialize sidebar with folder list
 unmailboxes *
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
+
+# Account-specific sync macro
+macro index,pager \Cr "!sync-mail gmail\n" "Sync gmail account"
 
 # COMMENTED 2024-06-09: GPG signing disabled at user request - set pgp_sign_as = F5CB0D752D686F53511E0CA41136D8FFA5E99E61 
