@@ -1,4 +1,6 @@
 # Gmail local maildir settings
+unmailboxes *
+
 set my_account = "gmail"
 set realname = "Ritchie Macapinlac"
 set from = "rsmacapinlac@gmail.com"
@@ -20,7 +22,6 @@ set move = "no"
 set copy = "no"
 
 # Clear existing mailboxes and initialize sidebar with folder list
-unmailboxes *
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
 
 # Account-specific sync macro
