@@ -404,6 +404,9 @@ install_media_apps() {
         ncmpcpp \
         mpc \
         python-requests \
+        beets \
+        python-pyacoustid \
+        python-discogs-client \
         rmpc
     
     # Configure locale for music applications
