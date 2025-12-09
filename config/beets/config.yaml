@@ -15,7 +15,7 @@ paths:
     comp: Compilations/$album%aunique{}/$track $title
 
 # Plugins
-plugins: [fetchart, embedart]
+plugins: [fetchart, embedart, chroma, discogs]
 
 # Album art settings
 fetchart:
@@ -31,4 +31,8 @@ fetchart:
 embedart:
     auto: yes
     remove_art_file: no
-    quality: 85 
+    quality: 85
+
+# Discogs plugin settings
+discogs:
+    data_source_mismatch_penalty: 0.5 
