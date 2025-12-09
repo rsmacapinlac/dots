@@ -66,17 +66,12 @@ set query_command = "notmuch address --output=sender --output=recipients %s"
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings
 
-# Note: Account switching is now handled by the neomutt-accounts script
-# Usage: neomutt-accounts [account-name]
-# 
-# Available local maildir accounts:
-#   macapinlac  - Macapinlac local maildir
-#   gmail       - Gmail local maildir
-#   boogienet   - Boogienet local maildir
-#
-# Examples:
-#   neomutt-accounts gmail        # Start with Gmail local maildir
-#   neomutt-accounts macapinlac   # Start with Macapinlac local maildir
-#
-# This neomutt instance was started without a specific account configuration.
-# Please use the neomutt-accounts script to start neomutt with the desired local account.
+# Account switching configuration
+# Default account: macapinlac
+source ~/.config/neomutt/accounts/macapinlac
+
+# Account switching macros (gi1/gi2/gi3 to switch between accounts)
+# gi1 = macapinlac, gi2 = boogienet, gi3 = gmail
+macro index,pager gi1 '<enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>' "Switch to macapinlac account"
+macro index,pager gi2 '<enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>' "Switch to boogienet account"
+macro index,pager gi3 '<enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>' "Switch to gmail account"
