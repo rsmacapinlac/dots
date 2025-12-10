@@ -33,6 +33,10 @@ embedart:
     remove_art_file: no
     quality: 85
 
+# MusicBrainz settings (default data source)
+musicbrainz:
+    searchlimit: 10
+
 # Discogs plugin settings
 discogs:
-    data_source_mismatch_penalty: 0.5 
+    data_source_mismatch_penalty: 0.5
