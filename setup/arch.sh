@@ -503,6 +503,8 @@ install_hyprland() {
         qt6-wayland \
         grim \
         slurp \
+        hyprshot \
+        wl-clipboard \
         swww \
         gnome-keyring \
         libsecret \
