@@ -4,7 +4,13 @@
 bind attach <return> view-mailcap
 bind attach l view-mailcap
 bind editor <space> noop
-bind pager c imap-fetch-mail
+#bind pager c imap-fetch-mail
+bind pager c noop
+# Override 's' as save
+bind index,pager s noop
+bind index,pager S save-message
+# Over ride 'q' when in index
+bind index q noop 
 bind index G last-entry
 bind index,pager g noop
 bind index gg first-entry
@@ -33,7 +39,7 @@ bind editor <Tab> complete-query
 # sidebar mappings
 bind index,pager \Ck sidebar-prev
 bind index,pager \Cj sidebar-next
-bind index,pager \Co sidebar-open
+bind index,pager \Cl sidebar-open
 bind index,pager \Cp sidebar-prev-new
 bind index,pager \Cn sidebar-next-new
 bind index,pager B sidebar-toggle-visible
