@@ -3,9 +3,6 @@
     "editor.lineNumbers": "relative",
     "workbench.iconTheme": "catppuccin-mocha",
     "git.confirmSync": false,
-    "extensions.experimental.affinity": {
-        "asvetliakov.vscode-neovim": 1
-    },
     "git.enableSmartCommit": true,
     "git.autofetch": true,
     "diffEditor.maxComputationTime": 0,

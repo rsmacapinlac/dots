@@ -16,6 +16,7 @@ This is a personal dotfiles repository containing configuration files for variou
 ### Hyprland Window Manager
 - `bin/toggle-ctrlmod-bindings` - Toggle Ctrl key bindings (useful for Citrix sessions)
 - `hyprctl reload` - Reload Hyprland configuration
+- Startup configuration and rationale documented in `docs/hyprland-startup.md`
 - Key configuration files:
   - `config/hypr/hyprland.conf` - Main Hyprland configuration
   - `config/hypr/keybinds_enabled.conf` - Normal keybindings

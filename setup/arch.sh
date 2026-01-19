@@ -383,6 +383,7 @@ install_productivity_apps() {
         krdc \
         nextcloud-client \
         obsidian \
+        slack-desktop \
         todoist-appimage \
         zoom \
         timer-bin
@@ -546,11 +547,11 @@ install_greeter() {
 vt = 1
 
 [default_session]
-command = "uwsm start hyprland"
+command = "start-hyprland"
 user = "greeter"
 
 [initial_session]
-command = "uwsm start hyprland"
+command = "start-hyprland"
 user = "$USER"
 EOF
     
