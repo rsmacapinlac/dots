@@ -7,5 +7,6 @@
     "git.autofetch": true,
     "diffEditor.maxComputationTime": 0,
     "window.confirmSaveUntitledWorkspace": false,
-    "makefile.configureOnOpen": true
+    "makefile.configureOnOpen": true,
+    "go.toolsManagement.autoUpdate": true
 }

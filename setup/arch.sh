@@ -51,12 +51,39 @@ detect_distro() {
 }
 
 
+# Update package mirrors for faster downloads
+update_package_mirrors() {
+    log_info "Updating package mirrors for faster downloads..."
+
+    # Install reflector if not present
+    if ! command -v reflector &> /dev/null; then
+        sudo pacman -S --needed --noconfirm reflector
+    fi
+
+    # Try to update mirrorlist with reflector
+    # If it fails (common issue with Python dependencies), continue anyway
+    if sudo reflector \
+        --country 'United States,Canada' \
+        --latest 20 \
+        --protocol https \
+        --sort rate \
+        --save /etc/pacman.d/mirrorlist 2>/dev/null; then
+        log_success "Package mirrors updated"
+    else
+        log_warning "Reflector failed, skipping mirror update"
+        log_info "You may want to manually update /etc/pacman.d/mirrorlist if downloads are slow"
+    fi
+}
+
 # Initial setup function for SSH and GPG
 initial_setup() {
     log_info "Update system and install minimal packages required for initial setup..."
 
     # Update system first
     sudo pacman -Sy --noconfirm
+
+    # Update mirrors early to ensure fast package downloads
+    update_package_mirrors
 
     # Install minimal packages needed for initial setup
     sudo pacman -Sy --noconfirm openssh git
