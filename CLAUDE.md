@@ -80,3 +80,9 @@ This is a personal dotfiles repository containing configuration files for variou
 - `aliases` file contains development shortcuts (gob, gor, got for Go; be for Ruby)
 - Tmuxinator templates in `config/tmuxinator/` for project sessions
 - Git configuration with custom aliases and settings
+
+## Claude Code Workflow
+- Claude Code runs in tmux window 1. Use other tmux windows to run and monitor long-running commands.
+- To run a command: `tmux send-keys -t <window> '<command>' Enter`
+- To check output: `tmux capture-pane -t <window> -p -S -<lines>`
+- This is useful for scripts that need sudo (password cached in the other pane), interactive input, or take a long time to complete.

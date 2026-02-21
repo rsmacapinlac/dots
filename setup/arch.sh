@@ -404,13 +404,14 @@ install_browsers() {
 install_productivity_apps() {
     log_info "Installing productivity applications..."
     
-    # Install from AUR
-    yay -S --needed --noconfirm \
+    # Install from AUR (--asexplicit prevents pulling optional deps like qt5-webengine for zoom)
+    yay -S --needed --noconfirm --answerdiff None --answerclean None \
         gnucash \
         krdc \
         nextcloud-client \
         obsidian \
         slack-desktop \
+        telegram-desktop \
         todoist-appimage \
         zoom \
         timer-bin
@@ -810,7 +811,11 @@ main() {
     
     # maybe standardize on yay?
     install_aur_helper
-    
+
+    # Full system upgrade to avoid dependency conflicts
+    log_info "Performing full system upgrade..."
+    yay -Syu --noconfirm --answerdiff None --answerclean None --removemake
+
     # system/base
     install_base_packages
     configure_user_shell
