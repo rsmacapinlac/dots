@@ -29,6 +29,11 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Wrapper for yay to prevent hanging on interactive AUR prompts
+yay_install() {
+    yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$@"
+}
+
 # Check if running as root
 check_not_root() {
     if [[ $EUID -eq 0 ]]; then
@@ -64,9 +69,9 @@ update_package_mirrors() {
     # If it fails (common issue with Python dependencies), continue anyway
     if sudo reflector \
         --country 'United States,Canada' \
-        --latest 20 \
+        --latest 5 \
         --protocol https \
-        --sort rate \
+        --sort score \
         --save /etc/pacman.d/mirrorlist 2>/dev/null; then
         log_success "Package mirrors updated"
     else
@@ -86,7 +91,7 @@ initial_setup() {
     update_package_mirrors
 
     # Install minimal packages needed for initial setup
-    sudo pacman -Sy --noconfirm openssh git
+    sudo pacman -S --needed --noconfirm openssh git
 
     log_info "Setting up SSH and GPG keys..."
     
@@ -164,7 +169,7 @@ install_base_packages() {
     yay -Rns --noconfirm ksshaskpass polkit-gnome 2>/dev/null || true
     
     # Install base system packages
-    yay -S --needed --noconfirm \
+    yay_install \
         htop \
         polkit-kde-agent \
         curl \
@@ -210,7 +215,7 @@ configure_system_services() {
     log_info "Configuring system services..."
     
     # Install system services packages
-    yay -S --needed --noconfirm \
+    yay_install \
         blueman \
         bluez \
         bluez-utils \
@@ -235,7 +240,7 @@ configure_security() {
     fi
 
     # Install pass password manager and extensions
-    yay -S --needed --noconfirm \
+    yay_install \
         bitwarden \
         pass \
         pass-otp \
@@ -258,7 +263,7 @@ configure_timeshift() {
     log_info "Configuring Timeshift integration..."
     
     # Install timeshift and related packages
-    yay -S --needed --noconfirm \
+    yay_install \
         timeshift \
         timeshift-gtk \
         grub-btrfs \
@@ -306,7 +311,7 @@ setup_dotfiles() {
     # Install rcm from AUR first (needed for workstation role)
     # Remove conflicting rcm-git package if present
     yay -Rns --noconfirm rcm-git 2>/dev/null || true
-    yay -S --needed --noconfirm rcm
+    yay_install rcm
     
     # Ensure workspace directory exists
     mkdir -p "$HOME/workspace"
@@ -329,7 +334,7 @@ setup_dotfiles() {
 install_development_packages() {
     log_info "Installing development packages..."
     
-    yay -S --needed --noconfirm \
+    yay_install \
         ruby \
         ruby-erb \
         ripgrep \
@@ -356,11 +361,11 @@ install_development_editors() {
     log_info "Installing development editors..."
     
     # Install editors from official repos
-    yay -S --needed --noconfirm \
+    yay_install \
         neovim \
     
     # Install editors from AUR
-    yay -S --needed --noconfirm \
+    yay_install \
         cursor-bin \
         claude-code
 
@@ -371,7 +376,7 @@ install_development_editors() {
 setup_development_tools() {
     log_info "Setting up development tools..."
     
-    yay -S --needed --noconfirm \
+    yay_install \
         tmux 
 
     # Install RVM
@@ -391,7 +396,7 @@ setup_development_tools() {
 install_browsers() {
     log_info "Installing browsers..."
     
-    yay -S --needed --noconfirm \
+    yay_install \
         firefox \
         qutebrowser \
         yt-dlp \
@@ -405,7 +410,7 @@ install_productivity_apps() {
     log_info "Installing productivity applications..."
     
     # Install from AUR (--asexplicit prevents pulling optional deps like qt5-webengine for zoom)
-    yay -S --needed --noconfirm --answerdiff None --answerclean None \
+    yay_install \
         gnucash \
         krdc \
         nextcloud-client \
@@ -426,7 +431,7 @@ install_media_apps() {
     # Remove conflicting packages
     yay -Rns --noconfirm totem totem-plugins 2>/dev/null || true
     
-    sudo pacman -S --needed --noconfirm \
+    yay_install \
         vlc \
         vlc-plugins-all \
         mpd \
@@ -456,11 +461,11 @@ install_steam() {
     # Enable multilib repository
     if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
         echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-        yay -Sy --noconfirm
+        yay -Sy --noconfirm --answerdiff None --answerclean None
     fi
     
     # Install Steam and dependencies
-    yay -S --needed --noconfirm \
+    yay_install \
         steam \
         ttf-liberation \
         lib32-mesa \
@@ -479,7 +484,7 @@ install_mail_client() {
     log_info "Installing terminal mail client..."
     
     # Install mail client packages
-    yay -S --needed --noconfirm \
+    yay_install \
         neomutt \
         isync \
         msmtp \
@@ -520,7 +525,7 @@ install_hyprland() {
     log_info "Installing Hyprland desktop environment..."
     
     # Install core Hyprland packages
-    yay -S --needed --noconfirm \
+    yay_install \
         hyprland \
         mako \
         libnotify \
@@ -564,7 +569,7 @@ install_greeter() {
     yay -Rns --noconfirm sddm 2>/dev/null || true
     
     # Install greetd
-    yay -S --needed --noconfirm greetd
+    yay_install greetd
     
     # Create greetd configuration directory
     sudo mkdir -p /etc/greetd
@@ -593,7 +598,7 @@ EOF
 install_fonts() {
     log_info "Installing fonts..."
     
-    yay -S --needed --noconfirm \
+    yay_install \
         ttf-font-awesome \
         ttf-ibmplex-mono-nerd \
         ttf-nerd-fonts-symbols \
@@ -608,7 +613,7 @@ install_fonts() {
 install_terminals() {
     log_info "Installing terminals..."
     
-    yay -S --needed --noconfirm \
+    yay_install \
         alacritty \
         kitty
     
@@ -620,7 +625,7 @@ install_file_manager() {
     log_info "Installing file managers..."
     
     # Install Ranger and dependencies
-    yay -S --needed --noconfirm \
+    yay_install \
         ranger \
         mc \
         atool \
@@ -635,7 +640,7 @@ install_file_manager() {
         w3m
     
     # Install Thunar and network browsing support
-    yay -S --needed --noconfirm \
+    yay_install \
         thunar \
         thunar-volman \
         gvfs \
@@ -651,7 +656,7 @@ install_file_manager() {
 install_work_tools() {
     log_info "Installing work tools..."
     
-    yay -S --needed --noconfirm icaclient
+    yay_install icaclient
     
     log_success "Work tools installed"
 }
@@ -705,7 +710,7 @@ install_virtualization() {
     log_info "Installing virtualization software..."
     
     # Core virtualization packages
-    yay -S --needed --noconfirm \
+    yay_install \
         qemu-full \
         libvirt \
         virt-manager \
