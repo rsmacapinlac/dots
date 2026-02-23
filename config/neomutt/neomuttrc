@@ -62,6 +62,9 @@ set sort_aux = reverse-last-date-received
 # Contact management with notmuch
 set query_command = "notmuch address --output=sender --output=recipients %s"
 
+# Don't prompt "Press any key to continue" after shell commands
+set wait_key = no
+
 # Load colors and mappings
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings
