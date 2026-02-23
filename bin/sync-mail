@@ -100,28 +100,31 @@ sync_account() {
         print_status "Performing dry-run sync for account: $account"
         mbsync -n "$account" 2>&1 | tee "$LOG_DIR/${account}_dryrun.log"
     else
-        print_status "Synchronizing account: $account"
-        mbsync "$account" 2>&1 | tee "$LOG_DIR/${account}_sync.log"
+        mbsync -q "$account" >> "$LOG_DIR/${account}_sync.log" 2>&1
     fi
     
     if [ $? -eq 0 ]; then
         if [ "$dry_run" = "true" ]; then
             print_success "Dry-run completed for $account"
         else
-            print_success "Synchronization completed for $account"
             # Update notmuch database if installed
             if command -v notmuch &> /dev/null; then
-                print_status "Updating notmuch database..."
-                notmuch new --quiet 2>&1 | grep -v "^Processed\|^Added\|^No new mail" || true
+                notmuch new --quiet >> "$LOG_DIR/${account}_sync.log" 2>&1 || true
+            fi
+            if command -v notify-send &> /dev/null; then
+                notify-send "Mail synced" "$account" --icon=mail-message-new
             fi
         fi
     else
         if [ "$dry_run" = "true" ]; then
             print_error "Dry-run failed for $account"
         else
+            if command -v notify-send &> /dev/null; then
+                notify-send "Mail sync failed" "$account" --icon=dialog-error --urgency=critical
+            fi
             print_error "Synchronization failed for $account"
+            print_status "Check $LOG_DIR/${account}_sync.log for error details"
         fi
-        print_status "Check $LOG_DIR/${account}_*.log for error details"
     fi
 }
 

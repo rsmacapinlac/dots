@@ -24,7 +24,7 @@ set sendmail = "/usr/bin/msmtp -a boogienet"
 mailboxes "+INBOX" "+Sent Items" "+Drafts" "+Trash" "+Spam"
 
 # Account-specific sync macro
-macro index,pager \Cr "!sync-mail boogienet\n" "Sync boogienet account"
+macro index,pager \Cr '<enter-command>echo "Syncing boogienet..."<enter><shell-escape>sync-mail boogienet &<enter>' "Sync boogienet account"
 
 # Connection settings (not needed for local maildir)
 # set mail_check = 6

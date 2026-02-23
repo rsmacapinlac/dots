@@ -25,6 +25,6 @@ set copy = "no"
 mailboxes "+INBOX" "+[Gmail]/Sent Mail" "+[Gmail]/Trash" "+[Gmail]/Drafts" "+[Gmail]/All Mail" "+[Gmail]/Spam"
 
 # Account-specific sync macro
-macro index,pager \Cr "!sync-mail gmail\n" "Sync gmail account"
+macro index,pager \Cr '<enter-command>echo "Syncing gmail..."<enter><shell-escape>sync-mail gmail &<enter>' "Sync gmail account"
 
 # COMMENTED 2024-06-09: GPG signing disabled at user request - set pgp_sign_as = F5CB0D752D686F53511E0CA41136D8FFA5E99E61 
