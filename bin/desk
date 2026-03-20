@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Open or attach to the personal desk tmux session.
+
+session_name="desk"
+
+not_in_tmux() {
+  [ -z "$TMUX" ]
+}
+
+session_exists() {
+  tmux has-session -t "=$session_name" 2>/dev/null
+}
+
+setup_desk() {
+  tmux rename-window -t "$session_name:1" "shell"
+  tmux new-window -t "$session_name" -n "mail"
+  tmux send-keys -t "$session_name:mail" "neomutt" Enter
+  tmux new-window -t "$session_name" -n "music"
+  tmux send-keys -t "$session_name:music" "ncmpcpp" Enter
+  tmux select-window -t "$session_name:shell"
+}
+
+if session_exists; then
+  if not_in_tmux; then
+    tmux attach-session -t "=$session_name"
+  else
+    tmux switch-client -t "=$session_name"
+  fi
+else
+  tmux new-session -d -s "$session_name"
+  setup_desk
+  if not_in_tmux; then
+    tmux attach-session -t "=$session_name"
+  else
+    tmux switch-client -t "=$session_name"
+  fi
+fi

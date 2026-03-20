@@ -7,7 +7,7 @@ if ! command -v notify-send >/dev/null 2>&1; then
 fi
 
 music_dir="$HOME/Music"
-previewdir="$XDG_CONFIG_HOME/ncmpcpp/previews"
+previewdir="${XDG_CONFIG_HOME:-$HOME/.config}/ncmpcpp/previews"
 
 # Create preview directory if it doesn't exist
 mkdir -p "$previewdir"
