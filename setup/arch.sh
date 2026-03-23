@@ -677,8 +677,8 @@ verify_virtualization_support() {
     # Check KVM module availability
     if ! lsmod | grep -q kvm; then
         log_info "Loading KVM modules for Intel processor..."
-        sudo modprobe kvm
-        sudo modprobe kvm_intel
+        sudo modprobe kvm 2>/dev/null || log_warning "KVM module not available, skipping"
+        sudo modprobe kvm_intel 2>/dev/null || log_warning "kvm_intel module not available, skipping"
     else
         log_success "KVM modules already loaded"
     fi
@@ -816,6 +816,27 @@ main() {
     
     # maybe standardize on yay?
     install_aur_helper
+
+    # Create lua54 shim — libinput 1.31.0 depends on it but no such package exists in repos/AUR
+    if ! pacman -Q lua54 &>/dev/null; then
+        log_info "Creating lua54 compatibility shim for libinput..."
+        local lua54_tmp
+        lua54_tmp=$(mktemp -d)
+        cat > "$lua54_tmp/PKGBUILD" << 'PKGEOF'
+pkgname=lua54
+pkgver=5.4.0
+pkgrel=1
+pkgdesc="Lua 5.4 compatibility shim providing lua54 virtual package"
+arch=('any')
+provides=('lua54')
+depends=('lua')
+build() { true; }
+package() { true; }
+PKGEOF
+        (cd "$lua54_tmp" && makepkg -si --noconfirm)
+        rm -rf "$lua54_tmp"
+        log_success "lua54 shim installed"
+    fi
 
     # Full system upgrade to avoid dependency conflicts
     log_info "Performing full system upgrade..."
