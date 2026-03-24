@@ -412,6 +412,7 @@ install_productivity_apps() {
     # Install from AUR (--asexplicit prevents pulling optional deps like qt5-webengine for zoom)
     yay_install \
         gnucash \
+        gogcli \
         krdc \
         nextcloud-client \
         obsidian \
