@@ -90,7 +90,7 @@ source $ZSH/oh-my-zsh.sh
 # User configuration
 
 # Add custom paths after oh-my-zsh loads
-export PATH=$PATH:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications
+export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications
 
 # export MANPATH="/usr/local/man:$MANPATH"
 

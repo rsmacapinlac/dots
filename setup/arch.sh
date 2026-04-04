@@ -239,6 +239,9 @@ configure_security() {
         log_info "Password store already exists, skipping clone"
     fi
 
+    # Install Bitwarden CLI via npm (avoids nodejs-lts-jod conflict with nodejs)
+    sudo npm install -g @bitwarden/cli
+
     # Install pass password manager and extensions
     yay_install \
         bitwarden \
@@ -412,7 +415,6 @@ install_productivity_apps() {
     # Install from AUR (--asexplicit prevents pulling optional deps like qt5-webengine for zoom)
     yay_install \
         gnucash \
-        gogcli \
         krdc \
         nextcloud-client \
         obsidian \
@@ -442,7 +444,8 @@ install_media_apps() {
         beets \
         python-pyacoustid \
         python-discogs-client \
-        rmpc
+        rmpc \
+        handbrake
     
     # Configure locale for music applications
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/environment
@@ -651,6 +654,52 @@ install_file_manager() {
         libsecret
     
     log_success "File managers installed"
+}
+
+# Install AI tools (ai)
+install_ai_tools() {
+    log_info "Installing AI tools..."
+
+    # Install agent-browser: headless browser CLI for AI agents
+    # https://github.com/vercel-labs/agent-browser
+    # Install chromium system dependencies (--with-deps only supports apt/dnf/yum)
+    yay_install \
+        gogcli \
+        himalaya \
+        nss \
+        libdrm \
+        mesa \
+        libxkbcommon \
+        alsa-lib
+    sudo npm install -g agent-browser
+    agent-browser install
+
+    log_success "AI tools installed"
+}
+
+# Install Raspberry Pi tools (rpi)
+install_rpi_tools() {
+    log_info "Installing Raspberry Pi tools..."
+
+    yay_install rpi-imager
+
+    # Override the system .desktop entry to use the wrapper script instead of pkexec,
+    # which doesn't work on Wayland without passing WAYLAND_DISPLAY/XDG_RUNTIME_DIR.
+    mkdir -p "$HOME/.local/share/applications"
+    cat > "$HOME/.local/share/applications/com.raspberrypi.rpi-imager.desktop" << 'EOF'
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Raspberry Pi Imager
+Comment=Tool for writing images to SD cards for Raspberry Pi
+Icon=rpi-imager
+Exec=rpi-imager %u
+Categories=Utility;
+StartupNotify=false
+MimeType=x-scheme-handler/rpi-imager;application/vnd.raspberrypi.imager-manifest+json;
+EOF
+
+    log_success "Raspberry Pi tools installed"
 }
 
 # Install work tools (work)
@@ -877,8 +926,14 @@ PKGEOF
     install_terminals
     install_file_manager
     
+    # ai tools
+    install_ai_tools
+
     # work
     install_work_tools
+
+    # raspberry pi
+    install_rpi_tools
     
     # virtualization
     verify_virtualization_support
