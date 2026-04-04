@@ -16,22 +16,26 @@ border_color="#cba6f7"
 # Function to set wallpaper using the existing script
 set_wallpaper() {
     local wallpaper_path="$1"
-    
-    # Check if swww-daemon is running, if not start it
-    if ! pgrep -x "swww-daemon" > /dev/null; then
-        swww-daemon &
+
+    # Check if hyprpaper is running, if not start it
+    if ! pgrep -x "hyprpaper" > /dev/null; then
+        hyprpaper &
         sleep 1
     fi
-    
-    # Use swww to set the wallpaper
-    swww img "$wallpaper_path" --transition-type any --transition-step 90 --resize stretch
-    
+
+    # Save the wallpaper path
+    echo "$wallpaper_path" > "$HOME/.wallpaper"
+
+    # Use hyprctl to set the wallpaper on all monitors
+    hyprctl hyprpaper wallpaper "eDP-1,$(cd "$WALLPAPER_DIR" && pwd)/$wallpaper_path"
+    hyprctl hyprpaper wallpaper "DP-4,$(cd "$WALLPAPER_DIR" && pwd)/$wallpaper_path"
+
     # Optional: Generate color scheme using wal if available
     if command -v wal &> /dev/null; then
         wal -c
-        wal -i "$wallpaper_path" -q
+        wal -i "$(cd "$WALLPAPER_DIR" && pwd)/$wallpaper_path" -q
     fi
-    
+
     echo "Wallpaper set to: $(basename "$wallpaper_path")"
 }
 

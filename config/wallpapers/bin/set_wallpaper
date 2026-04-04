@@ -4,9 +4,9 @@ filename="$HOME/.wallpaper"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Check if swww-daemon is running, if not start it
-if ! pgrep -x "swww-daemon" > /dev/null; then
-    swww-daemon &
+# Check if hyprpaper is running, if not start it
+if ! pgrep -x "hyprpaper" > /dev/null; then
+    hyprpaper &
     # Wait for the daemon to start
     sleep 1
 fi
@@ -28,18 +28,22 @@ declare -a wallpapers
 wallpapers=( Generic/* $monthly_wallpaper)
 wallpaper_count=${#wallpapers[*]}
 
-# Select random wallpaper
-index=$( shuf -i 0-"$wallpaper_count" -n 1 )
-if [[ $index != $wallpaper_count ]]
+# Select random wallpaper (shuf returns 0 to count-1)
+index=$( shuf -i 0-$((wallpaper_count - 1)) -n 1 )
+if [[ $index -lt $wallpaper_count ]]
 then
   current_wallpaper=${wallpapers[$index]}
-  
-  # Use swww to set the wallpaper with proper scaling
-  swww img "$current_wallpaper" --transition-type any --transition-step 90 --resize stretch
-  
+
+  # Save the wallpaper path for hyprpaper preload
+  echo "$current_wallpaper" > "$filename"
+
+  # Use hyprctl to set the wallpaper on all monitors
+  hyprctl hyprpaper wallpaper "eDP-1,$PWD/$current_wallpaper"
+  hyprctl hyprpaper wallpaper "DP-4,$PWD/$current_wallpaper"
+
   # Optional: Generate color scheme using wal if available
   if command -v wal &> /dev/null; then
     wal -c
-    wal -i "$current_wallpaper" -q
+    wal -i "$PWD/$current_wallpaper" -q
   fi
-fi 
+fi

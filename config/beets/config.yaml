@@ -6,7 +6,9 @@ import:
     copy: no
     move: yes
     write: yes
-    resume: ask
+    resume: yes
+    timid: no
+    quiet: yes
 
 # Path format for organizing files
 paths:
@@ -15,7 +17,7 @@ paths:
     comp: Compilations/$album%aunique{}/$track $title
 
 # Plugins
-plugins: [fetchart, embedart, chroma, discogs]
+plugins: [fetchart, embedart, discogs, mbsync]
 
 # Album art settings
 fetchart:
