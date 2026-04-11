@@ -24,7 +24,7 @@ local plugins = {
     'nvim-telescope/telescope.nvim', tag = '0.1.6',
     dependencies = { 'nvim-lua/plenary.nvim' }
   },
-  { "nvim-treesitter/nvim-treesitter", build= ":TSUpdate" },
+  { "nvim-treesitter/nvim-treesitter", enabled = false, build= ":TSUpdate" },
   {
     "nvim-tree/nvim-tree.lua",
     version = "*",
@@ -41,6 +41,8 @@ local plugins = {
   },
   {
     'MeanderingProgrammer/render-markdown.nvim',
+    enabled = false,
+    tag = 'v10.9.0',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
@@ -56,6 +58,7 @@ local plugins = {
   },
   {
     "epwalsh/obsidian.nvim",
+    enabled = false,
     version = "*",  -- recommended, use latest release instead of latest commit
     lazy = true,
     ft = "markdown",
