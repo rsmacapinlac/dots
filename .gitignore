@@ -32,4 +32,9 @@ Thumbs.db
 
 # Local environment files
 .env
-.env.local 
+.env.local
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
