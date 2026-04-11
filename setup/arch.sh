@@ -2,6 +2,12 @@
 #
 # Workstation Builder - RSM's Unified Installation Script
 #
+# This script always installs the latest available versions:
+# - Arch/AUR packages: automatically latest via yay/pacman
+# - GitHub AppImages/releases: fetched via GitHub API (latest release)
+# - Git repositories: shallow clones from main/master branch (latest commit)
+# - npm packages: installed globally with latest version
+#
 
 set -euo pipefail
 
@@ -32,6 +38,36 @@ log_error() {
 # Wrapper for yay to prevent hanging on interactive AUR prompts
 yay_install() {
     yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$@"
+}
+
+# Fetch latest GitHub release download URL for a given pattern
+# Usage: get_latest_github_release "owner/repo" "filename_pattern"
+# Example: get_latest_github_release "bambulab/BambuStudio" "ubuntu-22.04.*AppImage"
+get_latest_github_release() {
+    local repo=$1
+    local pattern=${2:-""}
+
+    local url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=1" \
+        | grep -o "https://github.com/$repo/releases/download/[^\"]*" | head -1)
+
+    if [[ -z "$url" ]]; then
+        log_error "Failed to fetch latest release for $repo"
+        return 1
+    fi
+
+    # If pattern provided, filter for matching filename
+    if [[ -n "$pattern" ]]; then
+        url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=5" \
+            | grep -o "https://github.com/$repo/releases/download/[^\"]*$pattern[^\"]*" | head -1)
+
+        if [[ -z "$url" ]]; then
+            log_warning "No release matching pattern '$pattern' found, using latest release"
+            url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=1" \
+                | grep -o "https://github.com/$repo/releases/download/[^\"]*" | head -1)
+        fi
+    fi
+
+    echo "$url"
 }
 
 # Check if running as root
@@ -202,8 +238,9 @@ configure_user_shell() {
     
     # Remove existing oh-my-zsh if present
     rm -rf ~/.oh-my-zsh 2>/dev/null || true
-    
-    # Download and install oh-my-zsh
+
+    # Download and install latest oh-my-zsh from master branch
+    log_info "Installing latest oh-my-zsh..."
     curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/install.sh
     sh /tmp/install.sh --unattended
     
@@ -656,6 +693,55 @@ install_file_manager() {
     log_success "File managers installed"
 }
 
+# Install 3D printing tools (3d-printing)
+install_3d_printing_tools() {
+    log_info "Installing 3D printing software (AppImage)..."
+
+    # Create applications directory
+    mkdir -p "$HOME/.local/share/applications"
+    mkdir -p "$HOME/.local/bin"
+
+    # Install FUSE2 and library dependencies required for AppImage support
+    yay_install \
+        libfuse2 \
+        libtiff5
+
+    # Fetch latest Bambu Studio AppImage using helper function
+    log_info "Fetching latest Bambu Studio release..."
+    local appimage_url=$(get_latest_github_release "bambulab/BambuStudio" "ubuntu-22.04.*AppImage")
+
+    if [[ -z "$appimage_url" ]]; then
+        log_warning "Failed to fetch latest Bambu Studio release URL"
+        return 1
+    fi
+
+    local appimage_path="$HOME/.local/bin/bambustudio"
+
+    log_info "Downloading Bambu Studio AppImage from: $appimage_url"
+    if curl -sSL -o "$appimage_path" "$appimage_url"; then
+        chmod +x "$appimage_path"
+        log_success "Bambu Studio AppImage installed to $appimage_path"
+    else
+        log_warning "Failed to download Bambu Studio AppImage"
+        return 1
+    fi
+
+    # Create desktop entry for easy access (use full path, not ~)
+    cat > "$HOME/.local/share/applications/bambustudio.desktop" << EOF
+[Desktop Entry]
+Type=Application
+Name=Bambu Studio
+Exec=$HOME/.local/bin/bambustudio %U
+Icon=application-x-executable
+Categories=Utility;3DPrinting;
+Comment=3D printing software for Bambu Lab and other printers
+Terminal=false
+StartupNotify=true
+EOF
+
+    log_success "3D printing tools installed"
+}
+
 # Install AI tools (ai)
 install_ai_tools() {
     log_info "Installing AI tools..."
@@ -912,8 +998,11 @@ PKGEOF
     install_steam
     install_mail_client
     # setup_flatpak
-    
-    # system/security  
+
+    # 3d-printing
+    install_3d_printing_tools
+
+    # system/security
     configure_security
     
     # system/snapshots
