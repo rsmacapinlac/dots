@@ -51,15 +51,15 @@ update_dotfiles() {
     fi
 }
 
-# Update npm global packages
+# Update npm global packages (requires sudo for system-wide packages)
 update_npm_packages() {
-    log_info "Checking npm global packages..."
+    log_info "Updating npm global packages..."
     if command -v npm &> /dev/null; then
-        # Try to update; if it fails due to permissions, provide helpful guidance
-        if npm update -g 2>/dev/null; then
+        # Use sudo for global npm updates (packages installed in /usr/lib/node_modules)
+        if sudo npm update -g; then
             log_success "npm global packages updated"
         else
-            log_warning "npm global packages skipped (likely permission issue). To update npm globals, run: sudo npm update -g"
+            log_warning "npm global packages update failed"
         fi
     else
         log_warning "npm not found, skipping"
