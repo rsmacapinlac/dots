@@ -23,7 +23,7 @@ plugins: [fetchart, embedart, discogs, mbsync]
 fetchart:
     auto: yes
     store_source: yes
-    sources: filesystem, coverart
+    sources: [filesystem, coverart]
     quality: 0
     maxwidth: 0
     enforce_ratio: no
