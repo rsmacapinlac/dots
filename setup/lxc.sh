@@ -107,7 +107,7 @@ initial_setup() {
     fi
 
     # Clone password store - assumes GPG keys are configured by user before running
-    mkdir -p ~/workspaces
+    mkdir -p ~/workspace
     if [[ ! -d ~/.password-store ]]; then
         # Only start SSH agent when we actually need it for the clone
         eval "$(ssh-agent -s)"
@@ -234,15 +234,15 @@ setup_dotfiles() {
         log_info "rcm already installed, skipping"
     fi
 
-    mkdir -p "$HOME/workspaces"
-    if [[ ! -d "$HOME/workspaces/dots" ]]; then
-        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspaces/dots" || \
-            git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspaces/dots"
+    mkdir -p "$HOME/workspace"
+    if [[ ! -d "$HOME/workspace/dots" ]]; then
+        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots" || \
+            git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
     else
         log_info "Dots repository already exists, skipping clone"
     fi
 
-    env RCRC="$HOME/workspaces/dots/rcrc" rcup -f
+    env RCRC="$HOME/workspace/dots/rcrc" rcup -f
 
     log_success "Dotfiles configured"
 }
