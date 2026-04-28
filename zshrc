@@ -95,7 +95,7 @@ export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/s
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
-# export LANG=en_US.UTF-8
+export LANG=C.UTF-8
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
@@ -108,7 +108,7 @@ export EDITOR='nvim'
 export GIT_EDITOR='nvim'
 
 setopt auto_cd autocd
-cdpath=($HOME/workspace $HOME)
+cdpath=($HOME/workspaces $HOME)
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
