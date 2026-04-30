@@ -108,7 +108,7 @@ export EDITOR='nvim'
 export GIT_EDITOR='nvim'
 
 setopt auto_cd autocd
-cdpath=($HOME/workspaces $HOME)
+cdpath=($HOME/workspace $HOME)
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
