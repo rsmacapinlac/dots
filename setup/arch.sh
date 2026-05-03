@@ -459,8 +459,9 @@ install_productivity_apps() {
         telegram-desktop \
         todoist-appimage \
         zoom \
-        timer-bin
-    
+        timer-bin \
+        speech-dispatcher
+
     log_success "Productivity applications installed"
 }
 
@@ -749,9 +750,12 @@ install_ai_tools() {
     # Install agent-browser: headless browser CLI for AI agents
     # https://github.com/vercel-labs/agent-browser
     # Install chromium system dependencies (--with-deps only supports apt/dnf/yum)
+    # himalaya is in the official repo — install via pacman to avoid the AUR
+    # version which pulls in webkit2gtk (compiled from source)
+    sudo pacman -S --needed --noconfirm himalaya
+
     yay_install \
         gogcli \
-        himalaya \
         nss \
         libdrm \
         mesa \
@@ -759,6 +763,10 @@ install_ai_tools() {
         alsa-lib
     sudo npm install -g agent-browser
     agent-browser install
+
+    # Install pi-coding-agent: minimalist AI coding agent
+    # https://github.com/badlogic/pi-mono
+    yay_install pi-coding-agent
 
     log_success "AI tools installed"
 }

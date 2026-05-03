@@ -203,6 +203,25 @@ export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 # This must be the LAST thing in the file to ensure RVM paths are at the front
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
+# Bashbunni timer  
+# Requires https://github.com/caarlos0/timer to be installed. spd-say should ship with your distro
+
+declare -A pomo_options
+pomo_options["work"]="45"
+pomo_options["break"]="10"
+
+pomodoro () {
+  if [ -n "$1" -a -n "${pomo_options["$1"]}" ]; then
+  val=$1
+  echo $val
+  timer ${pomo_options["$val"]}m
+  spd-say "'$val' session done"
+  fi
+}
+
+alias wo="pomodoro 'work'"
+alias br="pomodoro 'break'"
+
 # Force RVM to set up environment properly
 if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
     rvm rvmrc warning ignore allGemfiles
