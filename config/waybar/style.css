@@ -39,6 +39,7 @@
 #tray,
 #backlight,
 #clock,
+#custom-clock,
 #network,
 #battery,
 #custom-music,
@@ -55,7 +56,8 @@
   border-radius: 1rem;
 }
 
-#clock {
+#clock,
+#custom-clock {
   color: @blue;
   border-radius: 1rem;
   margin-right: 1rem;
