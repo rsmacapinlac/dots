@@ -1,11 +1,12 @@
 {
-  "theme": "auto",
-  "tui": "fullscreen",
-  "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true
-  },
   "statusLine": {
     "type": "command",
     "command": "bash /home/ritchie/.claude/statusline.sh"
-  }
+  },
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
+  },
+  "tui": "fullscreen",
+  "theme": "auto",
+  "agentPushNotifEnabled": true
 }

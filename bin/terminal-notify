@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Shared terminal/desktop notification helper.
+# Usage: terminal-notify [title] [message] [urgency] [tmux-target]
+
+set -euo pipefail
+
+show_help() {
+  cat <<'EOF'
+Usage: terminal-notify [title] [message] [urgency] [tmux-target]
+
+Send a notification using the best available backend:
+  1. tmux popup in the active pane + terminal bell when inside tmux
+  2. notify-send when desktop notifications are available
+  3. stdout + terminal bell fallback
+
+Arguments:
+  title        Notification title       default: notification
+  message      Notification message     default: done
+  urgency      low|normal|critical      default: normal
+  tmux-target  Optional context target, e.g. 3.1 or dots:3.1
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  show_help
+  exit 0
+fi
+
+title=${1:-notification}
+message=${2:-done}
+urgency=${3:-normal}
+tmux_target=${4:-}
+
+case "$urgency" in
+  low|normal|critical) ;;
+  *) urgency="normal" ;;
+esac
+
+# Prefer tmux-native notifications in tmux/SSH/headless workflows.
+if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
+  duration=10000
+  popup_sleep=5
+  [[ "$urgency" == "critical" ]] && duration=30000 && popup_sleep=12
+
+  text="$message"
+  [[ -n "$tmux_target" ]] && text="$message [$tmux_target]"
+
+  shown=0
+  # Show a temporary popup in each attached client's active pane. This makes the
+  # notification appear where the user is currently looking, without typing into
+  # the pane or disturbing a running command.
+  while IFS= read -r active_target; do
+    [[ -z "$active_target" ]] && continue
+    if tmux display-popup \
+      -t "$active_target" \
+      -T "$title" \
+      -w 70% \
+      -h 5 \
+      -E \
+      -e TERMINAL_NOTIFY_MESSAGE="$text" \
+      -e TERMINAL_NOTIFY_SLEEP="$popup_sleep" \
+      'printf "\n  %s\n" "$TERMINAL_NOTIFY_MESSAGE"; sleep "$TERMINAL_NOTIFY_SLEEP"' \
+      2>/dev/null; then
+      shown=1
+    fi
+  done < <(tmux list-clients -F '#{client_session}:#{window_index}.#{pane_index}' 2>/dev/null || true)
+
+  # Fallback to the tmux message line if a popup could not be displayed.
+  if [[ "$shown" -eq 0 ]]; then
+    tmux display-message -d "$duration" "$title: $text" 2>/dev/null || true
+  fi
+
+  printf '\a'
+  exit 0
+fi
+
+# Use desktop notifications when a notification daemon/session bus is likely available.
+if command -v notify-send >/dev/null 2>&1 && \
+   [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+  if notify-send -u "$urgency" "$title" "$message" 2>/dev/null; then
+    exit 0
+  fi
+fi
+
+# Last resort: visible terminal output and bell.
+echo "$title: $message"
+printf '\a'
