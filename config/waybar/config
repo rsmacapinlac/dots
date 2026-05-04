@@ -13,7 +13,7 @@
        "pulseaudio",
        "battery",
        "network",
-       "clock",
+       "custom/clock",
        "tray",
        "custom/lock",
        "custom/power"],
@@ -33,10 +33,10 @@
         "icon-size": 21,
         "spacing": 10
     },
-    "clock": {
-        "timezone": "America/Vancouver",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "format": "{:%Y-%m-%d %H:%M}"
+    "custom/clock": {
+        "exec": "date '+%Y-%m-%d %H:%M'",
+        "interval": 30,
+        "tooltip": false
     },
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
