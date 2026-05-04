@@ -90,7 +90,13 @@ source $ZSH/oh-my-zsh.sh
 # User configuration
 
 # Add custom paths after oh-my-zsh loads
-export PATH=$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications
+# If RVM is already active in the inherited environment, do not prepend
+# anything ahead of its Ruby paths or RVM will warn about PATH ordering.
+if [[ -n "$rvm_path" ]]; then
+  export PATH="$PATH:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
+else
+  export PATH="$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
+fi
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -199,18 +205,14 @@ export GOPATH="$HOME/go"
 export GOROOT="/usr/lib/go"
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
-# Load RVM into a shell session *as a function*
-# This must be the LAST thing in the file to ensure RVM paths are at the front
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-
-# Bashbunni timer  
+# Bashbunni timer modified  
 # Requires https://github.com/caarlos0/timer to be installed. spd-say should ship with your distro
 
 declare -A pomo_options
 pomo_options["work"]="45"
 pomo_options["break"]="10"
 
-pomodoro () {
+pomo () {
   if [ -n "$1" -a -n "${pomo_options["$1"]}" ]; then
   val=$1
   echo $val
@@ -219,8 +221,15 @@ pomodoro () {
   fi
 }
 
-alias wo="pomodoro 'work'"
-alias br="pomodoro 'break'"
+# Load RVM into a shell session *as a function*
+# This must be the LAST thing in the file to ensure RVM paths are at the front
+# If the shell inherits an active RVM environment, normalize PATH before
+# sourcing RVM so its own path-mismatch check does not warn.
+if [[ -n "$GEM_HOME" && -n "$MY_RUBY_HOME" ]]; then
+  path=("$GEM_HOME/bin" "${GEM_HOME}@global/bin" "$MY_RUBY_HOME/bin" "${rvm_path:-$HOME/.rvm}/bin" $path)
+  path=("${(@u)path}")
+fi
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 # Force RVM to set up environment properly
 if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
