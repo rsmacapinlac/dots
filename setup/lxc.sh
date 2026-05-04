@@ -315,6 +315,27 @@ install_lazygit() {
     log_success "lazygit ${version} installed"
 }
 
+install_timer() {
+    if command -v timer &>/dev/null; then
+        log_info "timer already installed ($(timer --version 2>/dev/null || echo 'unknown version')), skipping"
+        return 0
+    fi
+
+    log_info "Installing caarlos0/timer for zsh pomo function..."
+
+    local url tmpdir
+    url=$(get_latest_github_release "caarlos0/timer" "timer_linux_amd64.tar.gz")
+    tmpdir=$(mktemp -d)
+
+    curl -fsSL "$url" -o "$tmpdir/timer.tar.gz"
+    tar -xzf "$tmpdir/timer.tar.gz" -C "$tmpdir"
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$tmpdir/timer" "$HOME/.local/bin/timer"
+    rm -rf "$tmpdir"
+
+    log_success "timer installed to ~/.local/bin/timer"
+}
+
 # Builds from the latest neovim source. Takes several minutes on first run.
 install_neovim() {
     if [[ -f /usr/local/bin/nvim ]]; then
@@ -445,6 +466,7 @@ main() {
     install_development_packages
     install_fastfetch
     install_lazygit
+    install_timer
     install_neovim
     install_gh
     install_claude_code

@@ -205,8 +205,12 @@ export GOPATH="$HOME/go"
 export GOROOT="/usr/lib/go"
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
-# Bashbunni timer modified  
-# Requires https://github.com/caarlos0/timer to be installed. spd-say should ship with your distro
+# Bashbunni timer modified
+# Requires https://github.com/caarlos0/timer to be installed.
+
+pomo_notify() {
+  terminal-notify "🍅 Pomodoro" "$1 session done" "normal"
+}
 
 declare -A pomo_options
 pomo_options["work"]="45"
@@ -217,7 +221,7 @@ pomo () {
   val=$1
   echo $val
   timer ${pomo_options["$val"]}m
-  spd-say "'$val' session done"
+  pomo_notify "$val"
   fi
 }
 
