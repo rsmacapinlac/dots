@@ -56,6 +56,16 @@ update_nvim_plugins() {
     fi
 }
 
+update_pi_coding_agent() {
+    log_info "Updating Pi coding agent..."
+    if command -v npm &>/dev/null; then
+        npm install -g @mariozechner/pi-coding-agent@latest
+        log_success "Pi coding agent updated"
+    else
+        log_warning "npm not found, skipping Pi coding agent update"
+    fi
+}
+
 update_lazygit() {
     log_info "Checking for lazygit updates..."
 
@@ -90,6 +100,7 @@ main() {
     update_system_packages
     update_dotfiles
     update_npm_packages
+    update_pi_coding_agent
     update_nvim_plugins
     update_lazygit
 

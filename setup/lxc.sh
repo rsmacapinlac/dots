@@ -380,6 +380,18 @@ install_claude_code() {
     log_success "Claude Code installed"
 }
 
+install_pi_coding_agent() {
+    if command -v pi &>/dev/null; then
+        log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version')), skipping"
+        return 0
+    fi
+
+    log_info "Installing Pi coding agent..."
+    npm install -g @mariozechner/pi-coding-agent
+
+    log_success "Pi coding agent installed"
+}
+
 setup_development_tools() {
     log_info "Setting up development tools..."
 
@@ -436,6 +448,7 @@ main() {
     install_neovim
     install_gh
     install_claude_code
+    install_pi_coding_agent
     setup_development_tools
     enable_services
 
