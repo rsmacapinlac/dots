@@ -14,6 +14,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
+
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
@@ -36,9 +38,21 @@ update_dotfiles() {
     fi
 }
 
+configure_npm_user_prefix() {
+    if ! command -v npm &>/dev/null; then
+        log_warning "npm not found, skipping npm user prefix setup"
+        return 0
+    fi
+
+    mkdir -p "$HOME/.npm-global"
+    npm config set prefix "$HOME/.npm-global"
+    export PATH="$HOME/.npm-global/bin:$PATH"
+}
+
 update_npm_packages() {
     log_info "Updating npm global packages..."
     if command -v npm &>/dev/null; then
+        configure_npm_user_prefix
         npm update -g
         log_success "npm global packages updated"
     else
@@ -56,11 +70,27 @@ update_nvim_plugins() {
     fi
 }
 
+install_pi_subagents_package() {
+    if ! command -v pi &>/dev/null; then
+        log_warning "pi not found, skipping Pi subagents package"
+        return 0
+    fi
+
+    log_info "Ensuring Pi subagents package is installed..."
+    if pi install "$PI_SUBAGENTS_PACKAGE"; then
+        log_success "Pi subagents package installed"
+    else
+        log_warning "Pi subagents package install failed"
+    fi
+}
+
 update_pi_coding_agent() {
     log_info "Updating Pi coding agent..."
+    configure_npm_user_prefix
     if command -v npm &>/dev/null; then
         npm install -g @mariozechner/pi-coding-agent@latest
         log_success "Pi coding agent updated"
+        install_pi_subagents_package
     else
         log_warning "npm not found, skipping Pi coding agent update"
     fi

@@ -18,6 +18,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
+
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -38,6 +40,18 @@ log_error() {
 # Wrapper for yay to prevent hanging on interactive AUR prompts
 yay_install() {
     yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$@"
+}
+
+# Configure user-level npm globals so Pi packages do not require sudo.
+configure_npm_user_prefix() {
+    if ! command -v npm &> /dev/null; then
+        log_warning "npm not found, skipping npm user prefix setup"
+        return 0
+    fi
+
+    mkdir -p "$HOME/.npm-global"
+    npm config set prefix "$HOME/.npm-global"
+    export PATH="$HOME/.npm-global/bin:$PATH"
 }
 
 # Fetch latest GitHub release download URL for a given pattern
@@ -764,9 +778,23 @@ install_ai_tools() {
     sudo npm install -g agent-browser
     agent-browser install
 
+    configure_npm_user_prefix
+
     # Install pi-coding-agent: minimalist AI coding agent
     # https://github.com/badlogic/pi-mono
     yay_install pi-coding-agent
+
+    # Install pi-subagents: subagent orchestration package for Pi
+    # https://pi.dev/packages/@tintinweb/pi-subagents
+    if command -v pi &> /dev/null; then
+        if pi install "$PI_SUBAGENTS_PACKAGE"; then
+            log_success "Pi subagents package installed"
+        else
+            log_warning "Pi subagents package install failed"
+        fi
+    else
+        log_warning "pi not found after install, skipping Pi subagents package"
+    fi
 
     log_success "AI tools installed"
 }

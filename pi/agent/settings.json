@@ -3,5 +3,8 @@
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "medium",
-  "theme": "catppuccin-mocha"
+  "theme": "catppuccin-mocha",
+  "packages": [
+    "npm:@tintinweb/pi-subagents"
+  ]
 }
