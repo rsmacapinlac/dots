@@ -93,9 +93,9 @@ source $ZSH/oh-my-zsh.sh
 # If RVM is already active in the inherited environment, do not prepend
 # anything ahead of its Ruby paths or RVM will warn about PATH ordering.
 if [[ -n "$rvm_path" ]]; then
-  export PATH="$PATH:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
+  export PATH="$PATH:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
 else
-  export PATH="$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
+  export PATH="$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
 fi
 
 # export MANPATH="/usr/local/man:$MANPATH"
