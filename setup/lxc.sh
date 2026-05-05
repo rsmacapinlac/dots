@@ -22,6 +22,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
+
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
@@ -163,8 +165,8 @@ install_nodejs() {
 configure_npm() {
     log_info "Configuring npm..."
 
-    if [[ ! -d "$HOME/.npm-global" ]]; then
-        mkdir -p "$HOME/.npm-global"
+    mkdir -p "$HOME/.npm-global"
+    if [[ "$(npm config get prefix)" != "$HOME/.npm-global" ]]; then
         npm config set prefix "$HOME/.npm-global"
         log_success "npm prefix set to ~/.npm-global"
     else
@@ -404,13 +406,23 @@ install_claude_code() {
 install_pi_coding_agent() {
     if command -v pi &>/dev/null; then
         log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version')), skipping"
-        return 0
+    else
+        log_info "Installing Pi coding agent..."
+        npm install -g @mariozechner/pi-coding-agent
+        log_success "Pi coding agent installed"
     fi
 
-    log_info "Installing Pi coding agent..."
-    npm install -g @mariozechner/pi-coding-agent
-
-    log_success "Pi coding agent installed"
+    # Install pi-subagents: subagent orchestration package for Pi
+    # https://pi.dev/packages/@tintinweb/pi-subagents
+    if command -v pi &>/dev/null; then
+        if pi install "$PI_SUBAGENTS_PACKAGE"; then
+            log_success "Pi subagents package installed"
+        else
+            log_warning "Pi subagents package install failed"
+        fi
+    else
+        log_warning "pi not found after install, skipping Pi subagents package"
+    fi
 }
 
 setup_development_tools() {

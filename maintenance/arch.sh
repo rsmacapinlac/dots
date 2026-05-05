@@ -17,6 +17,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
+
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -50,6 +52,18 @@ update_dotfiles() {
     else
         log_warning "rcup not found, skipping dotfiles update"
     fi
+}
+
+# Configure user-level npm globals so Pi packages do not require sudo.
+configure_npm_user_prefix() {
+    if ! command -v npm &> /dev/null; then
+        log_warning "npm not found, skipping npm user prefix setup"
+        return 0
+    fi
+
+    mkdir -p "$HOME/.npm-global"
+    npm config set prefix "$HOME/.npm-global"
+    export PATH="$HOME/.npm-global/bin:$PATH"
 }
 
 # Update npm global packages (requires sudo for system-wide packages)
@@ -116,9 +130,25 @@ PY
     log_success "Pi coding agent updated to $(pi --version)"
 }
 
+install_pi_subagents_package() {
+    if ! command -v pi &> /dev/null; then
+        log_warning "pi not found, skipping Pi subagents package"
+        return 0
+    fi
+
+    log_info "Ensuring Pi subagents package is installed..."
+    if pi install "$PI_SUBAGENTS_PACKAGE"; then
+        log_success "Pi subagents package installed"
+    else
+        log_warning "Pi subagents package install failed"
+    fi
+}
+
 # Update Pi coding agent and installed Pi packages
 update_pi_coding_agent() {
     log_info "Updating Pi coding agent..."
+
+    configure_npm_user_prefix
 
     if command -v pi &> /dev/null; then
         local pi_path
@@ -155,6 +185,7 @@ update_pi_coding_agent() {
             else
                 log_warning "Pi package update failed"
             fi
+            install_pi_subagents_package
             return 0
         fi
 
@@ -162,6 +193,7 @@ update_pi_coding_agent() {
         # and any non-pinned Pi packages from ~/.pi/agent/settings.json are kept current.
         if pi update; then
             log_success "Pi coding agent updated"
+            install_pi_subagents_package
             return 0
         fi
         log_warning "pi update failed, falling back to npm install"
@@ -176,6 +208,8 @@ update_pi_coding_agent() {
     else
         log_warning "npm not found, skipping Pi coding agent update"
     fi
+
+    install_pi_subagents_package
 }
 
 # Update Neovim plugins via lazy.nvim
