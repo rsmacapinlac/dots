@@ -393,6 +393,7 @@ install_development_packages() {
         ruby-erb \
         ripgrep \
         fd \
+        fzf \
         xclip \
         python-pynvim \
         lazygit \
@@ -612,6 +613,15 @@ install_hyprland() {
         ttf-fantasque-sans-mono \
         ttf-fantasque-nerd
     
+    # Configure logind to ignore lid close so Hyprland handles it via bindl
+    sudo mkdir -p /etc/systemd/logind.conf.d
+    sudo tee /etc/systemd/logind.conf.d/lid.conf > /dev/null << EOF
+[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchDocked=ignore
+EOF
+    sudo systemctl restart systemd-logind
+
     log_success "Hyprland desktop environment installed"
 }
 
