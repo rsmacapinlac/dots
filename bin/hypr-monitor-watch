@@ -1,0 +1,23 @@
+#!/bin/sh
+# Background listener for Hyprland monitor connect/disconnect events.
+# Requires: socat
+
+socket="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+while [ ! -S "$socket" ]; do
+    sleep 1
+done
+
+while true; do
+    socat -u UNIX-CONNECT:"$socket" - 2>/dev/null | while IFS= read -r line; do
+        case "$line" in
+            monitoradded*)
+                "$HOME/.bin/hypr-monitor-connect"
+                ;;
+            monitorremoved*)
+                "$HOME/.bin/hypr-monitor-disconnect"
+                ;;
+        esac
+    done
+    sleep 1
+done

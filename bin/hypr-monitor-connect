@@ -1,8 +1,6 @@
 #!/bin/sh
 . "$HOME/.bin/hypr-utils"
 
-if has_external_monitors; then
+if is_lid_closed; then
     disable_internal
-else
-    systemctl suspend
 fi

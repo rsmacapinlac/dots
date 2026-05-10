@@ -32,14 +32,16 @@ wallpaper_count=${#wallpapers[*]}
 index=$( shuf -i 0-$((wallpaper_count - 1)) -n 1 )
 if [[ $index -lt $wallpaper_count ]]
 then
-  current_wallpaper=${wallpapers[$index]}
+  current_wallpaper="$PWD/${wallpapers[$index]}"
 
-  # Save the wallpaper path for hyprpaper preload
+  # Save absolute path so hyprpaper.conf can preload it on next boot
   echo "$current_wallpaper" > "$filename"
 
-  # Use hyprctl to set the wallpaper on all monitors
-  hyprctl hyprpaper wallpaper "eDP-1,$PWD/$current_wallpaper"
-  hyprctl hyprpaper wallpaper "DP-4,$PWD/$current_wallpaper"
+  hyprctl hyprpaper preload "$current_wallpaper"
+
+  while IFS= read -r monitor; do
+    hyprctl hyprpaper wallpaper "$monitor,$current_wallpaper"
+  done < <(hyprctl monitors -j | jq -r '.[].name')
 
   # Optional: Generate color scheme using wal if available
   if command -v wal &> /dev/null; then

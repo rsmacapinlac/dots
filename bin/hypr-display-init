@@ -1,0 +1,8 @@
+#!/bin/sh
+# Disable internal display at startup if lid is already closed with an external connected.
+sleep 2
+. "$HOME/.bin/hypr-utils"
+
+if is_lid_closed && has_external_monitors; then
+    disable_internal
+fi
