@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$HOME/.bin/hypr-utils"
+
+if ! has_external_monitors; then
+    enable_internal
+fi

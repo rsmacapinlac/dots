@@ -610,17 +610,20 @@ install_hyprland() {
         hyprlock \
         hyprcursor \
         hyprpolkitagent \
+        socat \
+        jq \
         ttf-fantasque-sans-mono \
         ttf-fantasque-nerd
     
     # Configure logind to ignore lid close so Hyprland handles it via bindl
     sudo mkdir -p /etc/systemd/logind.conf.d
-    sudo tee /etc/systemd/logind.conf.d/lid.conf > /dev/null << EOF
+    sudo tee /etc/systemd/logind.conf.d/lid.conf > /dev/null << 'EOF'
 [Login]
 HandleLidSwitch=ignore
 HandleLidSwitchDocked=ignore
 EOF
-    sudo systemctl restart systemd-logind
+    # Do not restart systemd-logind here — it kills any live Hyprland session.
+    log_info "logind lid config written; takes effect on next login or reboot"
 
     log_success "Hyprland desktop environment installed"
 }

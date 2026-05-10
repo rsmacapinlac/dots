@@ -1,0 +1,38 @@
+#!/bin/sh
+# Shared display helpers — source this file, do not execute directly.
+
+get_internal_mon() {
+    hyprctl monitors all -j | jq -r '.[] | select(.name | contains("eDP")).name' | head -n 1
+}
+
+has_external_monitors() {
+    for status in /sys/class/drm/card*-*/status; do
+        case "$status" in *eDP*) continue ;; esac
+        [ "$(cat "$status")" = "connected" ] && return 0
+    done
+    return 1
+}
+
+is_lid_closed() {
+    for lid_path in \
+        /proc/acpi/button/lid/LID/state \
+        /proc/acpi/button/lid/LID0/state \
+        /proc/acpi/button/lid/LID1/state; do
+        [ -r "$lid_path" ] || continue
+        case "$(cat "$lid_path")" in
+            *closed*) return 0 ;;
+            *) return 1 ;;
+        esac
+    done
+    return 1
+}
+
+disable_internal() {
+    mon=$(get_internal_mon)
+    [ -n "$mon" ] && hyprctl keyword monitor "$mon,disabled"
+}
+
+enable_internal() {
+    mon=$(get_internal_mon)
+    [ -n "$mon" ] && hyprctl keyword monitor "$mon,preferred,auto,auto"
+}
