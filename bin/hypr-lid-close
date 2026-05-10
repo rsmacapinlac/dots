@@ -1,0 +1,9 @@
+#!/bin/sh
+# Disable laptop screen when docked; suspend when undocked.
+if hyprctl monitors | grep -q "^Monitor DP-4"; then
+    echo "docked" > /tmp/hypr-lid-state
+    hyprctl keyword monitor eDP-1,disabled
+else
+    echo "undocked" > /tmp/hypr-lid-state
+    systemctl suspend
+fi

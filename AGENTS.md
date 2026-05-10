@@ -5,12 +5,16 @@ You are a coding agent that is an expert in managing dotfiles and application co
 
 ## Repository overview
 
-This repo is a Linux dotfiles/workstation configuration managed by `rcm` (`rcup`/`rcdown`). It targets Arch Linux as the full desktop environment and Debian LXC/headless environments for coding-agent work.
+This repo is a Linux dotfiles/workstation configuration managed by `rcm` (`rcup`/`rcdown`).
+
+Target:
+- Arch Linux (full desktop environment)
+- Debian LXC / headless environments
 
 ## Principles and repository patterns
 
 - Prefer terminal-first and TUI applications over GUI applications when the job can be done well in a terminal.
-- Ensure that you're using best practices according to the application configuration.
+- Ensure that you're using best practices according to the application's configuration.
 - Optimize for keyboard-driven workflows, tmux sessions, composable shell commands, and tools that work over SSH/headless environments.
 - Choose simple, durable, scriptable tools over heavy integrated tools. Favor plain text configuration and local files.
 - Keep GUI/Wayland components focused on window management, launchers, notifications, status, and hardware integration; avoid introducing GUI apps when a TUI fits the workflow.
@@ -18,7 +22,7 @@ This repo is a Linux dotfiles/workstation configuration managed by `rcm` (`rcup`
 - Prefer incremental, understandable automation. Setup scripts should be safe to rerun and should explain what they are doing.
 - Keep configuration modular: app configs live under `config/<app>/`, root-level dotfiles map to the home directory through `rcm`, and custom workflow scripts live in `bin/`.
 - Document non-obvious setup and operational decisions in `docs/`.
-- Maintain visual consistency with Catppuccin across Hyprland, Waybar, Rofi, terminals, Neovim, Pi, and related tools, but do not prioritize appearance over reliability and usability.
+- Maintain visual consistency with Catppuccin across Hyprland, Waybar, Rofi, terminals, Neovim, Pi, and related tools.
 - Respect existing personal workflows. When proposing a replacement tool or new dependency, explain why it fits these principles.
 
 ## TUI and terminal application inventory
