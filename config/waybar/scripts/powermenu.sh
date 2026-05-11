@@ -1,30 +1,85 @@
 #!/usr/bin/env bash
 
-# Catppuccin Mocha color scheme
-bg_color="#1e1e2e"
-fg_color="#cdd6f4"
-select_bg="#cba6f7"
-select_fg="#11111b"
-border_color="#cba6f7"
+ROFI_CONFIG_DIR="$HOME/.config/rofi"
+TEMP_THEME="$ROFI_CONFIG_DIR/powermenu-theme.rasi"
 
-# Get the options with icons
+cat > "$TEMP_THEME" << 'EOF'
+@import "catppuccin-mocha"
+
+* {
+  background-color: transparent;
+  text-color:       @text;
+  border-color:     @mauve;
+}
+
+window {
+    background-color: @base;
+    border:           4px;
+    border-color:     @mauve;
+    border-radius:    12px;
+    width:            25%;
+    location:         center;
+    anchor:           center;
+    padding:          20px;
+}
+
+mainbox {
+    background-color: @base;
+    padding:          0;
+    border:           0;
+}
+
+inputbar {
+    background-color: @surface1;
+    border-radius:    8px;
+    padding:          12px;
+    margin:           0px 0px 12px 0px;
+    children:         [prompt];
+}
+
+prompt {
+    text-color: @mauve;
+}
+
+listview {
+    background-color: transparent;
+    lines:            5;
+    columns:          1;
+    fixed-height:     1;
+    spacing:          2px;
+    scrollbar:        false;
+}
+
+element {
+    background-color: @base;
+    padding:          12px;
+    border-radius:    8px;
+    margin:           2px;
+}
+
+element selected {
+    background-color: @mauve;
+    text-color:       @crust;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+}
+EOF
+
 options="󰐥 Lock\n󰤄 Suspend\n󰜉 Reboot\n󰤆 Shutdown\n󰗽 Logout"
 
-# Show the menu with custom styling
 selected=$(echo -e "$options" | rofi -dmenu \
     -i \
     -p "⏻ Power Menu" \
-    -theme-str "window { background-color: $bg_color; border: 2px; border-color: $border_color; border-radius: 12px; width: 25%; location: center; }" \
-    -theme-str "listview { lines: 5; columns: 1; }" \
-    -theme-str "element { padding: 12px; border-radius: 8px; margin: 2px; }" \
-    -theme-str "element selected { background-color: $select_bg; text-color: $select_fg; }" \
-    -theme-str "element-text { color: $fg_color; }" \
-    -theme-str "prompt { color: $select_bg; }" \
-    -theme-str "inputbar { children: [prompt]; }" \
+    -font "Hack Nerd Font 12" \
+    -theme "$TEMP_THEME" \
     -no-custom \
     -format "s")
 
-# Handle the selection
+rm -f "$TEMP_THEME"
+
 case $selected in
     "󰐥 Lock")
         hyprlock
@@ -41,4 +96,4 @@ case $selected in
     "󰗽 Logout")
         hyprctl dispatch exit
         ;;
-esac 
+esac
