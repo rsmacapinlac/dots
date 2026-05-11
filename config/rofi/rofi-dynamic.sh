@@ -1,26 +1,13 @@
 #!/usr/bin/env bash
 
-# Dynamic rofi launcher with rotating wallpaper backgrounds
-WALLPAPER_DIR="$HOME/.config/wallpapers"
 ROFI_CONFIG_DIR="$HOME/.config/rofi"
 TEMP_THEME="$ROFI_CONFIG_DIR/dynamic-theme.rasi"
 
-# Collect all wallpapers (Generic only)
-declare -a wallpapers
-wallpapers=( "$WALLPAPER_DIR"/Generic/* )
-wallpaper_count=${#wallpapers[*]}
-
-# Select random wallpaper
-if [[ $wallpaper_count -gt 0 ]]; then
-    index=$(shuf -i 0-$((wallpaper_count-1)) -n 1)
-    selected_wallpaper="${wallpapers[$index]}"
-else
-    # Fallback to a solid color if no wallpapers found
-    selected_wallpaper=""
-fi
-
-# Create dynamic theme with wallpaper background
 cat > "$TEMP_THEME" << EOF
+configuration {
+  lines: 6;
+}
+
 @import "catppuccin-mocha"
 
 * {
@@ -59,11 +46,11 @@ element {
     border:  0;
     border-radius: 8px;
     margin: 2px;
-    background-color: rgba(30, 30, 46, 0.8);
+    background-color: @base;
 }
 
 element normal.normal {
-    background-color: rgba(30, 30, 46, 0.6);
+    background-color: @base;
     text-color:       @normal-foreground;
 }
 element normal.urgent {
@@ -75,7 +62,7 @@ element normal.active {
     text-color:       @active-foreground;
 }
 element selected.normal {
-    background-color: rgba(203, 166, 247, 0.9);
+    background-color: @mauve;
     text-color:       @selected-normal-foreground;
 }
 element selected.urgent {
@@ -87,7 +74,7 @@ element selected.active {
     text-color:       @selected-active-foreground;
 }
 element alternate.normal {
-    background-color: rgba(69, 71, 90, 0.4);
+    background-color: @surface1;
     text-color:       @alternate-normal-foreground;
 }
 element alternate.urgent {
@@ -114,22 +101,14 @@ element-icon {
 
 window {
     padding:          20;
-    border:           2;
+    border:           4;
     border-color:     @border-color;
     border-radius:    12px;
-    width:            50%;
+    width:            65%;
     location:         center;
     anchor:           center;
-    transparency:     "real";
+    background-color: @base;
 EOF
-
-# Add background image if wallpaper exists
-if [[ -f "$selected_wallpaper" ]]; then
-    echo "    background-image: url(\"$selected_wallpaper\", both);" >> "$TEMP_THEME"
-    echo "    background-color: rgba(30, 30, 46, 0.95);" >> "$TEMP_THEME"
-else
-    echo "    background-color: rgba(30, 30, 46, 0.95);" >> "$TEMP_THEME"
-fi
 
 cat >> "$TEMP_THEME" << EOF
 }
@@ -152,7 +131,8 @@ listview {
     scrollbar:    true;
     border-color: @separatorcolor;
     spacing:      2px ;
-    fixed-height: 0;
+    fixed-height: 1;
+    lines:        6;
     border:       2px dash 0px 0px ;
     background-color: transparent;
 }
@@ -178,23 +158,23 @@ button selected {
 }
 num-filtered-rows {
     expand:     false;
-    text-color: Gray;
+    text-color: @overlay0;
 }
 num-rows {
     expand:     false;
-    text-color: Gray;
+    text-color: @overlay0;
 }
 textbox-num-sep {
     expand:     false;
     str:        "/";
-    text-color: Gray;
+    text-color: @overlay0;
 }
 inputbar {
     padding:    12px;
     spacing:    8px;
     text-color: @normal-foreground;
     children:   [ "prompt","textbox-prompt-colon","entry","case-indicator" ];
-    background-color: rgba(69, 71, 90, 0.95);
+    background-color: @surface1;
     border-radius: 8px;
     margin: 0 0 12px 0;
 }
@@ -223,7 +203,7 @@ textbox-prompt-colon {
 EOF
 
 # Launch rofi with the dynamic theme
-rofi -show drun -theme "$TEMP_THEME" -show-icons -font "Hack Nerd Font 12" -display-drun "󰀻 Apps" -display-run " Run" -display-window "󰖯 Windows" "$@"
+rofi -show drun -theme "$TEMP_THEME" -show-icons -font "Hack Nerd Font 12" -display-drun "󰀻 Apps" -display-run " Run" -display-window "󰖯 Windows" -lines 6 "$@"
 
 # Clean up temp theme file
 rm -f "$TEMP_THEME"

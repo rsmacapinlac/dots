@@ -9,8 +9,6 @@ configuration {
   click-to-exit: true;
   icon-theme: "Oranchelo";
   drun-display-format: "{icon} {name}";
-  fake-transparency: true;
-  fake-background: "screenshot";
 }
 
 @import "catppuccin-mocha"
@@ -24,19 +22,19 @@ configuration {
   lightbg:                     @surface0;
   background-color:            transparent;
   border-color:                @mauve;
-  normal-background:           @base;
+  normal-background:           transparent;
   selected-urgent-background:  @red;
-  alternate-active-background: @surface0;
+  alternate-active-background: transparent;
   spacing:                     2;
   alternate-normal-foreground: @text;
-  urgent-background:           @base;
+  urgent-background:           transparent;
   selected-normal-foreground:  @crust;
   active-foreground:           @mauve;
-  background:                  @base;
+  background:                  transparent;
   selected-active-background:  @mauve;
-  active-background:           @base;
+  active-background:           transparent;
   selected-normal-background:  @mauve;
-  alternate-normal-background: @surface0;
+  alternate-normal-background: transparent;
   foreground:                  @text;
   selected-urgent-foreground:  @crust;
   normal-foreground:           @text;
@@ -102,7 +100,7 @@ element-icon {
 }
 window {
     padding:          20;
-    background-color: rgba(30, 30, 46, 0.85);
+    background-color: transparent;
     border:           2;
     border-color:     @border-color;
     border-radius:    12px;
@@ -169,7 +167,7 @@ inputbar {
     spacing:    8px;
     text-color: @normal-foreground;
     children:   [ "prompt","textbox-prompt-colon","entry","case-indicator" ];
-    background-color: @surface0;
+    background-color: transparent;
     border-radius: 8px;
     margin: 0 0 12px 0;
 }
