@@ -4,12 +4,16 @@ filename="$HOME/.wallpaper"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Check if hyprpaper is running, if not start it
+# Start hyprpaper if not running
 if ! pgrep -x "hyprpaper" > /dev/null; then
     hyprpaper &
-    # Wait for the daemon to start
-    sleep 1
 fi
+
+# Wait for hyprpaper IPC to be ready before issuing commands
+for _ in $(seq 1 20); do
+    hyprctl hyprpaper listpreloaded &>/dev/null && break
+    sleep 0.5
+done
 
 # create the filename if it doesn't exist
 if [[ ! -e $filename ]]
