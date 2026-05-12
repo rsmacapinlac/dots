@@ -3,4 +3,7 @@
 
 if is_lid_closed; then
     disable_internal
+    pkill -x waybar
+    sleep 0.5
+    nohup waybar >/dev/null 2>&1 &
 fi
