@@ -1,8 +1,22 @@
 #!/bin/sh
 # Shared display helpers — source this file, do not execute directly.
 
+log_display() {
+    state_dir="${XDG_STATE_HOME:-$HOME/.local/state}"
+    mkdir -p "$state_dir"
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$state_dir/hypr-display.log"
+}
+
 get_internal_mon() {
-    hyprctl monitors all -j | jq -r '.[] | select(.name | contains("eDP")).name' | head -n 1
+    hyprctl monitors all -j | jq -r '.[] | select(.name | test("^eDP")).name' | head -n 1
+}
+
+get_primary_external_mon() {
+    # Use "monitors all" and do not filter out disabled outputs: after boot or
+    # hotplug Hyprland may know about the external display while it is still
+    # disabled. Selecting it here lets `hyprctl keyword monitor ...` turn it on
+    # before eDP is disabled for clamshell mode.
+    hyprctl monitors all -j | jq -r '.[] | select(.name | test("^eDP") | not).name' | head -n 1
 }
 
 has_external_monitors() {
@@ -27,12 +41,34 @@ is_lid_closed() {
     return 1
 }
 
+place_primary_external_auto() {
+    external_mon=$(get_primary_external_mon)
+    [ -n "$external_mon" ] || return 1
+
+    log_display "enabling/placing external monitor automatically: $external_mon"
+    hyprctl keyword monitor "$external_mon,preferred,auto,auto"
+}
+
 disable_internal() {
-    mon=$(get_internal_mon)
-    [ -n "$mon" ] && hyprctl keyword monitor "$mon,disabled"
+    internal_mon=$(get_internal_mon)
+    [ -n "$internal_mon" ] || return 0
+
+    log_display "disabling internal monitor: $internal_mon"
+    hyprctl keyword monitor "$internal_mon,disabled"
+
+    if has_external_monitors; then
+        place_primary_external_auto || true
+    fi
 }
 
 enable_internal() {
-    mon=$(get_internal_mon)
-    [ -n "$mon" ] && hyprctl keyword monitor "$mon,preferred,auto,auto"
+    internal_mon=$(get_internal_mon)
+    [ -n "$internal_mon" ] || return 0
+
+    log_display "enabling internal monitor automatically: $internal_mon"
+    hyprctl keyword monitor "$internal_mon,preferred,auto,1.5"
+
+    if has_external_monitors; then
+        place_primary_external_auto || true
+    fi
 }
