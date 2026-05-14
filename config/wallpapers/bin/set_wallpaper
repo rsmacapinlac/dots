@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 filename="$HOME/.wallpaper"
+mode="${1:-random}"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -29,11 +30,27 @@ cd $SCRIPT_DIR && cd ..
 month=$( date '+%Y-%m' )
 monthly_wallpaper="Monthly/$month*"
 
-# Collect all wallpapers. Use nullglob so a missing monthly wallpaper does not
-# leave a literal Monthly/YYYY-MM* entry that hyprpaper cannot load.
+# Collect candidate wallpapers. On Hyprland startup, prefer a current-month
+# calendar if one exists; otherwise fall back to generic non-calendar images.
+# Manual changes use the normal random rotation: Generic/ plus any current-month
+# Monthly/YYYY-MM* matches.
 declare -a wallpapers
 shopt -s nullglob
-wallpapers=( Generic/* $monthly_wallpaper )
+case "$mode" in
+  --initial|initial|--startup|startup)
+    wallpapers=( $monthly_wallpaper )
+    if [[ ${#wallpapers[@]} -eq 0 ]]; then
+      wallpapers=( Generic/* )
+    fi
+    ;;
+  random|--random)
+    wallpapers=( Generic/* $monthly_wallpaper )
+    ;;
+  *)
+    echo "Usage: $0 [--initial|--random]" >&2
+    exit 2
+    ;;
+esac
 shopt -u nullglob
 wallpaper_count=${#wallpapers[*]}
 
