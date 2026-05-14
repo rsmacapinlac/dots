@@ -1,0 +1,95 @@
+#!/bin/sh
+# Temporary Hyprland display troubleshooting collector.
+# Run after reboot/login when the external display state looks wrong:
+#   ~/.bin/hypr-display-troubleshoot
+# Optional: try the clamshell startup fix after collecting diagnostics:
+#   ~/.bin/hypr-display-troubleshoot --fix
+
+set -u
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}"
+out_dir="$state_dir/hypr-display-troubleshoot"
+mkdir -p "$out_dir"
+
+stamp="$(date '+%Y%m%d-%H%M%S')"
+out="$out_dir/$stamp.log"
+
+section() {
+    printf '\n===== %s =====\n' "$1"
+}
+
+run() {
+    printf '\n$ %s\n' "$*"
+    "$@" 2>&1 || printf '[exit %s]\n' "$?"
+}
+
+{
+    section "basic"
+    printf 'date: %s\n' "$(date --iso-8601=seconds 2>/dev/null || date)"
+    printf 'host: %s\n' "$(hostname)"
+    printf 'user: %s\n' "$(id -un)"
+    printf 'session: XDG_SESSION_TYPE=%s HYPRLAND_INSTANCE_SIGNATURE=%s\n' "${XDG_SESSION_TYPE:-}" "${HYPRLAND_INSTANCE_SIGNATURE:-}"
+    run uptime
+
+    section "lid state"
+    for f in /proc/acpi/button/lid/*/state; do
+        [ -r "$f" ] || continue
+        printf '%s: %s\n' "$f" "$(cat "$f")"
+    done
+
+    section "DRM connector status"
+    for f in /sys/class/drm/card*-*/status; do
+        [ -r "$f" ] || continue
+        printf '%s: %s\n' "$f" "$(cat "$f")"
+    done
+
+    section "Hyprland monitors"
+    if command -v hyprctl >/dev/null 2>&1; then
+        run hyprctl monitors all
+        printf '\n--- hyprctl monitors all -j summary ---\n'
+        hyprctl monitors all -j 2>&1 | jq -r '.[] | [.name, .description, "disabled=\(.disabled)", "pos=\(.x)x\(.y)", "size=\(.width)x\(.height)", "scale=\(.scale)", "refresh=\(.refreshRate)"] | @tsv' 2>&1 || true
+    else
+        printf 'hyprctl not found\n'
+    fi
+
+    section "recent helper log"
+    if [ -r "$state_dir/hypr-display.log" ]; then
+        tail -n 120 "$state_dir/hypr-display.log"
+    else
+        printf 'no %s/hypr-display.log yet\n' "$state_dir"
+    fi
+
+    section "helper scripts"
+    for s in "$HOME/.bin/hypr-utils" "$HOME/.bin/hypr-display-init" "$HOME/.bin/hypr-monitor-connect" "$HOME/.bin/hypr-monitor-disconnect" "$HOME/.bin/hypr-lid-close" "$HOME/.bin/hypr-lid-open"; do
+        if [ -e "$s" ]; then
+            ls -l "$s"
+            readlink -f "$s" 2>/dev/null || true
+        else
+            printf 'missing: %s\n' "$s"
+        fi
+    done
+
+    section "journal snippets"
+    if command -v journalctl >/dev/null 2>&1; then
+        run journalctl --user -b --no-pager -n 80
+        printf '\n--- system boot display-ish messages ---\n'
+        journalctl -b --no-pager 2>/dev/null | grep -Ei 'hypr|drm|display|monitor|lid|dp-|hdmi|edp' | tail -n 160 || true
+    else
+        printf 'journalctl not found\n'
+    fi
+
+    if [ "${1:-}" = "--fix" ]; then
+        section "fix attempt"
+        if [ -x "$HOME/.bin/hypr-display-init" ]; then
+            run "$HOME/.bin/hypr-display-init"
+        else
+            printf 'cannot run missing/non-executable hypr-display-init\n'
+        fi
+        if command -v hyprctl >/dev/null 2>&1; then
+            printf '\n--- monitors after fix attempt ---\n'
+            run hyprctl monitors all
+        fi
+    fi
+} >"$out" 2>&1
+
+printf 'Wrote Hyprland display troubleshooting log:\n%s\n' "$out"
