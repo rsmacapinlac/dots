@@ -9,9 +9,11 @@ if ! pgrep -x "hyprpaper" > /dev/null; then
     hyprpaper &
 fi
 
-# Wait for hyprpaper IPC to be ready before issuing commands
+# Wait for hyprpaper IPC to be ready before issuing commands.  Newer
+# hyprpaper versions do not support the old listpreloaded request, but
+# listactive is enough to confirm the IPC socket is responding.
 for _ in $(seq 1 20); do
-    hyprctl hyprpaper listpreloaded &>/dev/null && break
+    hyprctl hyprpaper listactive &>/dev/null && break
     sleep 0.5
 done
 
@@ -27,10 +29,18 @@ cd $SCRIPT_DIR && cd ..
 month=$( date '+%Y-%m' )
 monthly_wallpaper="Monthly/$month*"
 
-# Collect all wallpapers
+# Collect all wallpapers. Use nullglob so a missing monthly wallpaper does not
+# leave a literal Monthly/YYYY-MM* entry that hyprpaper cannot load.
 declare -a wallpapers
-wallpapers=( Generic/* $monthly_wallpaper)
+shopt -s nullglob
+wallpapers=( Generic/* $monthly_wallpaper )
+shopt -u nullglob
 wallpaper_count=${#wallpapers[*]}
+
+if [[ $wallpaper_count -eq 0 ]]; then
+  echo "No wallpapers found under $PWD" >&2
+  exit 1
+fi
 
 # Select random wallpaper (shuf returns 0 to count-1)
 index=$( shuf -i 0-$((wallpaper_count - 1)) -n 1 )
@@ -41,8 +51,6 @@ then
   # Save absolute path so hyprpaper.conf can preload it on next boot
   echo "$current_wallpaper" > "$filename"
 
-  hyprctl hyprpaper preload "$current_wallpaper"
-
   while IFS= read -r monitor; do
     hyprctl hyprpaper wallpaper "$monitor,$current_wallpaper"
   done < <(hyprctl monitors -j | jq -r '.[].name')
@@ -50,6 +58,6 @@ then
   # Optional: Generate color scheme using wal if available
   if command -v wal &> /dev/null; then
     wal -c
-    wal -i "$PWD/$current_wallpaper" -q
+    wal -i "$current_wallpaper" -q
   fi
 fi
