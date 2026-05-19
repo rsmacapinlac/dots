@@ -202,7 +202,11 @@ export GO111MODULE=on
 export GOPROXY=direct,https://proxy.golang.org
 export GOSUMDB=sum.golang.org
 export GOPATH="$HOME/go"
-export GOROOT="/usr/lib/go"
+if [[ -d "/usr/local/go" ]]; then
+  export GOROOT="/usr/local/go"
+elif [[ -d "/usr/lib/go" ]]; then
+  export GOROOT="/usr/lib/go"
+fi
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
 # Bashbunni timer modified

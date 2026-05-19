@@ -86,14 +86,42 @@ install_pi_subagents_package() {
 
 update_pi_coding_agent() {
     log_info "Updating Pi coding agent..."
+
     configure_npm_user_prefix
+
+    if command -v pi &>/dev/null; then
+        # Prefer Pi's own updater, matching the Arch maintenance flow for
+        # npm/standalone installs. This updates Pi itself and installed Pi
+        # packages/extensions from ~/.pi/agent/settings.json when supported.
+        if pi update; then
+            log_success "Pi coding agent updated"
+            install_pi_subagents_package
+            return 0
+        fi
+        log_warning "pi update failed, falling back to npm install"
+    fi
+
     if command -v npm &>/dev/null; then
-        npm install -g @mariozechner/pi-coding-agent@latest
-        log_success "Pi coding agent updated"
-        install_pi_subagents_package
+        if npm install -g @mariozechner/pi-coding-agent@latest; then
+            log_success "Pi coding agent updated via npm"
+        else
+            log_warning "Pi coding agent update failed"
+        fi
     else
         log_warning "npm not found, skipping Pi coding agent update"
     fi
+
+    # If we had to update Pi through npm, still try to refresh installed Pi
+    # extensions/packages explicitly, similar to Arch's pacman/AUR branch.
+    if command -v pi &>/dev/null; then
+        if pi update --extensions; then
+            log_success "Pi packages updated"
+        else
+            log_warning "Pi package update failed"
+        fi
+    fi
+
+    install_pi_subagents_package
 }
 
 update_lazygit() {
