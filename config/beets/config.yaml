@@ -1,23 +1,21 @@
 directory: ~/Music
-library: ~/.config/beets/musiclibrary.blb
+library: ~/.config/beets/musiclibrary.db
 
-# Import settings
+ignore: ['DJ Johnny*', 'dj_johnnys*', 'Bumpers and Ads', 'Dynamic Power Hour Playlist 1']
+
 import:
-    copy: no
-    move: yes
-    write: yes
-    resume: yes
-    timid: no
-    quiet: yes
-
-# Path format for organizing files
-paths:
-    default: $albumartist/$album%aunique{}/$track $title
-    singleton: Non-Album/$artist/$title
-    comp: Compilations/$album%aunique{}/$track $title
+    move: yes    # Move files to new location
+    # copy: no   # Use files in place
+    # write: no  # Don't modify tags
 
 # Plugins
-plugins: [fetchart, embedart, discogs, mbsync]
+plugins: 
+  - musicbrainz
+  - fetchart 
+  - embedart
+  - discogs
+  - mbsync
+  - duplicates
 
 # Album art settings
 fetchart:
@@ -35,10 +33,7 @@ embedart:
     remove_art_file: no
     quality: 85
 
-# MusicBrainz settings (default data source)
-musicbrainz:
-    searchlimit: 10
+match:
+  preferred:
+    media: ["CD", "Digital Media|File"]
 
-# Discogs plugin settings
-discogs:
-    data_source_mismatch_penalty: 0.5
