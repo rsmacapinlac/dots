@@ -54,36 +54,6 @@ configure_npm_user_prefix() {
     export PATH="$HOME/.npm-global/bin:$PATH"
 }
 
-# Fetch latest GitHub release download URL for a given pattern
-# Usage: get_latest_github_release "owner/repo" "filename_pattern"
-# Example: get_latest_github_release "bambulab/BambuStudio" "ubuntu-22.04.*AppImage"
-get_latest_github_release() {
-    local repo=$1
-    local pattern=${2:-""}
-
-    local url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=1" \
-        | grep -o "https://github.com/$repo/releases/download/[^\"]*" | head -1)
-
-    if [[ -z "$url" ]]; then
-        log_error "Failed to fetch latest release for $repo"
-        return 1
-    fi
-
-    # If pattern provided, filter for matching filename
-    if [[ -n "$pattern" ]]; then
-        url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=5" \
-            | grep -o "https://github.com/$repo/releases/download/[^\"]*$pattern[^\"]*" | head -1)
-
-        if [[ -z "$url" ]]; then
-            log_warning "No release matching pattern '$pattern' found, using latest release"
-            url=$(curl -s "https://api.github.com/repos/$repo/releases?per_page=1" \
-                | grep -o "https://github.com/$repo/releases/download/[^\"]*" | head -1)
-        fi
-    fi
-
-    echo "$url"
-}
-
 # Check if running as root
 check_not_root() {
     if [[ $EUID -eq 0 ]]; then
@@ -224,6 +194,7 @@ install_base_packages() {
         polkit-kde-agent \
         curl \
         base-devel \
+        linux-headers \
         zsh \
         nodejs \
         npm \
@@ -498,8 +469,14 @@ install_media_apps() {
         python-pyacoustid \
         python-discogs-client \
         rmpc \
-        handbrake
-    
+        handbrake \
+        obs-studio \
+        v4l2loopback-dkms
+
+    # Persist and load v4l2loopback for OBS Virtual Camera
+    echo "v4l2loopback" | sudo tee /etc/modules-load.d/v4l2loopback.conf > /dev/null
+    sudo modprobe v4l2loopback 2>/dev/null || true
+
     # Configure locale for music applications
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/environment
     sudo locale-gen en_US.UTF-8
@@ -719,55 +696,6 @@ install_file_manager() {
         libsecret
     
     log_success "File managers installed"
-}
-
-# Install 3D printing tools (3d-printing)
-install_3d_printing_tools() {
-    log_info "Installing 3D printing software (AppImage)..."
-
-    # Create applications directory
-    mkdir -p "$HOME/.local/share/applications"
-    mkdir -p "$HOME/.local/bin"
-
-    # Install FUSE2 and library dependencies required for AppImage support
-    yay_install \
-        libfuse2 \
-        libtiff5
-
-    # Fetch latest Bambu Studio AppImage using helper function
-    log_info "Fetching latest Bambu Studio release..."
-    local appimage_url=$(get_latest_github_release "bambulab/BambuStudio" "ubuntu-22.04.*AppImage")
-
-    if [[ -z "$appimage_url" ]]; then
-        log_warning "Failed to fetch latest Bambu Studio release URL"
-        return 1
-    fi
-
-    local appimage_path="$HOME/.local/bin/bambustudio"
-
-    log_info "Downloading Bambu Studio AppImage from: $appimage_url"
-    if curl -sSL -o "$appimage_path" "$appimage_url"; then
-        chmod +x "$appimage_path"
-        log_success "Bambu Studio AppImage installed to $appimage_path"
-    else
-        log_warning "Failed to download Bambu Studio AppImage"
-        return 1
-    fi
-
-    # Create desktop entry for easy access (use full path, not ~)
-    cat > "$HOME/.local/share/applications/bambustudio.desktop" << EOF
-[Desktop Entry]
-Type=Application
-Name=Bambu Studio
-Exec=$HOME/.local/bin/bambustudio %U
-Icon=application-x-executable
-Categories=Utility;3DPrinting;
-Comment=3D printing software for Bambu Lab and other printers
-Terminal=false
-StartupNotify=true
-EOF
-
-    log_success "3D printing tools installed"
 }
 
 # Install AI tools (ai)
@@ -1047,9 +975,6 @@ PKGEOF
     install_steam
     install_mail_client
     # setup_flatpak
-
-    # 3d-printing
-    install_3d_printing_tools
 
     # system/security
     configure_security
