@@ -1,0 +1,357 @@
+#!/bin/bash
+#
+# macOS Setup Script - RSM's terminal-first macOS workstation configuration
+#
+# Designed for a fresh or lightly configured macOS host.
+# Installs Homebrew packages, configures npm user globals, clones/applies
+# dotfiles via rcm, and installs AI/dev tools used by this repo.
+#
+# Safe to rerun: package installs and clones check for existing state.
+#
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
+
+log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
+
+check_not_root() {
+    if [[ $EUID -eq 0 ]]; then
+        log_error "This script should not be run as root. Run as your normal macOS user."
+        exit 1
+    fi
+}
+
+check_macos() {
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+        log_error "This script only supports macOS"
+        exit 1
+    fi
+    log_info "Detected macOS $(sw_vers -productVersion) on $(uname -m)"
+}
+
+ensure_xcode_clt() {
+    if xcode-select -p &>/dev/null; then
+        log_info "Xcode Command Line Tools already installed"
+        return 0
+    fi
+
+    log_warning "Xcode Command Line Tools are required. Launching installer..."
+    xcode-select --install || true
+    log_error "Re-run this script after Xcode Command Line Tools finish installing."
+    exit 1
+}
+
+install_homebrew() {
+    if command -v brew &>/dev/null; then
+        log_info "Homebrew already installed ($(brew --version | head -1))"
+    else
+        log_info "Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    local brew_bin
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        brew_bin=/opt/homebrew/bin/brew
+    elif [[ -x /usr/local/bin/brew ]]; then
+        brew_bin=/usr/local/bin/brew
+    else
+        brew_bin=$(command -v brew)
+    fi
+
+    eval "$("$brew_bin" shellenv)"
+
+    mkdir -p "$HOME/.zprofile.d"
+    if ! grep -q 'brew shellenv' "$HOME/.zprofile" 2>/dev/null; then
+        {
+            echo ''
+            echo '# Homebrew'
+            echo "eval \"\$(\"$brew_bin\" shellenv)\""
+        } >> "$HOME/.zprofile"
+        log_info "Added Homebrew shellenv to ~/.zprofile"
+    fi
+
+    brew update
+    log_success "Homebrew ready"
+}
+
+brew_install_formulae() {
+    local formula
+    for formula in "$@"; do
+        if brew list --formula "$formula" &>/dev/null; then
+            log_info "$formula already installed"
+        else
+            log_info "Installing $formula..."
+            if brew install "$formula"; then
+                log_success "$formula installed"
+            else
+                log_warning "Failed to install formula: $formula"
+            fi
+        fi
+    done
+}
+
+brew_install_casks() {
+    local cask
+    for cask in "$@"; do
+        if brew list --cask "$cask" &>/dev/null; then
+            log_info "$cask already installed"
+        else
+            log_info "Installing cask $cask..."
+            if brew install --cask "$cask"; then
+                log_success "$cask installed"
+            else
+                log_warning "Failed to install cask: $cask"
+            fi
+        fi
+    done
+}
+
+install_base_packages() {
+    log_info "Installing base and terminal packages..."
+    brew_install_formulae \
+        git \
+        curl \
+        wget \
+        rcm \
+        zsh \
+        htop \
+        fastfetch \
+        jq \
+        gnupg \
+        pinentry-mac \
+        pass \
+        pass-otp \
+        bitwarden-cli \
+        wireguard-tools \
+        node
+    log_success "Base packages installed"
+}
+
+configure_npm() {
+    log_info "Configuring npm user prefix..."
+
+    if ! command -v npm &>/dev/null; then
+        log_warning "npm not found, skipping npm configuration"
+        return 0
+    fi
+
+    mkdir -p "$HOME/.npm-global"
+    if [[ "$(npm config get prefix)" != "$HOME/.npm-global" ]]; then
+        npm config set prefix "$HOME/.npm-global"
+    fi
+
+    if ! grep -q 'npm-global/bin' "$HOME/.zprofile" 2>/dev/null; then
+        echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> "$HOME/.zprofile"
+        log_info "Added ~/.npm-global/bin to PATH in ~/.zprofile"
+    fi
+
+    export PATH="$HOME/.npm-global/bin:$PATH"
+    log_success "npm configured"
+}
+
+configure_user_shell() {
+    log_info "Configuring zsh and oh-my-zsh..."
+
+    local brew_zsh
+    brew_zsh="$(brew --prefix)/bin/zsh"
+    if [[ -x "$brew_zsh" ]]; then
+        if ! grep -qx "$brew_zsh" /etc/shells; then
+            echo "$brew_zsh" | sudo tee -a /etc/shells > /dev/null
+        fi
+        if [[ "$SHELL" != "$brew_zsh" ]]; then
+            sudo chsh -s "$brew_zsh" "$USER"
+        fi
+    fi
+
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        log_info "oh-my-zsh already installed"
+    else
+        log_info "Installing oh-my-zsh..."
+        curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/omz-install.sh
+        sh /tmp/omz-install.sh --unattended
+        rm -f /tmp/omz-install.sh
+        log_success "oh-my-zsh installed"
+    fi
+
+    log_success "User shell configured"
+}
+
+configure_gnupg() {
+    log_info "Configuring GnuPG for pinentry-mac..."
+
+    mkdir -p "$HOME/.gnupg"
+    chmod 700 "$HOME/.gnupg"
+
+    local pinentry_path
+    pinentry_path="$(brew --prefix)/bin/pinentry-mac"
+    if [[ -x "$pinentry_path" ]]; then
+        if ! grep -q "^pinentry-program $pinentry_path$" "$HOME/.gnupg/gpg-agent.conf" 2>/dev/null; then
+            grep -v '^pinentry-program ' "$HOME/.gnupg/gpg-agent.conf" 2>/dev/null > "$HOME/.gnupg/gpg-agent.conf.tmp" || true
+            echo "pinentry-program $pinentry_path" >> "$HOME/.gnupg/gpg-agent.conf.tmp"
+            mv "$HOME/.gnupg/gpg-agent.conf.tmp" "$HOME/.gnupg/gpg-agent.conf"
+        fi
+        gpgconf --kill gpg-agent 2>/dev/null || true
+    fi
+
+    log_success "GnuPG configured"
+}
+
+setup_dotfiles() {
+    log_info "Setting up dotfiles..."
+
+    mkdir -p "$HOME/workspace"
+    if [[ ! -d "$HOME/workspace/dots" ]]; then
+        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots" || \
+            git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
+    else
+        log_info "Dots repository already exists"
+    fi
+
+    env RCRC="$HOME/workspace/dots/rcrc" rcup -f
+    log_success "Dotfiles configured"
+}
+
+install_development_packages() {
+    log_info "Installing development packages..."
+    brew_install_formulae \
+        neovim \
+        tmux \
+        ripgrep \
+        fd \
+        fzf \
+        lazygit \
+        go \
+        ruby \
+        python \
+        cmake \
+        ninja \
+        pkg-config \
+        make
+
+    if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+        git clone --depth 1 https://github.com/tmux-plugins/tpm.git "$HOME/.tmux/plugins/tpm"
+        log_info "TPM installed"
+    fi
+
+    if [[ ! -d "$HOME/.rvm" ]]; then
+        log_info "Installing RVM..."
+        curl -sSL https://get.rvm.io | bash
+    else
+        log_info "RVM already installed"
+    fi
+
+    if [[ -x "$(brew --prefix)/opt/fzf/install" && ! -f "$HOME/.fzf.zsh" ]]; then
+        "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+    fi
+
+    log_success "Development packages installed"
+}
+
+install_terminal_apps() {
+    log_info "Installing terminal-first application stack..."
+    brew_install_formulae \
+        ranger \
+        atool \
+        highlight \
+        mediainfo \
+        ffmpeg \
+        yt-dlp \
+        mpv \
+        neomutt \
+        isync \
+        msmtp \
+        notmuch \
+        urlscan \
+        lynx \
+        w3m \
+        imagemagick \
+        unzip \
+        p7zip \
+        lbdb \
+        mpd \
+        ncmpcpp \
+        mpc \
+        beets \
+        cava
+    log_success "Terminal applications installed"
+}
+
+install_gui_apps() {
+    log_info "Installing keyboard-friendly GUI/support apps..."
+    brew_install_casks \
+        kitty \
+        alacritty \
+        qutebrowser \
+        firefox \
+        bitwarden \
+        obsidian \
+        slack \
+        telegram \
+        zoom \
+        cursor \
+        raspberry-pi-imager
+    log_success "GUI/support apps processed"
+}
+
+install_ai_tools() {
+    log_info "Installing AI coding tools..."
+
+    configure_npm
+
+    if ! command -v claude &>/dev/null; then
+        npm install -g @anthropic-ai/claude-code
+        log_success "Claude Code installed"
+    else
+        log_info "Claude Code already installed ($(claude --version 2>/dev/null || echo 'unknown version'))"
+    fi
+
+    if ! command -v pi &>/dev/null; then
+        npm install -g @mariozechner/pi-coding-agent
+        log_success "Pi coding agent installed"
+    else
+        log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version'))"
+    fi
+
+    if command -v pi &>/dev/null; then
+        if pi install "$PI_SUBAGENTS_PACKAGE"; then
+            log_success "Pi subagents package installed"
+        else
+            log_warning "Pi subagents package install failed"
+        fi
+    fi
+
+    log_success "AI tools installed"
+}
+
+main() {
+    log_info "Starting macOS setup..."
+
+    check_not_root
+    check_macos
+    ensure_xcode_clt
+    install_homebrew
+    install_base_packages
+    configure_npm
+    configure_user_shell
+    configure_gnupg
+    setup_dotfiles
+    install_development_packages
+    install_terminal_apps
+    install_gui_apps
+    install_ai_tools
+
+    log_success "macOS setup completed!"
+    log_info "Start a new shell session for PATH/shell changes to take effect."
+}
+
+main "$@"
