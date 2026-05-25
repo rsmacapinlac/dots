@@ -365,6 +365,7 @@ install_gui_apps() {
         obsidian \
         slack \
         telegram \
+        todoist \
         zoom \
         cursor \
         nextcloud \
