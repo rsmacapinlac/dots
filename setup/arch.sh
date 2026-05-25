@@ -500,9 +500,11 @@ install_media_apps() {
     echo "v4l2loopback" | sudo tee /etc/modules-load.d/v4l2loopback.conf > /dev/null
     sudo modprobe v4l2loopback 2>/dev/null || true
 
-    # Configure locale for music applications
-    echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/environment
-    sudo locale-gen en_US.UTF-8
+    # Configure a UTF-8 system locale. Prefer LANG in /etc/locale.conf;
+    # avoid setting LC_ALL globally because it overrides category-specific locales.
+    sudo sed -i 's/^#\?en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    sudo locale-gen
+    echo "LANG=en_US.UTF-8" | sudo tee /etc/locale.conf > /dev/null
     
     # Disable system MPD service in favor of user service (already in the dot files)
     sudo systemctl stop mpd.service 2>/dev/null || true
@@ -668,6 +670,7 @@ install_fonts() {
     log_info "Installing fonts..."
     
     yay_install \
+        noto-fonts-cjk \
         ttf-font-awesome \
         ttf-ibmplex-mono-nerd \
         ttf-nerd-fonts-symbols \

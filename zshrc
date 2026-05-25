@@ -100,8 +100,10 @@ fi
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
-# You may need to manually set your language environment
-export LANG=C.UTF-8
+# Use a real UTF-8 locale so terminal/TUI apps display non-ASCII text consistently.
+# macOS does not provide C.UTF-8; Arch should also have en_US.UTF-8 generated.
+export LANG=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then

@@ -356,6 +356,7 @@ configure_mpd_service() {
 install_gui_apps() {
     log_info "Installing keyboard-friendly GUI/support apps..."
     brew_install_casks \
+        font-noto-sans-cjk \
         kitty \
         alacritty \
         qutebrowser \
