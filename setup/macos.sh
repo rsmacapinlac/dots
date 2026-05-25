@@ -366,6 +366,7 @@ install_gui_apps() {
         telegram \
         zoom \
         cursor \
+        nextcloud \
         raspberry-pi-imager
     log_success "GUI/support apps processed"
 }
