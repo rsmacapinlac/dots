@@ -243,3 +243,6 @@ fi
 if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
     rvm rvmrc warning ignore allGemfiles
 fi
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"

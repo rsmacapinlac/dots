@@ -1,0 +1,20 @@
+#!/bin/bash
+# Platform-aware pinentry dispatcher for gpg-agent.
+# Deployed by rcm to ~/bin/; referenced from ~/.gnupg/gpg-agent.conf.
+case "$(uname -s)" in
+    Darwin)
+        exec /opt/homebrew/bin/pinentry-mac "$@"
+        ;;
+    Linux)
+        if [[ -n "${WAYLAND_DISPLAY:-}" ]] || [[ -n "${DISPLAY:-}" ]]; then
+            exec /usr/bin/pinentry-qt "$@" 2>/dev/null || \
+            exec /usr/bin/pinentry-gtk-2 "$@" 2>/dev/null || \
+            exec /usr/bin/pinentry-curses "$@"
+        else
+            exec /usr/bin/pinentry-curses "$@"
+        fi
+        ;;
+    *)
+        exec pinentry "$@"
+        ;;
+esac

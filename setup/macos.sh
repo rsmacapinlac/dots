@@ -187,22 +187,23 @@ configure_user_shell() {
 }
 
 configure_gnupg() {
-    log_info "Configuring GnuPG for pinentry-mac..."
+    log_info "Configuring GnuPG pinentry..."
+
+    local conf="$HOME/.gnupg/gpg-agent.conf"
 
     mkdir -p "$HOME/.gnupg"
     chmod 700 "$HOME/.gnupg"
 
-    local pinentry_path
-    pinentry_path="$(brew --prefix)/bin/pinentry-mac"
-    if [[ -x "$pinentry_path" ]]; then
-        if ! grep -q "^pinentry-program $pinentry_path$" "$HOME/.gnupg/gpg-agent.conf" 2>/dev/null; then
-            grep -v '^pinentry-program ' "$HOME/.gnupg/gpg-agent.conf" 2>/dev/null > "$HOME/.gnupg/gpg-agent.conf.tmp" || true
-            echo "pinentry-program $pinentry_path" >> "$HOME/.gnupg/gpg-agent.conf.tmp"
-            mv "$HOME/.gnupg/gpg-agent.conf.tmp" "$HOME/.gnupg/gpg-agent.conf"
-        fi
-        gpgconf --kill gpg-agent 2>/dev/null || true
+    # Break symlink so the injected pinentry path doesn't land in the dotfiles repo
+    if [[ -L "$conf" ]]; then
+        cp "$conf" "$conf.tmp" && mv "$conf.tmp" "$conf"
     fi
 
+    if ! grep -q "^pinentry-program " "$conf" 2>/dev/null; then
+        echo "pinentry-program $HOME/.bin/pinentry-wrapper" >> "$conf"
+    fi
+
+    gpgconf --kill gpg-agent 2>/dev/null || true
     log_success "GnuPG configured"
 }
 
@@ -219,6 +220,19 @@ setup_dotfiles() {
 
     env RCRC="$HOME/workspace/dots/rcrc" rcup -f
     log_success "Dotfiles configured"
+}
+
+configure_security() {
+    log_info "Configuring security tools..."
+
+    if [[ ! -d "$HOME/.password-store" ]]; then
+        git clone git@github.com:rsmacapinlac/cautious-dollop.git "$HOME/.password-store"
+        log_success "Password store repository cloned"
+    else
+        log_info "Password store already exists, skipping clone"
+    fi
+
+    log_success "Security configuration completed"
 }
 
 install_development_packages() {
@@ -286,6 +300,59 @@ install_terminal_apps() {
     log_success "Terminal applications installed"
 }
 
+install_rmpc() {
+    if command -v rmpc &>/dev/null; then
+        log_info "rmpc already installed, skipping"
+        return 0
+    fi
+
+    log_info "Installing rmpc..."
+
+    local arch
+    case "$(uname -m)" in
+        arm64)  arch="aarch64-apple-darwin" ;;
+        x86_64) arch="x86_64-apple-darwin" ;;
+        *)
+            log_warning "Unsupported architecture $(uname -m), skipping rmpc install"
+            return 0
+            ;;
+    esac
+
+    local version url tmpdir
+    version=$(curl -s "https://api.github.com/repos/mierak/rmpc/releases/latest" \
+        | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
+    url="https://github.com/mierak/rmpc/releases/download/v${version}/rmpc-v${version}-${arch}.tar.gz"
+
+    tmpdir=$(mktemp -d)
+    curl -fsSL "$url" -o "$tmpdir/rmpc.tar.gz"
+    tar -xzf "$tmpdir/rmpc.tar.gz" -C "$tmpdir"
+    install -m 0755 "$tmpdir/rmpc" "$(brew --prefix)/bin/rmpc"
+    rm -rf "$tmpdir"
+
+    log_success "rmpc ${version} installed"
+}
+
+configure_mpd_service() {
+    log_info "Configuring MPD service..."
+
+    mkdir -p "$HOME/.config/mpd" "$HOME/Music"
+
+    if command -v brew &>/dev/null && brew list --formula mpd &>/dev/null; then
+        mkdir -p "$(brew --prefix)/etc"
+        ln -sfn "$HOME/.config/mpd/mpd.conf" "$(brew --prefix)/etc/mpd.conf"
+
+        if brew services list | awk '$1 == "mpd" && $2 == "started" { found = 1 } END { exit !found }'; then
+            log_info "MPD Homebrew service already started"
+        elif brew services start mpd; then
+            log_success "MPD Homebrew service started"
+        else
+            log_warning "Failed to start MPD Homebrew service"
+        fi
+    else
+        log_warning "MPD is not installed; skipping service setup"
+    fi
+}
+
 install_gui_apps() {
     log_info "Installing keyboard-friendly GUI/support apps..."
     brew_install_casks \
@@ -345,8 +412,11 @@ main() {
     configure_user_shell
     configure_gnupg
     setup_dotfiles
+    configure_security
     install_development_packages
     install_terminal_apps
+    install_rmpc
+    configure_mpd_service
     install_gui_apps
     install_ai_tools
 

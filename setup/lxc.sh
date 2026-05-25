@@ -221,6 +221,27 @@ configure_security() {
     log_success "Security tools configured"
 }
 
+configure_gnupg() {
+    log_info "Configuring GnuPG pinentry..."
+
+    local conf="$HOME/.gnupg/gpg-agent.conf"
+
+    mkdir -p "$HOME/.gnupg"
+    chmod 700 "$HOME/.gnupg"
+
+    # Break symlink so the injected pinentry path doesn't land in the dotfiles repo
+    if [[ -L "$conf" ]]; then
+        cp "$conf" "$conf.tmp" && mv "$conf.tmp" "$conf"
+    fi
+
+    if ! grep -q "^pinentry-program " "$conf" 2>/dev/null; then
+        echo "pinentry-program $HOME/.bin/pinentry-wrapper" >> "$conf"
+    fi
+
+    gpgconf --kill gpg-agent 2>/dev/null || true
+    log_success "GnuPG configured"
+}
+
 setup_dotfiles() {
     log_info "Setting up dotfiles..."
 
@@ -475,6 +496,7 @@ main() {
     configure_user_shell
     configure_security
     setup_dotfiles
+    configure_gnupg
     install_development_packages
     install_fastfetch
     install_lazygit
