@@ -38,18 +38,20 @@ check_device() {
 }
 
 # Emit rsync filter args based on albums referenced in playlists.
-# Includes playlist files, then each referenced artist/ and artist/album/***.
+# Includes each referenced artist/ and artist/album/***.
 # Excludes everything else.
+# M3U files are handled separately by sync_music (stripped of #EXTINF for device).
 build_filter() {
-    echo "--include=*.m3u"
-
     grep -rh "^[^#]" "$MUSIC_DIR"/*.m3u \
         | sed 's|/[^/]*$||' \
         | awk -F'/' 'NF >= 3 { print $1"/"$2 } NF < 3 { print }' \
         | sort -u \
         | while IFS= read -r album; do
-            echo "--include=${album%%/*}/"
-            echo "--include=${album}/***"
+            # Escape rsync glob metacharacters ([ ] * ?) in literal path segments
+            safe_album=$(printf '%s' "$album" | sed 's/\[/\\[/g; s/\]/\\]/g; s/\*/\\*/g; s/?/\\?/g')
+            safe_artist=$(printf '%s' "${album%%/*}" | sed 's/\[/\\[/g; s/\]/\\]/g; s/\*/\\*/g; s/?/\\?/g')
+            echo "--include=${safe_artist}/"
+            echo "--include=${safe_album}/***"
         done
 
     echo "--exclude=*"
@@ -102,6 +104,11 @@ sync_music() {
     rsync "${rsync_opts[@]}" "$MUSIC_DIR/" "$MOUNT_POINT/"
 
     if ! $DRY_RUN; then
+        # Copy M3U files separately, stripping #EXTM3U/#EXTINF lines.
+        # The H2 treats those comment lines as song paths and skips them.
+        for m3u in "$MUSIC_DIR"/*.m3u; do
+            grep -Ev '^(#EXTM3U|#EXTINF)' "$m3u" | grep . > "$MOUNT_POINT/$(basename "$m3u")"
+        done
         print_success "Sync complete."
         sync
         print_status "Buffers flushed. Safe to unplug."
