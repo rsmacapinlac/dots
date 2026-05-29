@@ -156,6 +156,62 @@ update_claude_code() {
     fi
 }
 
+update_rmpc() {
+    if ! command -v rmpc &>/dev/null; then
+        log_warning "rmpc not installed, skipping update"
+        return 0
+    fi
+
+    log_info "Updating rmpc..."
+
+    local arch
+    case "$(uname -m)" in
+        arm64)  arch="aarch64-apple-darwin" ;;
+        x86_64) arch="x86_64-apple-darwin" ;;
+        *)
+            log_warning "Unsupported architecture $(uname -m), skipping rmpc update"
+            return 0
+            ;;
+    esac
+
+    local latest_version current_version
+    latest_version=$(curl -s "https://api.github.com/repos/mierak/rmpc/releases/latest" \
+        | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/') || true
+    current_version=$(rmpc --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+
+    if [[ -z "$latest_version" ]]; then
+        log_warning "Could not determine latest rmpc version, skipping update"
+        return 0
+    fi
+
+    if [[ "$latest_version" == "$current_version" ]]; then
+        log_info "rmpc already at latest version ($current_version)"
+        return 0
+    fi
+
+    local url tmpdir
+    url="https://github.com/mierak/rmpc/releases/download/v${latest_version}/rmpc-v${latest_version}-${arch}.tar.gz"
+    tmpdir=$(mktemp -d)
+    if curl -fsSL "$url" -o "$tmpdir/rmpc.tar.gz" \
+        && tar -xzf "$tmpdir/rmpc.tar.gz" -C "$tmpdir" \
+        && install -m 0755 "$tmpdir/rmpc" "$(brew --prefix)/bin/rmpc"; then
+        log_success "rmpc updated to ${latest_version}"
+    else
+        log_warning "rmpc update failed"
+    fi
+    rm -rf "$tmpdir"
+}
+
+update_rvm() {
+    log_info "Updating RVM..."
+    if command -v rvm &>/dev/null; then
+        rvm get stable || log_warning "RVM update failed"
+        log_success "RVM updated"
+    else
+        log_warning "RVM not found, skipping"
+    fi
+}
+
 update_oh_my_zsh() {
     log_info "Updating oh-my-zsh..."
     if [[ -x "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
@@ -177,6 +233,17 @@ update_nvim_plugins() {
     fi
 }
 
+update_tmux_plugins() {
+    log_info "Updating tmux plugins..."
+    local tpm_update="$HOME/.tmux/plugins/tpm/bin/update_plugins"
+    if [[ -x "$tpm_update" ]]; then
+        "$tpm_update" all || log_warning "tmux plugin update failed"
+        log_success "tmux plugins updated"
+    else
+        log_warning "TPM not found, skipping tmux plugin update"
+    fi
+}
+
 main() {
     log_info "Starting macOS maintenance..."
 
@@ -185,10 +252,13 @@ main() {
     update_homebrew_packages
     update_dotfiles
     update_npm_packages
+    update_rvm
+    update_rmpc
     update_claude_code
     update_pi_coding_agent
     update_oh_my_zsh
     update_nvim_plugins
+    update_tmux_plugins
 
     log_success "Maintenance complete!"
 }
