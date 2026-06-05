@@ -1,6 +1,10 @@
 directory: ~/Music
 library: ~/.config/beets/musiclibrary.db
 
+# Keep filesystem paths portable for MPD playlists and firmware-based players
+# like the HIFI Walker H2. Tags can remain Unicode; this only affects paths.
+asciify_paths: yes
+
 ignore: ['DJ Johnny*', 'dj_johnnys*', 'Bumpers and Ads', 'Dynamic Power Hour Playlist 1']
 
 import:
