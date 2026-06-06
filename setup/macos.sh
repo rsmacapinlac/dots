@@ -116,6 +116,15 @@ brew_install_casks() {
     done
 }
 
+get_latest_github_release_asset() {
+    local repo=$1
+    local pattern=$2
+
+    curl -fsSL "https://api.github.com/repos/$repo/releases?per_page=5" \
+        | grep -om 1 "https://github.com/$repo/releases/download/[^\"]*$pattern[^\"]*" \
+        || true
+}
+
 install_base_packages() {
     log_info "Installing base and terminal packages..."
     brew_install_formulae \
@@ -374,10 +383,67 @@ install_gui_apps() {
     log_success "GUI/support apps processed"
 }
 
+install_gogcli() {
+    log_info "Installing gogcli Google Suite CLI..."
+    brew_install_formulae gogcli
+}
+
+install_himalaya() {
+    if command -v himalaya &>/dev/null; then
+        log_info "himalaya already installed, skipping"
+        return 0
+    fi
+
+    log_info "Installing himalaya..."
+
+    local arch pattern url tmpdir binary
+    case "$(uname -m)" in
+        arm64)  arch="aarch64-darwin" ;;
+        x86_64) arch="x86_64-darwin" ;;
+        *)
+            log_warning "Unsupported architecture $(uname -m), skipping himalaya install"
+            return 0
+            ;;
+    esac
+
+    pattern="himalaya.${arch}.tgz"
+    url=$(get_latest_github_release_asset "pimalaya/himalaya" "$pattern")
+    if [[ -z "$url" ]]; then
+        log_warning "Could not find himalaya release asset for $pattern"
+        return 0
+    fi
+
+    tmpdir=$(mktemp -d)
+    if curl -fsSL "$url" -o "$tmpdir/himalaya.tgz" && tar -xzf "$tmpdir/himalaya.tgz" -C "$tmpdir"; then
+        binary=$(find "$tmpdir" -type f -name himalaya | head -1)
+        if [[ -n "$binary" ]] && install -m 0755 "$binary" "$(brew --prefix)/bin/himalaya"; then
+            log_success "himalaya installed"
+        else
+            log_warning "himalaya binary not found in release archive"
+        fi
+    else
+        log_warning "himalaya install failed"
+    fi
+    rm -rf "$tmpdir"
+}
+
 install_ai_tools() {
     log_info "Installing AI coding tools..."
 
     configure_npm
+    install_himalaya
+    install_gogcli
+
+    if ! command -v agent-browser &>/dev/null; then
+        npm install -g agent-browser
+        log_success "agent-browser installed"
+    else
+        log_info "agent-browser already installed"
+    fi
+
+    if command -v agent-browser &>/dev/null; then
+        agent-browser install || log_warning "agent-browser browser install failed"
+    fi
 
     if ! command -v claude &>/dev/null; then
         npm install -g @anthropic-ai/claude-code

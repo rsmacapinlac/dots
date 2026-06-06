@@ -40,6 +40,15 @@ load_homebrew() {
     fi
 }
 
+get_latest_github_release_asset() {
+    local repo=$1
+    local pattern=$2
+
+    curl -fsSL "https://api.github.com/repos/$repo/releases?per_page=5" \
+        | grep -om 1 "https://github.com/$repo/releases/download/[^\"]*$pattern[^\"]*" \
+        || true
+}
+
 update_homebrew_packages() {
     log_info "Updating Homebrew packages..."
 
@@ -139,6 +148,63 @@ update_pi_coding_agent() {
     fi
 
     install_pi_subagents_package
+}
+
+update_ai_support_tools() {
+    log_info "Updating AI support tools..."
+
+    load_homebrew
+    configure_npm_user_prefix
+
+    if command -v npm &>/dev/null; then
+        npm install -g agent-browser@latest || log_warning "agent-browser update failed"
+        if command -v agent-browser &>/dev/null; then
+            agent-browser install || log_warning "agent-browser browser install failed"
+        fi
+    else
+        log_warning "npm not found, skipping agent-browser update"
+    fi
+
+    if command -v brew &>/dev/null; then
+        local brew_bin arch pattern url tmpdir binary
+        brew_bin="$(brew --prefix)/bin"
+
+        if brew list --formula gogcli &>/dev/null; then
+            brew upgrade gogcli || log_warning "gogcli upgrade failed"
+        else
+            brew install gogcli || log_warning "gogcli install failed"
+        fi
+
+        case "$(uname -m)" in
+            arm64)  arch="aarch64-darwin" ;;
+            x86_64) arch="x86_64-darwin" ;;
+            *) arch="" ;;
+        esac
+        if [[ -n "$arch" ]]; then
+            pattern="himalaya.${arch}.tgz"
+            url=$(get_latest_github_release_asset "pimalaya/himalaya" "$pattern")
+            if [[ -n "$url" ]]; then
+                tmpdir=$(mktemp -d)
+                if curl -fsSL "$url" -o "$tmpdir/himalaya.tgz" && tar -xzf "$tmpdir/himalaya.tgz" -C "$tmpdir"; then
+                    binary=$(find "$tmpdir" -type f -name himalaya | head -1)
+                    if [[ -n "$binary" ]] && install -m 0755 "$binary" "$brew_bin/himalaya"; then
+                        log_success "himalaya updated"
+                    else
+                        log_warning "himalaya binary not found in release archive"
+                    fi
+                else
+                    log_warning "himalaya update failed"
+                fi
+                rm -rf "$tmpdir"
+            else
+                log_warning "Could not find himalaya release asset for $pattern"
+            fi
+        else
+            log_warning "Unsupported architecture $(uname -m), skipping himalaya update"
+        fi
+    else
+        log_warning "Homebrew not found, skipping gogcli/himalaya updates"
+    fi
 }
 
 update_claude_code() {
@@ -254,6 +320,7 @@ main() {
     update_npm_packages
     update_rvm
     update_rmpc
+    update_ai_support_tools
     update_claude_code
     update_pi_coding_agent
     update_oh_my_zsh
