@@ -9,6 +9,7 @@ This repo is a Linux dotfiles/workstation configuration managed by `rcm` (`rcup`
 
 Target:
 - Arch Linux (full desktop environment)
+- Macos (full desktop environment)
 - Debian LXC / headless environments
 
 ## Principles and repository patterns
