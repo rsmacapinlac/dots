@@ -4,3 +4,5 @@
 if ! has_external_monitors; then
     enable_internal
 fi
+
+restart_waybar

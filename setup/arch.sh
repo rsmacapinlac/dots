@@ -791,6 +791,20 @@ EOF
     log_success "Raspberry Pi tools installed"
 }
 
+# Install electronics/Arduino tools (arduino)
+install_arduino_tools() {
+    log_info "Installing Arduino tools..."
+
+    # CLI + language server from official repos (terminal-first workflow, Neovim autocompletion)
+    sudo pacman -S --needed --noconfirm arduino-cli arduino-language-server
+
+    # Serial port access for board uploads (Arch uses the uucp group)
+    sudo usermod -a -G uucp "$USER"
+
+    log_success "Arduino tools installed"
+    log_warning "Log out and back in for uucp group membership (serial uploads) to take effect"
+}
+
 # Install work tools (work)
 install_work_tools() {
     log_info "Installing work tools..."
@@ -1024,7 +1038,10 @@ PKGEOF
 
     # raspberry pi
     install_rpi_tools
-    
+
+    # electronics / arduino
+    install_arduino_tools
+
     # virtualization
     verify_virtualization_support
     install_virtualization
@@ -1037,5 +1054,8 @@ PKGEOF
     log_info "Please reboot your system to ensure all changes take effect."
 }
 
-# Run main function
-main "$@"
+# Run main function only when executed directly.
+# When sourced (e.g. to run a single install_* function), main is skipped.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

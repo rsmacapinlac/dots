@@ -72,3 +72,10 @@ enable_internal() {
         place_primary_external_auto || true
     fi
 }
+
+restart_waybar() {
+    log_display "restarting waybar after monitor change"
+    pkill -x waybar 2>/dev/null || true
+    sleep 0.5
+    nohup waybar >/dev/null 2>&1 &
+}

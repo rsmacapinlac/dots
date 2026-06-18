@@ -18,8 +18,12 @@ if [[ -n "$FPATH" ]]; then
   done
 
   if (( _dots_reset_fpath )); then
+    # Save FPATH before clearing: fpath and FPATH are tied variables — clearing
+    # fpath immediately empties FPATH, so ${(s.:.)FPATH} would expand to nothing
+    # if we don't capture it first.
+    _dots_saved_fpath="${FPATH}"
     fpath=()
-    for _dots_fpath_dir in ${(s.:.)FPATH} \
+    for _dots_fpath_dir in ${(s.:.)_dots_saved_fpath} \
       /opt/homebrew/share/zsh/site-functions \
       /usr/local/share/zsh/site-functions \
       /usr/share/zsh/site-functions \
@@ -30,6 +34,7 @@ if [[ -n "$FPATH" ]]; then
       [[ -d "$_dots_fpath_dir" ]] && fpath+=("$_dots_fpath_dir")
     done
     typeset -U fpath
+    unset _dots_saved_fpath
   fi
 
   unset _dots_reset_fpath _dots_fpath_dir
