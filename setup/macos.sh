@@ -231,6 +231,45 @@ setup_dotfiles() {
     log_success "Dotfiles configured"
 }
 
+install_passff_host() {
+    local host_dir="$HOME/Library/Application Support/Mozilla/NativeMessagingHosts"
+    local host_script="$host_dir/passff.py"
+    local manifest="$host_dir/passff.json"
+
+    if [[ -s "$manifest" && -x "$host_script" ]]; then
+        log_info "PassFF native messaging host already installed"
+        return 0
+    fi
+
+    log_info "Installing PassFF native messaging host..."
+
+    local version
+    version=$(curl -fsSL "https://api.github.com/repos/passff/passff-host/releases/latest" \
+        | grep '"tag_name"' | sed 's/.*"\([^"]*\)".*/\1/')
+
+    if [[ -z "$version" ]]; then
+        log_warning "Could not determine passff-host version, skipping"
+        return 0
+    fi
+
+    mkdir -p "$host_dir"
+    curl -fsSL "https://github.com/passff/passff-host/releases/download/${version}/passff.py" \
+        -o "$host_script"
+    chmod +x "$host_script"
+
+    cat > "$manifest" <<EOF
+{
+    "name": "passff",
+    "description": "Host app enabling PassFF browser extension to use the pass password manager",
+    "path": "${host_script}",
+    "type": "stdio",
+    "allowed_extensions": ["passff@invicem.pro"]
+}
+EOF
+
+    log_success "PassFF native messaging host installed for Firefox"
+}
+
 configure_security() {
     log_info "Configuring security tools..."
 
@@ -240,6 +279,8 @@ configure_security() {
     else
         log_info "Password store already exists, skipping clone"
     fi
+
+    install_passff_host
 
     log_success "Security configuration completed"
 }
