@@ -474,6 +474,9 @@ enable_services() {
     sudo systemctl enable ssh
     sudo systemctl start ssh
 
+    systemctl --user daemon-reload
+    systemctl --user enable --now ssh-agent.service 2>/dev/null || true
+
     log_success "Services enabled"
 }
 
