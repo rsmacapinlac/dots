@@ -193,6 +193,7 @@ install_base_packages() {
         htop \
         polkit-kde-agent \
         curl \
+        rsync \
         base-devel \
         linux-headers \
         zsh \
@@ -365,8 +366,7 @@ setup_dotfiles() {
     
     # Clone dots repository (skip if already exists)
     if [[ ! -d "$HOME/workspace/dots" ]]; then
-        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots" || \
-        git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
+        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots"
     else
         log_info "Dots repository already exists, skipping clone"
     fi

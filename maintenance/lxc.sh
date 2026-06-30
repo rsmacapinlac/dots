@@ -102,7 +102,7 @@ update_pi_coding_agent() {
     fi
 
     if command -v npm &>/dev/null; then
-        if npm install -g @mariozechner/pi-coding-agent@latest; then
+        if npm install -g @earendil-works/pi-coding-agent@latest; then
             log_success "Pi coding agent updated via npm"
         else
             log_warning "Pi coding agent update failed"

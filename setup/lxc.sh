@@ -259,8 +259,7 @@ setup_dotfiles() {
 
     mkdir -p "$HOME/workspace"
     if [[ ! -d "$HOME/workspace/dots" ]]; then
-        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots" || \
-            git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
+        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots"
     else
         log_info "Dots repository already exists, skipping clone"
     fi
@@ -429,7 +428,7 @@ install_pi_coding_agent() {
         log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version')), skipping"
     else
         log_info "Installing Pi coding agent..."
-        npm install -g @mariozechner/pi-coding-agent
+        npm install -g @earendil-works/pi-coding-agent
         log_success "Pi coding agent installed"
     fi
 
