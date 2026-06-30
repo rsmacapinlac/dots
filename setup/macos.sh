@@ -142,6 +142,7 @@ install_base_packages() {
         pass-otp \
         bitwarden-cli \
         wireguard-tools \
+        rsync \
         node
     log_success "Base packages installed"
 }

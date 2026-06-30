@@ -79,11 +79,22 @@ plugins=(
   dotenv
 )
 
-# GPG Agent SSH support
-# Use GPG agent for SSH authentication
-# This works with pinentry-qt for graphical password prompts
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-gpgconf --launch gpg-agent 2>/dev/null
+# SSH agent — platform-conditional startup
+# Arch: ssh-agent runs as a systemd user service with a fixed socket path
+# macOS: no launchd-managed socket; use a fixed socket and start agent if needed
+if [[ "$(uname -s)" == "Linux" ]]; then
+    export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
+elif [[ "$(uname -s)" == "Darwin" ]]; then
+    export SSH_AUTH_SOCK="$HOME/.ssh/ssh-agent.sock"
+    if ! ssh-add -l &>/dev/null; then
+        rm -f "$SSH_AUTH_SOCK"
+        ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
+    fi
+fi
+
+if ! ssh-add -l &>/dev/null; then
+    find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' -exec ssh-add {} \;
+fi
 
 source $ZSH/oh-my-zsh.sh
 

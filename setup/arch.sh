@@ -933,6 +933,7 @@ enable_services() {
     # Enable user MPD service
     systemctl --user daemon-reload
     systemctl --user enable mpd.service 2>/dev/null || true
+    systemctl --user enable --now ssh-agent.service 2>/dev/null || true
     
     # Enable gnome-keyring 
     systemctl --user enable gnome-keyring-daemon 2>/dev/null || true
