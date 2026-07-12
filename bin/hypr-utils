@@ -67,6 +67,7 @@ enable_internal() {
 
     log_display "enabling internal monitor automatically: $internal_mon"
     hyprctl keyword monitor "$internal_mon,preferred,auto,1.5"
+    hyprctl dispatch dpms on "$internal_mon"
 
     if has_external_monitors; then
         place_primary_external_auto || true
