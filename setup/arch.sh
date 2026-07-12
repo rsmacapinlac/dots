@@ -207,7 +207,7 @@ install_base_packages() {
         system-config-printer \
         avahi \
         nss-mdns \
-        pinentry-qt
+        pinentry
     
     # Add user to lp group for printer access
     sudo usermod -a -G lp "$USER"
@@ -389,6 +389,7 @@ install_development_packages() {
         fzf \
         xclip \
         python-pynvim \
+        esptool \
         lazygit \
         go \
         make
