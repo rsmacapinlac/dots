@@ -53,7 +53,7 @@
             "critical": 15
         },
         "format": "{capacity}% {icon}",
-        "format-charging": "",
+        "format-charging": "{time} 󰉁",
         "format-plugged": "",
         "format-alt": "{icon}",
         "format-icons": ["", "", "", "", ""]
