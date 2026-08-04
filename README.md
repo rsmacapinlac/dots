@@ -57,7 +57,7 @@ This unified installation script will:
 
 ### Configuration Files (`config/`)
 - **Desktop Environment**:
-  - `hypr/`: Hyprland compositor with modular keybinding system
+  - `hypr/`: Hyprland compositor, configured in Lua with modules under `hypr/conf/`
   - `waybar/`: Status bar with custom scripts and styling
   - `rofi/`: Application launcher themes
   - `mako/`: Notification configuration
@@ -85,7 +85,6 @@ This unified installation script will:
   - Various theme files with Catppuccin color schemes
 
 ### Scripts & Utilities (`bin/`)
-- `toggle-ctrlmod-bindings`: Toggle Ctrl key bindings for Citrix compatibility
 - Custom workflow scripts and automation tools
 
 ### Documentation (`docs/`)
@@ -116,7 +115,7 @@ This unified installation script will:
 ### Detailed Guides
 - **[Email Setup (isync)](docs/isync.md)**: Complete multi-account email configuration
 - **[Ranger SMB Mounting](docs/ranger-smb-mounting.md)**: Network share integration
-- **[Hyprland Ctrl Toggle](bin/toggle-ctrlmod-bindings)**: Citrix compatibility script
+- **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
 
 ## Post-Installation Usage
 
@@ -137,9 +136,6 @@ rcdown
 
 ### Common Commands
 ```bash
-# Hyprland keybinding toggle (for Citrix sessions)
-bin/toggle-ctrlmod-bindings
-
 # Email synchronization
 mbsync -a
 
@@ -160,8 +156,9 @@ The dotfiles are managed with `rcm`. After making changes to configurations:
 
 The configuration is designed to be modular and easily customizable:
 
-- **Colors**: All themes use Catppuccin - modify `mocha.conf` and related theme files
-- **Keybindings**: Hyprland bindings are in separate files for easy modification
+- **Colors**: All themes use Catppuccin - modify `config/hypr/conf/mocha.lua` (Hyprland),
+  `config/hypr/mocha.conf` (hyprlock), and related theme files
+- **Keybindings**: Hyprland bindings live in `config/hypr/conf/binds.lua`
 - **Applications**: Each app configuration is self-contained in `config/`
 - **Scripts**: Custom utilities in `bin/` can be modified or extended
 

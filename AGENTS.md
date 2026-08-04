@@ -70,7 +70,8 @@ rcdown   # destructive; use with caution
 Hyprland:
 ```bash
 hyprctl reload
-bin/toggle-ctrlmod-bindings
+hyprctl configerrors   # Lua errors surface here, not in the log
+hyprctl binds          # verify modmasks after touching conf/binds.lua
 ```
 
 Email:
@@ -103,7 +104,7 @@ There is no single project-wide test suite. Validate changes based on file type 
 - Lua configs: run `luac -p <file>` if Lua is available; for Neovim Lua, prefer opening or headless-loading Neovim only when safe.
 - JSON/JSONC: validate JSON with `python -m json.tool` only for strict JSON files; do not use it for JSONC files with comments.
 - YAML: parse with available YAML tooling if installed.
-- Hyprland changes: inspect syntax carefully and run `hyprctl reload` only when the user wants the live session reloaded.
+- Hyprland changes: `luac -p` only catches Lua syntax, not bad `hl.*` arguments. Bad binds and rules fail silently at load, so after reloading always check `hyprctl configerrors` and confirm the result with `hyprctl binds` / `hyprctl monitors`. Run `hyprctl reload` only when the user wants the live session reloaded.
 - RCM changes: use `rcup -n`/dry-run style checks if available; otherwise ask before applying with `rcup`.
 
 Avoid running bootstrap or maintenance scripts unless explicitly requested; they install packages, alter services, and may require sudo.
@@ -115,7 +116,9 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 - Prefer small, focused edits. Do not reformat large configs unnecessarily.
 - Keep executable scripts executable when creating or moving them.
 - Use existing helper/logging patterns (`log_info`, `log_success`, etc.) in setup and maintenance scripts.
-- For Hyprland keybindings, preserve the enabled/disabled/current pattern used for Citrix compatibility.
+- Hyprland is configured in Lua. `config/hypr/hyprland.lua` is a thin loader; keep real configuration in modules under `config/hypr/conf/` and `require` them in dependency order. `conf/switches.lua` must load after `conf/monitors.lua` — switch binds silently stop firing when declared alongside `hl.monitor()` calls.
+- `$HOME` does not expand in the Lua config. Build paths with `os.getenv("HOME") .. "/..."`.
+- `hyprlock`, `hypridle`, and `hyprpaper` stay in hyprlang; only Hyprland itself moved to Lua. The Catppuccin palette therefore exists twice: `config/hypr/conf/mocha.lua` for Hyprland and `config/hypr/mocha.conf` for hyprlock. Update both together.
 - For Neovim, keep plugin declarations in `config/nvim/lua/core/plugins.lua` and plugin-specific setup under `config/nvim/lua/core/plugins_config/`.
 - For Awesome WM, keep modules split between `bindings/`, `deco/`, and `main/`.
 
