@@ -26,9 +26,11 @@ hl.bind(ctrlMod .. " + SHIFT + Q",     hl.dsp.window.close())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 
 -- Switch workspaces with ctrlMod + [0-9]
+-- Move the active window to a workspace with ctrlMod + SHIFT + [0-9]
 for i = 1, 10 do
     local key = i % 10 -- 10 maps to key 0
-    hl.bind(ctrlMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
+    hl.bind(ctrlMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
+    hl.bind(ctrlMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
 
 -- Move focus with ctrlMod + arrow keys
