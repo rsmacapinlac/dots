@@ -36,11 +36,51 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Directory tree that npm manages out-of-band (e.g. `sudo npm update -g` below).
+# Files here can drift from pacman's `npm` package and make `yay -Syu` abort
+# with "exists in filesystem" conflicts on the next run.
+NPM_MODULES_DIR="/usr/lib/node_modules"
+
 # Update all Arch/AUR packages (removes --needed, forces updates)
 update_system_packages() {
     log_info "Updating all system packages..."
-    yay -Syu --noconfirm --answerdiff None --answerclean None --removemake
-    log_success "System packages updated"
+
+    local log_file
+    log_file="$(mktemp)"
+
+    if yay -Syu --noconfirm --answerdiff None --answerclean None --removemake \
+        2>&1 | tee "$log_file"; then
+        rm -f "$log_file"
+        log_success "System packages updated"
+        return 0
+    fi
+
+    # Recover from npm file-ownership conflicts caused by `sudo npm update -g`
+    # shadowing pacman's `npm` package. Only retry when the upgrade failed on
+    # "exists in filesystem" AND every conflicting path lives under the npm
+    # modules tree, so we never blindly overwrite unrelated packages.
+    local conflicts
+    conflicts="$(grep -oE '/[^ ]+ exists in filesystem' "$log_file" | awk '{print $1}')"
+    rm -f "$log_file"
+
+    if [[ -z "$conflicts" ]]; then
+        log_error "System package update failed"
+        return 1
+    fi
+
+    if grep -qv "^${NPM_MODULES_DIR}/" <<< "$conflicts"; then
+        log_error "System upgrade hit file conflicts outside ${NPM_MODULES_DIR}; not auto-overwriting. Resolve manually."
+        return 1
+    fi
+
+    log_warning "npm file conflicts under ${NPM_MODULES_DIR} detected; retrying upgrade with --overwrite..."
+    if yay -Syu --noconfirm --answerdiff None --answerclean None --removemake \
+        --overwrite "${NPM_MODULES_DIR}/*"; then
+        log_success "System packages updated (resolved npm file conflicts)"
+    else
+        log_error "System package update failed even after overwriting npm conflicts"
+        return 1
+    fi
 }
 
 # Update dotfiles via rcup
