@@ -748,6 +748,10 @@ install_ai_tools() {
 
     configure_npm_user_prefix
 
+    # Install Codex CLI: OpenAI's terminal coding agent
+    # https://github.com/openai/codex
+    yay_install openai-codex-bin
+
     # Install pi-coding-agent: minimalist AI coding agent
     # https://github.com/badlogic/pi-mono
     yay_install pi-coding-agent
@@ -764,7 +768,28 @@ install_ai_tools() {
         log_warning "pi not found after install, skipping Pi subagents package"
     fi
 
+    install_ai_desktop_apps
+
     log_success "AI tools installed"
+}
+
+# Install AI desktop apps (GUI companions to the terminal agents).
+# Desktop-only: these are skipped on headless hosts such as the LXC setup.
+install_ai_desktop_apps() {
+    log_info "Installing AI desktop apps..."
+
+    # Claude desktop: Anthropic's official Linux build, packaged in the AUR
+    # https://claude.com/download
+    yay_install claude-desktop
+
+    # ChatGPT desktop (hosts the Codex view): OpenAI shipped an official Linux
+    # build on 2026-08-11, but ships only .deb/.rpm and does not target Arch.
+    # This AUR package repackages OpenAI's own .deb from their apt repo on
+    # persistent.oaistatic.com, so it tracks the official binary and the same
+    # version stream as the macOS cask. Non-fatal if it fails to build.
+    yay_install chatgpt-desktop
+
+    log_success "AI desktop apps installed"
 }
 
 # Install Raspberry Pi tools (rpi)

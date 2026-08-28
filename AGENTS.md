@@ -53,8 +53,9 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
 - `setup/arch.sh` — full Arch workstation bootstrap script.
+- `setup/macos.sh` — full macOS workstation bootstrap script (Homebrew-based).
 - `setup/lxc.sh` — Debian 12 LXC/headless setup for AI-agent/dev work.
-- `maintenance/arch.sh`, `maintenance/lxc.sh` — regular update scripts.
+- `maintenance/arch.sh`, `maintenance/macos.sh`, `maintenance/lxc.sh` — regular update scripts.
 - `config/wallpapers/` — wallpaper scripts and image collections.
 
 ## Common commands
@@ -91,8 +92,10 @@ bin/songinfo
 Setup/maintenance:
 ```bash
 setup/arch.sh        # Arch desktop bootstrap; do not run casually
+setup/macos.sh       # macOS desktop bootstrap; do not run casually
 setup/lxc.sh         # Debian LXC bootstrap; do not run casually
 maintenance/arch.sh
+maintenance/macos.sh
 maintenance/lxc.sh
 ```
 

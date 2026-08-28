@@ -423,6 +423,20 @@ install_claude_code() {
     log_success "Claude Code installed"
 }
 
+install_codex_cli() {
+    if command -v codex &>/dev/null; then
+        log_info "Codex CLI already installed ($(codex --version 2>/dev/null || echo 'unknown version')), skipping"
+        return 0
+    fi
+
+    # OpenAI's Codex CLI: terminal coding agent
+    # https://github.com/openai/codex
+    log_info "Installing Codex CLI..."
+    npm install -g @openai/codex
+
+    log_success "Codex CLI installed"
+}
+
 install_pi_coding_agent() {
     if command -v pi &>/dev/null; then
         log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version')), skipping"
@@ -506,6 +520,7 @@ main() {
     install_neovim
     install_gh
     install_claude_code
+    install_codex_cli
     install_pi_coding_agent
     setup_development_tools
     enable_services

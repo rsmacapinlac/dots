@@ -404,6 +404,68 @@ configure_mpd_service() {
     fi
 }
 
+# AI desktop apps. The apps themselves also install on Arch (see
+# setup/arch.sh), but the capabilities they host -- desktop control (computer
+# use) and phone-to-this-Mac remote control -- are macOS/Windows only. See
+# docs/ai-desktop-control.md. The LXC is headless and installs neither.
+install_ai_desktop_apps() {
+    log_info "Installing AI desktop apps..."
+
+    # Claude desktop: hosts Cowork + Claude Code computer use (auto-updating cask)
+    # ChatGPT desktop: OpenAI folded the standalone Codex app into this one; it
+    # hosts the Codex view, Codex computer use, and the mobile relay target.
+    brew_install_casks \
+        claude \
+        chatgpt
+
+    log_success "AI desktop apps installed"
+}
+
+# Report the manual steps that finish the AI capability setup.
+#
+# These cannot be scripted: macOS TCC permissions (Accessibility, Screen
+# Recording) are only grantable through a user-driven consent prompt, by design,
+# and the in-app toggles live behind each vendor's account. Print them instead so
+# a fresh machine has an explicit checklist.
+report_ai_capability_steps() {
+    cat <<'EOF'
+
+────────────────────────────────────────────────────────────────────────
+  Manual steps to finish AI desktop control + mobile remote (macOS only)
+────────────────────────────────────────────────────────────────────────
+
+  Claude — desktop control
+    1. Open Claude Desktop and sign in (requires Pro or Max; Team and
+       Enterprise plans do not have computer use).
+    2. Settings > General (under Desktop app) > enable "Computer use".
+       Research preview; Claude prompts per-application as it goes.
+
+  Claude — mobile remote control
+    3. Already enabled repo-wide via claude/settings.json:
+         "remoteControlAtStartup": true
+       Drives a real Claude Code session on this machine from the Claude
+       mobile app. Note: Cowork on mobile is different -- it runs in
+       Anthropic's cloud, not on this Mac.
+
+  Codex — desktop control
+    4. Open ChatGPT Desktop > Codex view.
+    5. System Settings > Privacy & Security, grant BOTH:
+         - Accessibility
+         - Screen Recording
+       Grant these to the helper app "Codex Computer Use", not to ChatGPT.
+
+  Codex — mobile remote control
+    6. In Codex for Mac, generate the pairing QR code and scan it from the
+       ChatGPT mobile app. Traffic goes through OpenAI's relay; this Mac is
+       never exposed to the public internet directly.
+
+  Both require this Mac awake with the app running.
+
+────────────────────────────────────────────────────────────────────────
+
+EOF
+}
+
 install_gui_apps() {
     log_info "Installing keyboard-friendly GUI/support apps..."
     brew_install_casks \
@@ -469,12 +531,46 @@ install_himalaya() {
     rm -rf "$tmpdir"
 }
 
+install_agent_python_deps() {
+    log_info "Installing Python runtime deps for agent skills..."
+
+    local py
+    py="$(brew --prefix)/bin/python3"
+    [[ -x "$py" ]] || py=python3
+
+    # The gwenbot `tubearchivist` skill invokes bare `python3` and imports `requests`.
+    # Homebrew's Python is PEP 668 externally-managed (and blocks --user), so the library
+    # has to be added to that interpreter with --break-system-packages; there is no venv
+    # in the invocation path to install into instead.
+    if "$py" -c "import requests" &>/dev/null; then
+        log_info "python requests already available"
+    elif "$py" -m pip install --break-system-packages requests; then
+        log_success "python requests installed"
+    else
+        log_warning "Failed to install python requests"
+    fi
+}
+
+install_codex_cli() {
+    if command -v codex &>/dev/null; then
+        log_info "Codex CLI already installed ($(codex --version 2>/dev/null || echo 'unknown version'))"
+        return 0
+    fi
+
+    # OpenAI's Codex CLI ships as a cask that installs a `codex` binary.
+    # https://github.com/openai/codex
+    log_info "Installing Codex CLI..."
+    brew_install_casks codex
+}
+
 install_ai_tools() {
     log_info "Installing AI coding tools..."
 
     configure_npm
     install_himalaya
     install_gogcli
+    install_agent_python_deps
+    install_codex_cli
 
     if ! command -v agent-browser &>/dev/null; then
         npm install -g agent-browser
@@ -495,7 +591,7 @@ install_ai_tools() {
     fi
 
     if ! command -v pi &>/dev/null; then
-        npm install -g @mariozechner/pi-coding-agent
+        npm install -g @earendil-works/pi-coding-agent
         log_success "Pi coding agent installed"
     else
         log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version'))"
@@ -531,9 +627,12 @@ main() {
     configure_mpd_service
     install_gui_apps
     install_ai_tools
+    install_ai_desktop_apps
 
     log_success "macOS setup completed!"
     log_info "Start a new shell session for PATH/shell changes to take effect."
+
+    report_ai_capability_steps
 }
 
 main "$@"

@@ -1,6 +1,6 @@
-# Dots - Personal Linux Workstation Configuration
+# Dots - Personal Workstation Configuration
 
-My comprehensive dotfiles repository for Arch Linux featuring a complete Hyprland-based desktop environment with consistent Catppuccin theming across all applications.
+My comprehensive dotfiles repository for Arch Linux, macOS, and headless Debian LXC containers, featuring a complete Hyprland-based desktop environment on Arch and consistent Catppuccin theming across all applications.
 
 ## Features
 
@@ -30,7 +30,11 @@ My comprehensive dotfiles repository for Arch Linux featuring a complete Hyprlan
 - **Nerd Fonts**: Icon fonts for enhanced UI elements
 - **Custom wallpapers**: Curated collection of backgrounds
 
-## Quick Setup (Arch Linux)
+## Quick Setup
+
+This repository targets three environments: an Arch Linux desktop, a macOS desktop, and headless Debian LXC containers.
+
+### Arch Linux
 
 For a complete Arch Linux workstation setup with all dotfiles, copy and paste this one-liner:
 
@@ -49,9 +53,47 @@ This unified installation script will:
 - Install applications (browsers, productivity, media, Steam)
 - Set up Hyprland desktop environment with all components
 - Configure fonts, terminals, and file managers
+- Install AI tooling (Claude Code, Codex CLI, Pi) and the Claude and ChatGPT desktop apps
 - Install work tools (Citrix client)
 
-**Note**: The script requires a regular user account with sudo privileges. Do not run as root.
+### macOS
+
+For a complete macOS workstation setup:
+
+```bash
+setup/macos.sh
+```
+
+This script will:
+- Install Homebrew and the base package set
+- Configure user shell (zsh with oh-my-zsh) and npm user globals
+- Set up security tools (pass, GnuPG pinentry, PassFF native host)
+- Clone and apply dotfiles using rcm
+- Install development tools (Neovim, tmux, Ruby, Go, Python)
+- Install the terminal application stack (ranger, neomutt, mpd/ncmpcpp/rmpc, beets, cava)
+- Install keyboard-friendly GUI apps (kitty, alacritty, qutebrowser, Firefox)
+- Install AI tooling (Claude Code, Codex CLI, Pi, agent-browser) and the Claude
+  and ChatGPT desktop apps
+
+The Claude and ChatGPT desktop apps install on both macOS and Arch, but macOS is
+the only platform where AI **desktop control** and **phone-to-machine remote
+control** actually work. Those require manual permission grants that no script
+can perform; `setup/macos.sh` prints a checklist on completion. See
+`docs/ai-desktop-control.md`.
+
+### Debian LXC
+
+For headless containers used for AI-agent and development work:
+
+```bash
+setup/lxc.sh
+```
+
+Command-line only by design — Claude Code, Codex CLI, and Pi, with no desktop
+apps. Claude Code Remote Control is enabled here too, so an LXC session can be
+driven from the Claude mobile app.
+
+**Note**: These scripts require a regular user account with sudo privileges. Do not run as root.
 
 ## Repository Structure
 
@@ -90,6 +132,8 @@ This unified installation script will:
 ### Documentation (`docs/`)
 - `isync.md`: Complete email synchronization setup guide
 - `ranger-smb-mounting.md`: SMB share mounting in Ranger
+- `hyprland-startup.md`: Hyprland startup and display handling
+- `ai-desktop-control.md`: AI desktop control and mobile remote (macOS)
 
 ### System Files (Root Level)
 - Shell configurations: `zshrc`, `aliases`, `rvmrc`
@@ -164,8 +208,9 @@ The configuration is designed to be modular and easily customizable:
 
 ## Requirements
 
-- **Arch Linux** (primary target)
-- **Hyprland** compositor
+- **Arch Linux** (primary target), **macOS**, or **Debian 12** (headless LXC)
+- **Hyprland** compositor (Arch desktop)
+- **Homebrew** (macOS)
 - **Zsh** shell
 - **Git** for repository management
 - **rcm** for dotfile management

@@ -70,6 +70,23 @@ update_nvim_plugins() {
     fi
 }
 
+update_codex_cli() {
+    log_info "Updating Codex CLI..."
+
+    configure_npm_user_prefix
+
+    if ! command -v npm &>/dev/null; then
+        log_warning "npm not found, skipping Codex CLI update"
+        return 0
+    fi
+
+    if npm install -g @openai/codex@latest; then
+        log_success "Codex CLI updated"
+    else
+        log_warning "Codex CLI update failed"
+    fi
+}
+
 install_pi_subagents_package() {
     if ! command -v pi &>/dev/null; then
         log_warning "pi not found, skipping Pi subagents package"
@@ -158,6 +175,7 @@ main() {
     update_system_packages
     update_dotfiles
     update_npm_packages
+    update_codex_cli
     update_pi_coding_agent
     update_nvim_plugins
     update_lazygit

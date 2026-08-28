@@ -184,6 +184,29 @@ install_pi_subagents_package() {
     fi
 }
 
+# Ensure AI packages are present. Version upgrades are handled by the
+# `yay -Syu` in update_system_packages; this step exists so machines
+# provisioned before these were added pick them up.
+update_ai_packages() {
+    log_info "Ensuring AI packages..."
+
+    if ! command -v yay &>/dev/null; then
+        log_warning "yay not found, skipping AI package check"
+        return 0
+    fi
+
+    local pkg
+    for pkg in claude-desktop chatgpt-desktop openai-codex-bin; do
+        if pacman -Q "$pkg" &>/dev/null; then
+            log_info "$pkg already installed"
+        elif yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$pkg"; then
+            log_success "$pkg installed"
+        else
+            log_warning "Failed to install $pkg"
+        fi
+    done
+}
+
 # Update Pi coding agent and installed Pi packages
 update_pi_coding_agent() {
     log_info "Updating Pi coding agent..."
@@ -269,6 +292,7 @@ main() {
     update_system_packages
     update_dotfiles
     update_npm_packages
+    update_ai_packages
     update_pi_coding_agent
     update_nvim_plugins
 

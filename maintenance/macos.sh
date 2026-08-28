@@ -130,7 +130,7 @@ update_pi_coding_agent() {
     fi
 
     if command -v npm &>/dev/null; then
-        if npm install -g @mariozechner/pi-coding-agent@latest; then
+        if npm install -g @earendil-works/pi-coding-agent@latest; then
             log_success "Pi coding agent updated via npm"
         else
             log_warning "Pi coding agent update failed"
@@ -205,6 +205,30 @@ update_ai_support_tools() {
     else
         log_warning "Homebrew not found, skipping gogcli/himalaya updates"
     fi
+}
+
+# Ensure the AI desktop apps and Codex CLI are present. Version upgrades are
+# handled by `brew upgrade --cask --greedy` in update_homebrew_packages; this
+# step exists so machines provisioned before these were added pick them up.
+update_ai_desktop_apps() {
+    log_info "Ensuring AI desktop apps and Codex CLI..."
+
+    load_homebrew
+    if ! command -v brew &>/dev/null; then
+        log_warning "Homebrew not found, skipping AI desktop apps"
+        return 0
+    fi
+
+    local cask
+    for cask in claude chatgpt codex; do
+        if brew list --cask "$cask" &>/dev/null; then
+            log_info "$cask already installed"
+        elif brew install --cask "$cask"; then
+            log_success "$cask installed"
+        else
+            log_warning "Failed to install cask: $cask"
+        fi
+    done
 }
 
 update_claude_code() {
@@ -322,6 +346,7 @@ main() {
     update_rmpc
     update_ai_support_tools
     update_claude_code
+    update_ai_desktop_apps
     update_pi_coding_agent
     update_oh_my_zsh
     update_nvim_plugins
