@@ -208,7 +208,8 @@ if [[ -z "$TMUX" ]]; then
 fi
 
 # Created by `pipx` on 2023-10-10 04:12:28
-export PATH="$PATH:/home/ritchie/.local/bin"
+# Guarded and $HOME-relative: the literal /home/ritchie path does not exist on macOS.
+[[ -d "$HOME/.local/bin" ]] && export PATH="$PATH:$HOME/.local/bin"
 
 # Modern Go configuration
 export GO111MODULE=on
