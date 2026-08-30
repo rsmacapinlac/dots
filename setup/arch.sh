@@ -116,9 +116,8 @@ initial_setup() {
     # SSH and GPG key restore deliberately does NOT happen here.
     #
     # This script builds the machine and must run unattended — in a VM, on a
-    # fresh laptop, before the key backup is at hand. Everything needing private
-    # key material lives in bin/restore-secrets, which is run separately once
-    # the backup is available.
+    # fresh laptop, before the key backup is at hand. Secrets are restored by
+    # hand afterwards; see the notes at the end of configure_security().
 
     log_success "Initial setup completed"
 }
@@ -198,8 +197,9 @@ configure_security() {
     mkdir -p ~/workspace
 
     # The password store is NOT cloned here. It is a private repository, so it
-    # needs an SSH key, which this script must not depend on. bin/restore-secrets
-    # clones it after the keys are restored.
+    # needs an SSH key, which this script must not depend on. It is cloned by
+    # hand after the keys are restored; see the notes at the end of this
+    # function.
 
     # Install Bitwarden CLI via npm (avoids nodejs-lts-jod conflict with nodejs)
     sudo npm install -g @bitwarden/cli
@@ -220,7 +220,41 @@ configure_security() {
     fi
     
     log_success "Security configuration completed"
-    log_warning "NOTE: pass has no keys or store yet. Run 'restore-secrets' from your key backup directory."
+
+    # Manual secret restore, run from the key backup directory (ssh/ and gpg/).
+    # Two things here are easy to get wrong and fail in confusing ways:
+    #
+    #   1. The backup lives on vfat, which reports every file as mode 755. ssh
+    #      refuses a private key that is group- or world-readable, so every
+    #      private key needs chmod 600 — not just id_rsa. The ansible and
+    #      terraform keys are silently unusable otherwise.
+    #      (The glob skips the macOS ._* resource forks on that drive already,
+    #      since globs do not match leading dots.)
+    #
+    #        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    #        cp ssh/* ~/.ssh/
+    #        chmod 600 ~/.ssh/*
+    #        chmod 644 ~/.ssh/*.pub ~/.ssh/known_hosts
+    #
+    #   2. Piping "5\ny" into `gpg --edit-key <id> trust` reports success but
+    #      records nothing. gpg then refuses to encrypt with "Unusable public
+    #      key" and pass is broken. Use --import-ownertrust (6 = ultimate):
+    #
+    #        gpg --import gpg/public.pgp
+    #        gpg --pinentry-mode loopback --import gpg/private.pgp
+    #        fpr=$(gpg --list-secret-keys --with-colons \
+    #                | awk -F: '/^sec:/{w=1;next} /^fpr:/&&w{print $10;w=0}')
+    #        echo "$fpr:6:" | gpg --import-ownertrust
+    #
+    #   Then the password store, which needs the SSH key in an agent:
+    #
+    #        ssh-add ~/.ssh/id_rsa
+    #        git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
+    #
+    #   Verify with a round trip before trusting it:
+    #        echo hi | gpg -e -r <your-email> | gpg -d
+    log_warning "NOTE: no keys, no password store. Restore them by hand — see the"
+    log_warning "      notes at the end of configure_security() in setup/arch.sh."
 }
 
 # Configure Timeshift snapshots (system/snapshots)

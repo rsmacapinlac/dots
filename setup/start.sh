@@ -9,8 +9,8 @@
 #   curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
 #
 # This needs no SSH or GPG keys and can be run anywhere — setup/arch.sh clones
-# everything over HTTPS. Restore secrets afterwards with `restore-secrets`, run
-# from your key backup directory.
+# everything over HTTPS. SSH keys, GPG keys and the password store are restored
+# by hand afterwards; setup/arch.sh documents the steps in configure_security().
 #
 # Environment overrides:
 #   DOTS_REPO   GitHub repo to pull setup/arch.sh from (default rsmacapinlac/dots)
@@ -149,8 +149,8 @@ main() {
     run_setup "$@"
 
     log_success "Setup completed! Please reboot your system."
-    log_info "Secrets were not restored. Run 'restore-secrets' from your key"
-    log_info "backup directory to set up SSH, GPG, and the password store."
+    log_info "Secrets were not restored: no SSH keys, no GPG keys, no password"
+    log_info "store. See the notes in configure_security() in setup/arch.sh."
 }
 
 # Run main function
