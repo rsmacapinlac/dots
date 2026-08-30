@@ -27,39 +27,13 @@ hashes, never belongs in this repo, and archinstall regenerates it on each run.
 ### Testing a rebuild in a VM
 
 `vm-test.json` exists so the bootstrap can be rehearsed without touching real
-hardware. The repository is public, so the guest can fetch it directly:
+hardware. The repository is public, so the guest can fetch it directly from the
+Arch ISO.
 
-```bash
-# Keep the ISO outside the repo — it is ~1.5 GB and .gitignore only helps
-# after the fact.
-curl -o ~/Downloads/archlinux-x86_64.iso \
-  https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso
-
-virt-install --name dots-test --memory 8192 --vcpus 4 --cpu host-passthrough \
-  --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=60,bus=virtio,format=qcow2 \
-  --boot uefi --cdrom ~/Downloads/archlinux-x86_64.iso --os-variant archlinux \
-  --graphics spice --video virtio
-
-# in the guest, from the Arch ISO:
-curl -fsSL -o /tmp/vm.json \
-  https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/archinstall/vm-test.json
-archinstall --config /tmp/vm.json
-```
-
-`--boot uefi` matters: `/boot` is an ESP, and a BIOS guest exercises a
-different path. `--cpu host-passthrough` exposes VMX so the virtualization
-steps in `setup/arch.sh` actually run.
-
-Snapshot after the install and before running the bootstrap, so a failed
-attempt costs a revert instead of a reinstall:
-
-```bash
-virsh snapshot-create-as dots-test clean-install "post-archinstall, pre-bootstrap"
-virsh snapshot-revert  dots-test clean-install
-```
-
-Hyprland and greetd are not meaningfully testable this way — a VM has no real
-GPU, so failures there are usually the VM rather than the configuration.
+The full procedure — creating the VM, both bootstrap phases, snapshots,
+iterating on a failure, teardown — is in
+[`docs/rebuild-rehearsal.md`](../../docs/rebuild-rehearsal.md). How this profile
+was adapted from `urakara.json` is under [vm-test.json](#vm-testjson) below.
 
 ## urakara.json
 
@@ -85,6 +59,8 @@ These are specific to this laptop and must be reviewed before use elsewhere:
 
 For a different machine, run `archinstall` interactively, save the config, and
 add it here as a new file rather than editing this one.
+
+## vm-test.json
 
 `vm-test.json` is a worked example of that adaptation. It differs from
 `urakara.json` in exactly four values — everything else, including the
