@@ -113,71 +113,13 @@ initial_setup() {
     # Install minimal packages needed for initial setup
     sudo pacman -S --needed --noconfirm openssh git
 
-    log_info "Setting up SSH and GPG keys..."
-    
-    # Check for SSH setup
-    if [[ -d ~/.ssh && -f ~/.ssh/id_rsa ]]; then
-        log_info "SSH keys already exist, skipping SSH setup"
-        SSH_SETUP_NEEDED=false
-    else
-        SSH_SETUP_NEEDED=true
-        # Check for SSH folder
-        if [[ -d "./ssh" ]]; then
-            SSH_SOURCE="./ssh"
-        else
-            read -p "SSH folder not found in current directory. Please enter the path to your SSH folder: " SSH_SOURCE
-            if [[ ! -d "$SSH_SOURCE" ]]; then
-                log_error "SSH folder not found at $SSH_SOURCE"
-                exit 1
-            fi
-        fi
-    fi
-    
-    # Check for GPG setup
-    if gpg --list-secret-keys 2>/dev/null | grep -q "sec"; then
-        log_info "GPG keys already exist, skipping GPG setup"
-        GPG_SETUP_NEEDED=false
-    else
-        GPG_SETUP_NEEDED=true
-        # Check for GPG folder
-        if [[ -d "./gpg" ]]; then
-            GPG_SOURCE="./gpg"
-        else
-            read -p "GPG folder not found in current directory. Please enter the path to your GPG folder: " GPG_SOURCE
-            if [[ ! -d "$GPG_SOURCE" ]]; then
-                log_error "GPG folder not found at $GPG_SOURCE"
-                exit 1
-            fi
-        fi
-    fi
-    
-    # Setup SSH if needed
-    if [[ "$SSH_SETUP_NEEDED" == true ]]; then
-        mkdir -p ~/.ssh
-        cp "$SSH_SOURCE"/* ~/.ssh/
-        chmod 600 ~/.ssh/id_rsa
-        log_success "SSH keys setup completed"
-    fi
-    
-    # Setup SSH agent (needed for git clone operations)
-    eval $(ssh-agent -s)
-    ssh-add ~/.ssh/id_rsa
-    
-    # Setup GPG if needed
-    if [[ "$GPG_SETUP_NEEDED" == true ]]; then
-        gpg --batch --import "$GPG_SOURCE/public.pgp"
-        gpg --batch --pinentry-mode loopback --import "$GPG_SOURCE/private.pgp"
-        
-        # Trust the imported key(s) automatically
-        # Get the key fingerprint(s) and set ultimate trust
-        gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5}' | while read -r keyid; do
-            echo -e "5\ny\n" | gpg --command-fd 0 --expert --edit-key "$keyid" trust quit
-        done
-        
-        log_success "GPG keys setup and trusted"
-    fi
-    
-    
+    # SSH and GPG key restore deliberately does NOT happen here.
+    #
+    # This script builds the machine and must run unattended — in a VM, on a
+    # fresh laptop, before the key backup is at hand. Everything needing private
+    # key material lives in bin/restore-secrets, which is run separately once
+    # the backup is available.
+
     log_success "Initial setup completed"
 }
 
@@ -253,14 +195,11 @@ configure_system_services() {
 configure_security() {
     log_info "Configuring security tools..."
     
-    # Setup password repository 
-    mkdir -p ~/workspace && cd ~/workspace
-    if [[ ! -d ~/.password-store ]]; then
-        git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
-        log_success "Password store repository cloned"
-    else
-        log_info "Password store already exists, skipping clone"
-    fi
+    mkdir -p ~/workspace
+
+    # The password store is NOT cloned here. It is a private repository, so it
+    # needs an SSH key, which this script must not depend on. bin/restore-secrets
+    # clones it after the keys are restored.
 
     # Install Bitwarden CLI via npm (avoids nodejs-lts-jod conflict with nodejs)
     sudo npm install -g @bitwarden/cli
@@ -281,22 +220,25 @@ configure_security() {
     fi
     
     log_success "Security configuration completed"
-    log_warning "NOTE: Pass requires manual GPG key setup - run 'gpg --full-gen-key' then 'pass init <email>'"
+    log_warning "NOTE: pass has no keys or store yet. Run 'restore-secrets' from your key backup directory."
 }
 
 # Configure Timeshift snapshots (system/snapshots)
 configure_timeshift() {
     log_info "Configuring Timeshift integration..."
-    
-    # Install timeshift and related packages
-    yay_install \
-        timeshift \
-        timeshift-gtk \
-        grub-btrfs \
-        grub-btrfsd \
-        inotify-tools \
-        timeshift-autosnap 
-    
+
+    # timeshift, grub-btrfs, inotify-tools and cronie are installed — and
+    # grub-btrfsd.service and cronie.service enabled — by archinstall, from
+    # disk_config.btrfs_options.snapshot_config = Timeshift with the Grub
+    # bootloader. See setup/archinstall/ and archinstall's
+    # Installer.setup_btrfs_snapshot(). Only the pacman pre-upgrade snapshot
+    # hook is missing from that, so it is the only thing installed here.
+    #
+    # Note: `timeshift-gtk` and `grub-btrfsd` are NOT packages — the first is a
+    # binary shipped in `timeshift`, the second a service unit shipped in
+    # `grub-btrfs`. Listing them here aborted the whole bootstrap under `set -e`.
+    yay_install timeshift-autosnap
+
     log_success "Timeshift integration configured"
 }
 
@@ -364,9 +306,14 @@ setup_dotfiles() {
     # Ensure workspace directory exists
     mkdir -p "$HOME/workspace"
     
-    # Clone dots repository (skip if already exists)
+    # Clone dots repository (skip if already exists).
+    #
+    # Fetch over HTTPS: dots is public, so this needs no credentials and works
+    # before any SSH key is restored. The push remote is set to SSH afterwards
+    # so committing from this machine still works once keys are in place.
     if [[ ! -d "$HOME/workspace/dots" ]]; then
-        git clone git@github.com:rsmacapinlac/dots.git "$HOME/workspace/dots"
+        git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
+        git -C "$HOME/workspace/dots" remote set-url --push origin git@github.com:rsmacapinlac/dots.git
     else
         log_info "Dots repository already exists, skipping clone"
     fi
@@ -743,10 +690,9 @@ install_ai_tools() {
         mesa \
         libxkbcommon \
         alsa-lib
-    sudo npm install -g agent-browser
-    agent-browser install
-
     configure_npm_user_prefix
+    npm install -g --allow-scripts=agent-browser agent-browser
+    agent-browser install
 
     # Install Codex CLI: OpenAI's terminal coding agent
     # https://github.com/openai/codex
@@ -789,7 +735,45 @@ install_ai_desktop_apps() {
     # version stream as the macOS cask. Non-fatal if it fails to build.
     yay_install chatgpt-desktop
 
+    set_default_web_browser
+
     log_success "AI desktop apps installed"
+}
+
+# Pin the default http/https handler.
+#
+# chatgpt-desktop's .desktop entry claims x-scheme-handler/http and
+# x-scheme-handler/https alongside its own x-scheme-handler/codex. With no
+# explicit default set, xdg-open falls back to mimeinfo.cache, which is ordered
+# alphabetically -- "chatgpt" sorts ahead of "firefox", so installing it
+# silently makes ChatGPT the system browser. OAuth logins in Claude Desktop and
+# ChatGPT Desktop then hand their login URL to ChatGPT instead of a browser and
+# vanish with no error, which looks like the apps failing to spawn a browser.
+#
+# Only sets the default when one is not already pinned, so a deliberate choice
+# is never overwritten on a rerun.
+set_default_web_browser() {
+    local current
+    current=$(xdg-settings get default-web-browser 2>/dev/null)
+
+    if [[ -n "$current" && "$current" != "chatgpt.desktop" ]]; then
+        log_info "Default browser already set to $current, leaving it alone"
+        return
+    fi
+
+    local browser
+    for browser in firefox.desktop org.qutebrowser.qutebrowser.desktop; do
+        if [[ -f "/usr/share/applications/$browser" ]]; then
+            if xdg-settings set default-web-browser "$browser" 2>/dev/null; then
+                log_success "Default browser set to $browser"
+            else
+                log_warning "Could not set $browser as the default browser"
+            fi
+            return
+        fi
+    done
+
+    log_warning "No known browser installed; default http/https handler left unset"
 }
 
 # Install Raspberry Pi tools (rpi)
@@ -898,7 +882,6 @@ install_virtualization() {
         bridge-utils \
         openbsd-netcat \
         swtpm \
-        swtpm-tools \
         spice-vdagent \
         qemu-guest-agent \
         spice-gtk3 \

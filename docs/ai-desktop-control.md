@@ -141,3 +141,58 @@ Claude Code computer use is hosted by Claude Desktop, so the CLI alone does not 
 **Mobile shows the session but nothing runs.** Confirm the Mac is awake and the app is open. For Claude specifically, verify you are in a Remote Control session and not Cowork — Cowork on mobile executes in the cloud and will never touch this machine.
 
 **A macOS permission is stuck in a bad state.** `tccutil reset Accessibility` and `tccutil reset ScreenCapture` clear the grants and let the consent prompt reappear. There is no supported way to grant them non-interactively.
+
+**Login does nothing — no browser window appears (Arch).** Both apps delegate
+their OAuth login to the system browser. `chatgpt-desktop`'s `.desktop` entry
+claims `x-scheme-handler/http` and `x-scheme-handler/https` alongside its own
+`x-scheme-handler/codex`, so if no default browser is explicitly pinned,
+`xdg-open` falls back to `mimeinfo.cache`, which is ordered alphabetically.
+`chatgpt` sorts ahead of `firefox`, so installing it silently makes ChatGPT the
+system browser. Claude then hands its login URL to ChatGPT — which has no route
+for an arbitrary `https://` URL and drops it — and ChatGPT hands the URL back to
+itself. Neither app logs an error; `~/.config/Claude/logs/main.log` just shows
+`[Auth] Using system browser for: /login/app-google-auth` and nothing further.
+
+Check and fix:
+
+```bash
+xdg-settings get default-web-browser          # chatgpt.desktop means it was hijacked
+xdg-settings set default-web-browser firefox.desktop
+```
+
+`install_ai_desktop_apps` in `setup/arch.sh` now pins this after installing the
+apps, and only when no default is already set, so a deliberate choice survives a
+rerun. Setting the http/https default does not disturb the `codex://` and
+`claude://` deep-link handlers, which stay mapped to their own apps.
+
+**"Sign-in won't be saved on this device — install and unlock a system keyring"
+(Arch).** Misleading message: gnome-keyring is installed by `setup/arch.sh`,
+enabled as a user service, and unlocked. The real error is one line earlier in
+`~/.config/Claude/logs/main.log`:
+
+```
+[safeStorage] isEncryptionAvailable=false on linux at startup (backend=basic_text)
+```
+
+`backend=basic_text` is the tell. Chromium — which Electron embeds — selects its
+password-store backend by sniffing `XDG_CURRENT_DESKTOP`. It recognizes
+GNOME/KDE/Unity/XFCE but not Hyprland, so a bare `Hyprland` resolves to an
+unknown desktop and falls back to the plaintext backend without ever trying the
+Secret Service. Both apps have libsecret support compiled in; it is purely a
+detection failure. Logins succeed and then evaporate on restart.
+
+Fixed repo-wide in `config/hypr/conf/env.lua` by setting
+`XDG_CURRENT_DESKTOP=Hyprland:GNOME`. This is a session variable, so it takes
+effect on the next Hyprland login, not on `hyprctl reload`. To confirm the
+backend before logging out:
+
+```bash
+XDG_CURRENT_DESKTOP=Hyprland:GNOME claude-desktop   # then re-check main.log
+secret-tool store --label=probe test probe          # verifies the keyring itself
+```
+
+Keep `Hyprland` first in that list. `xdg-desktop-portal` walks the entries in
+order and uses the first matching `<desktop>-portals.conf`, which must stay
+`hyprland-portals.conf` (`default=hyprland;gtk`) so screenshots, screencast, and
+global shortcuts keep going to `xdg-desktop-portal-hyprland`. Reversing it to
+`GNOME:Hyprland` would hand those to the GTK portal and break screen sharing.
