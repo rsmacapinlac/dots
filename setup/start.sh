@@ -311,8 +311,6 @@ run_workstation_phase() {
     run_setup "$@"
 
     log_success "Setup completed! Please reboot your system."
-    log_info "Secrets were not restored: no SSH keys, no GPG keys, no password"
-    log_info "store. See the notes in configure_security() in setup/arch.sh."
 }
 
 # ------------------------------------------------------------------- main --
