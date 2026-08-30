@@ -45,7 +45,34 @@ log_error() {
 # installed and removed over and over. remove_build_dependencies() sweeps them
 # once at the end instead.
 yay_install() {
+    refresh_runtime_path
     yay -S --needed --noconfirm --answerdiff None --answerclean None "$@"
+}
+
+# Pick up PATH entries added by packages installed during this run.
+#
+# Packages can drop PATH additions into /etc/profile.d, but those files are
+# sourced only by login shells. This script's shell logged in before those
+# packages existed, so its PATH stays stale for the whole run and every child
+# it spawns — makepkg included — inherits the stale copy.
+#
+# perl is the one that bites. It installs pod2man into /usr/bin/core_perl and
+# adds that directory through /etc/profile.d/perlbin.sh, so an AUR build that
+# generates man pages dies with "pod2man: command not found". lbdb does exactly
+# that, and it only happens on a machine where perl was installed during the
+# same session — which is every fresh install, and never a re-run.
+#
+# Only logs when it actually changes something, so calling it from yay_install
+# on every transaction stays quiet.
+refresh_runtime_path() {
+    local dir
+    for dir in /usr/bin/core_perl /usr/bin/vendor_perl /usr/bin/site_perl; do
+        if [[ -d $dir && ":$PATH:" != *":$dir:"* ]]; then
+            PATH="$PATH:$dir"
+            export PATH
+            log_info "Added $dir to PATH (installed during this run)"
+        fi
+    done
 }
 
 # Enable parallel package downloads.
@@ -424,6 +451,9 @@ install_aur_helper() {
     # declared locally rather than fixed by reordering main().
     log_info "Installing build prerequisites (base-devel)..."
     sudo pacman -S --needed --noconfirm base-devel git
+
+    # base-devel pulls perl; its bin dirs are not on this shell's PATH yet.
+    refresh_runtime_path
 
     # Remove any existing yay build directory
     rm -rf /tmp/yay
