@@ -692,10 +692,6 @@ install_steam() {
 install_mail_client() {
     log_info "Installing terminal mail client..."
 
-    # himalaya is in the official repo — install via pacman to avoid the AUR
-    # version which pulls in webkit2gtk (compiled from source)
-    sudo pacman -S --needed --noconfirm himalaya
-
     # Install mail client packages
     yay_install \
         neomutt \

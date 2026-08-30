@@ -49,10 +49,33 @@ In the archinstall menu you **must** set a root password and add a user **with s
 
 Reverting takes seconds; reinstalling takes an hour. Do this after archinstall finishes and before running the workstation phase.
 
+Install `qemu-guest-agent` before taking the snapshot, so every revert lands on
+a system the host can already inspect. It is **test instrumentation only** —
+never part of a real rebuild, and deliberately not in `setup/arch.sh` — but
+baking it into the baseline saves reinstalling it by hand after every revert.
+
 ```bash
 virsh destroy dots-test                              # the ISO ignores ACPI shutdown
 virsh change-media dots-test sda --eject --config    # or it boots the installer again
-virsh snapshot-create-as dots-test clean-install "post-archinstall, pre-bootstrap"
+virsh start dots-test
+```
+
+Then, at the guest console, log in and install the agent:
+
+```bash
+sudo pacman -Sy --noconfirm qemu-guest-agent
+sudo systemctl enable --now qemu-guest-agent
+```
+
+`systemctl` warns that the unit has no install config; that is expected, since
+it is udev-activated. Confirm it came up with `guest-ping` from the host, then
+snapshot:
+
+```bash
+virsh qemu-agent-command dots-test '{"execute":"guest-ping"}'   # => {"return":{}}
+
+virsh destroy dots-test
+virsh snapshot-create-as dots-test clean-install "post-archinstall, agent, pre-bootstrap"
 virsh start dots-test
 
 # after a failed attempt
@@ -61,6 +84,11 @@ virsh snapshot-revert dots-test clean-install
 
 Eject while the domain is stopped. `--config` alone edits the persistent
 definition and leaves a running domain untouched.
+
+One consequence worth knowing: installing the agent runs `sudo`, which caches a
+credential for five minutes. Run `sudo -k` before launching the workstation
+phase, or `check_sudo` is silently satisfied and its password prompt goes
+untested.
 
 ## Iterating on a failure
 
@@ -102,25 +130,11 @@ virsh qemu-agent-command dots-test \
   '{"execute":"guest-exec","arguments":{"path":"/bin/sh","arg":["-c","..."],"capture-output":true}}'
 ```
 
-That only works on the ISO. The installed system has no guest agent, so after
-the first reboot the console is the only way in — which makes diagnosing a
-failure 40 steps into the workstation phase painful, since a framebuffer
-screenshot shows about 25 lines at a time.
-
-Installing the agent in the guest buys back host-side access. This is **test
-instrumentation only** — never part of a real rebuild, and deliberately not in
-`setup/arch.sh`:
-
-```bash
-# typed once at the guest console, after the first reboot
-sudo pacman -Sy --noconfirm qemu-guest-agent
-sudo systemctl enable --now qemu-guest-agent
-```
-
-`systemctl` warns that the unit has no install config; that is expected, since
-it is udev-activated, and `guest-ping` confirms it came up anyway. Do this
-*after* snapshotting `clean-install`, so reverting returns a genuinely clean
-system; reinstalling the agent is one command.
+That only works on the ISO. The installed system has no guest agent of its own,
+so without one the console is the only way in after the first reboot — which
+makes diagnosing a failure 25 steps into the workstation phase painful, since a
+framebuffer screenshot shows about 25 lines at a time. Installing it into the
+baseline is covered in [Snapshot before bootstrapping](#snapshot-before-bootstrapping).
 
 With the agent running, the console can be read as text rather than pixels,
 which beats cropping screenshots:
