@@ -295,7 +295,6 @@ install_development_packages() {
         fzf \
         lazygit \
         go \
-        ruby \
         python \
         cmake \
         ninja \
@@ -307,12 +306,12 @@ install_development_packages() {
         log_info "TPM installed"
     fi
 
-    if [[ ! -d "$HOME/.rvm" ]]; then
-        log_info "Installing RVM..."
-        curl -sSL https://get.rvm.io | bash
-    else
-        log_info "RVM already installed"
-    fi
+    # mise owns the Ruby runtime, replacing RVM. .ruby-version files are ignored
+    # unless idiomatic version files are explicitly enabled for the tool, and
+    # per-project switching is the whole point of managing Ruby this way.
+    log_info "Configuring mise-managed Ruby..."
+    mise settings add idiomatic_version_file_enable_tools ruby
+    mise use -g ruby@3.4
 
     if [[ -x "$(brew --prefix)/opt/fzf/install" && ! -f "$HOME/.fzf.zsh" ]]; then
         "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish

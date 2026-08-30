@@ -248,15 +248,6 @@ update_rmpc() {
     rm -rf "$tmpdir"
 }
 
-update_rvm() {
-    log_info "Updating RVM..."
-    if command -v rvm &>/dev/null; then
-        rvm get stable || log_warning "RVM update failed"
-        log_success "RVM updated"
-    else
-        log_warning "RVM not found, skipping"
-    fi
-}
 
 update_oh_my_zsh() {
     log_info "Updating oh-my-zsh..."
@@ -298,7 +289,6 @@ main() {
     update_homebrew_packages
     update_dotfiles
     update_npm_packages
-    update_rvm
     update_rmpc
     update_ai_support_tools
     update_ai_desktop_apps

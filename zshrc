@@ -100,14 +100,10 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
-# Add custom paths after oh-my-zsh loads
-# mise wrappers lead the normal user PATH. The RVM block at the end restores
-# active Ruby paths ahead of them before sourcing RVM, avoiding its ordering warning.
-if [[ -n "$rvm_path" ]]; then
-  export PATH="$HOME/.local/bin:$PATH:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
-else
-  export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
-fi
+# Add custom paths after oh-my-zsh loads.
+# mise wrappers lead the user PATH; mise activation at the end of this file
+# prepends the active toolchain ahead of them.
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -243,20 +239,16 @@ pomo () {
   fi
 }
 
-# Load RVM into a shell session *as a function*
-# This must be the LAST thing in the file to ensure RVM paths are at the front
-# If the shell inherits an active RVM environment, normalize PATH before
-# sourcing RVM so its own path-mismatch check does not warn.
-if [[ -n "$GEM_HOME" && -n "$MY_RUBY_HOME" ]]; then
-  path=("$GEM_HOME/bin" "${GEM_HOME}@global/bin" "$MY_RUBY_HOME/bin" "${rvm_path:-$HOME/.rvm}/bin" $path)
-  path=("${(@u)path}")
+# mise owns the language runtimes (currently Ruby). Two mechanisms, deliberately:
+#
+#   shims    resolve tools in non-interactive contexts that never source this
+#            file - scripts, ssh commands, editors
+#   activate hooks the prompt so a directory's .ruby-version switches versions
+#            the way RVM used to, and prepends the real toolchain ahead of the
+#            shims
+#
+# Both are guarded so a machine without mise still gets a working shell.
+if command -v mise &>/dev/null; then
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
+  eval "$(mise activate zsh)"
 fi
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-
-# Force RVM to set up environment properly
-if [[ -n "$rvm_path" ]] && type rvm &>/dev/null; then
-    rvm rvmrc warning ignore allGemfiles
-fi
-
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"

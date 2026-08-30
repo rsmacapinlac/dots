@@ -521,8 +521,6 @@ install_development_packages() {
     log_info "Installing development packages..."
     
     yay_install \
-        ruby \
-        ruby-erb \
         ripgrep \
         fd \
         fzf \
@@ -572,10 +570,12 @@ setup_development_tools() {
     export PATH="$HOME/.local/bin:$PATH"
     "$HOME/workspace/dots/bin/install-mise-tools"
 
-    # Install RVM
-    if [[ ! -d "$HOME/.rvm" ]]; then
-        curl -sSL https://get.rvm.io | bash
-    fi
+    # mise owns the Ruby runtime, replacing RVM. .ruby-version files are ignored
+    # unless idiomatic version files are explicitly enabled for the tool, and
+    # per-project switching is the whole point of managing Ruby this way.
+    log_info "Configuring mise-managed Ruby..."
+    mise settings add idiomatic_version_file_enable_tools ruby
+    mise use -g ruby@3.4
     
     # Clone TPM repository for tmux
     if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then

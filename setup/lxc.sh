@@ -286,8 +286,6 @@ install_development_packages() {
         ripgrep \
         fd-find \
         make \
-        ruby-full \
-        ruby-dev \
         python3-pip \
         python3-dev \
         libtool-bin
@@ -420,13 +418,12 @@ setup_development_tools() {
         log_info "TPM already installed, skipping"
     fi
 
-    if [[ ! -d "$HOME/.rvm" ]]; then
-        log_info "Installing RVM..."
-        curl -sSL https://get.rvm.io | bash
-        log_success "RVM installed"
-    else
-        log_info "RVM already installed, skipping"
-    fi
+    # mise owns the Ruby runtime, replacing RVM. .ruby-version files are ignored
+    # unless idiomatic version files are explicitly enabled for the tool, and
+    # per-project switching is the whole point of managing Ruby this way.
+    log_info "Configuring mise-managed Ruby..."
+    mise settings add idiomatic_version_file_enable_tools ruby
+    mise use -g ruby@3.4
 
     log_success "Development tools configured"
 }
