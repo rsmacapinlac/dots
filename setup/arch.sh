@@ -62,45 +62,78 @@ check_not_root() {
     fi
 }
 
-# Keep the sudo timestamp warm for the whole run.
+# Run the whole install without repeated password prompts.
 #
-# A full install takes 45-90 minutes and makes dozens of sudo calls directly,
-# plus however many yay and makepkg invoke on their own. sudo's
-# timestamp_timeout defaults to 15 minutes, so without this the run stops to ask
-# for a password partway through — often mid-transaction, where it is easy to
-# miss and easy to leave the machine sitting idle for hours.
+# A full run takes 45-90 minutes and makes dozens of sudo calls directly, plus
+# however many yay and makepkg invoke on their own. sudo's timestamp_timeout
+# defaults to 15 minutes, so without this the install stops to ask for a
+# password several times — usually mid-transaction, where it is easy to miss and
+# easy to leave the machine idle for hours waiting on a prompt nobody saw.
 #
-# You still authenticate once, at the start. Going fully passwordless would mean
-# writing a NOPASSWD rule into /etc/sudoers.d, which outlives a crashed script
-# and is a security decision this script should not make on its own.
-SUDO_KEEPALIVE_PID=""
+# You authenticate once, here, to install the rule. It grants NOPASSWD: ALL to
+# the invoking user only, and only for the length of the run.
+#
+# A leftover rule is a standing privilege escalation, so removal has three
+# independent layers:
+#   1. the EXIT trap, for normal and signalled exits
+#   2. a background watcher, because a trap does not run on SIGKILL
+#   3. removal at startup, in case a previous run lost both of the above
+SUDO_NOPASSWD_FILE="/etc/sudoers.d/99-dots-setup"
+SUDO_WATCHER_PID=""
 
-start_sudo_keepalive() {
-    log_info "Priming sudo for the duration of the run..."
+enable_passwordless_sudo() {
+    log_info "Enabling passwordless sudo for the duration of this run..."
+
     if ! sudo -v; then
         log_error "Cannot obtain sudo privileges for $USER."
         exit 1
     fi
 
-    # $$ inside the subshell is still this script's PID, so the refresher exits
-    # on its own when the script does. That is deliberate: polling for the
-    # parent means an abnormal exit cannot leave a stray process quietly
-    # refreshing sudo, which a trap alone would not guarantee.
+    # Layer 3: clear anything a previous run left behind.
+    sudo rm -f "$SUDO_NOPASSWD_FILE"
+
+    local tmp
+    tmp="$(mktemp)"
+    printf '%s ALL=(ALL:ALL) NOPASSWD: ALL\n' "$USER" > "$tmp"
+
+    # Validate before installing. A malformed file in /etc/sudoers.d breaks sudo
+    # for every user, and discovering that on a half-built machine with no
+    # working sudo is a genuinely bad place to be.
+    if ! sudo visudo -c -f "$tmp" > /dev/null; then
+        rm -f "$tmp"
+        log_error "Refusing to install a sudoers file that does not validate."
+        exit 1
+    fi
+
+    sudo install -m 0440 -o root -g root "$tmp" "$SUDO_NOPASSWD_FILE"
+    rm -f "$tmp"
+
+    # Layer 2: the watcher outlives an abnormal exit and cleans up. $$ inside
+    # the subshell is still this script's PID. The rule is still in force while
+    # this runs, so its own sudo needs no password.
     (
-        while true; do
-            sleep 50
-            kill -0 "$$" 2>/dev/null || exit 0
-            sudo -n true 2>/dev/null || exit 0
-        done
+        while kill -0 "$$" 2>/dev/null; do sleep 5; done
+        sudo -n rm -f "$SUDO_NOPASSWD_FILE" 2>/dev/null
     ) &
-    SUDO_KEEPALIVE_PID=$!
-    log_success "sudo will stay unlocked until the script exits"
+    SUDO_WATCHER_PID=$!
+
+    log_success "Passwordless sudo active; removed automatically when this script exits"
 }
 
-stop_sudo_keepalive() {
-    [[ -n $SUDO_KEEPALIVE_PID ]] || return 0
-    kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
-    SUDO_KEEPALIVE_PID=""
+disable_passwordless_sudo() {
+    if [[ -n $SUDO_WATCHER_PID ]]; then
+        kill "$SUDO_WATCHER_PID" 2>/dev/null || true
+        SUDO_WATCHER_PID=""
+    fi
+
+    if [[ -e $SUDO_NOPASSWD_FILE ]]; then
+        if sudo -n rm -f "$SUDO_NOPASSWD_FILE" 2>/dev/null; then
+            log_info "Passwordless sudo rule removed."
+        else
+            log_warning "Could not remove $SUDO_NOPASSWD_FILE — remove it manually:"
+            log_warning "    sudo rm -f $SUDO_NOPASSWD_FILE"
+        fi
+    fi
 }
 
 # Detect Linux distribution
@@ -1062,8 +1095,8 @@ main() {
     fi
 
     # Authenticate once here so the rest of the run is unattended.
-    trap stop_sudo_keepalive EXIT
-    start_sudo_keepalive
+    trap disable_passwordless_sudo EXIT
+    enable_passwordless_sudo
 
     # Run initial setup first
     initial_setup
