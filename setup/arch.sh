@@ -615,7 +615,6 @@ install_productivity_apps() {
     yay_install \
         gnucash \
         krdc \
-        nextcloud-client \
         obsidian \
         slack-desktop \
         telegram-desktop \

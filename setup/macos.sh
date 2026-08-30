@@ -479,7 +479,6 @@ install_gui_apps() {
         vlc \
         zoom \
         cursor \
-        nextcloud \
         raspberry-pi-imager
     log_success "GUI/support apps processed"
 }
