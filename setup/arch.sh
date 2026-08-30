@@ -264,6 +264,36 @@ initial_setup() {
     log_success "Initial setup completed"
 }
 
+remove_retired_packages() {
+    log_info "Removing retired packages..."
+
+    yay -Rns --noconfirm \
+        alacritty \
+        arduino-cli \
+        arduino-language-server \
+        cifs-utils \
+        krdc \
+        mc \
+        mpc \
+        mpd \
+        mpv \
+        ncmpcpp \
+        pavucontrol \
+        python-pyacoustid \
+        python-requests \
+        rmpc \
+        rpi-imager \
+        speech-dispatcher \
+        telegram-desktop \
+        thunar \
+        thunar-volman \
+        timer-bin \
+        libreoffice-still \
+        smbclient 2>/dev/null || true
+
+    log_success "Retired package removal completed"
+}
+
 # Install base system packages (system/base/packages)
 install_base_packages() {
     log_info "Installing base system packages..."
@@ -274,6 +304,8 @@ install_base_packages() {
     # Install base system packages
     yay_install \
         htop \
+        btop \
+        tldr \
         polkit-kde-agent \
         curl \
         rsync \
@@ -326,6 +358,7 @@ configure_system_services() {
         blueman \
         bluez \
         bluez-utils \
+        bolt \
         pipewire \
         pipewire-pulse \
         wireplumber
@@ -601,8 +634,7 @@ install_browsers() {
         firefox \
         qutebrowser \
         chromium \
-        yt-dlp \
-        mpv
+        yt-dlp
     
     log_success "Browsers installed"
 }
@@ -614,14 +646,11 @@ install_productivity_apps() {
     # Install from AUR (--asexplicit prevents pulling optional deps like qt5-webengine for zoom)
     yay_install \
         gnucash \
-        krdc \
         obsidian \
         slack-desktop \
-        telegram-desktop \
         todoist-appimage \
         zoom \
-        timer-bin \
-        speech-dispatcher
+        aether
 
     log_success "Productivity applications installed"
 }
@@ -637,14 +666,9 @@ install_media_apps() {
         vlc \
         vlc-plugins-all \
         libao \
-        mpd \
-        ncmpcpp \
-        mpc \
-        python-requests \
+        cliamp \
         beets \
-        python-pyacoustid \
         python-discogs-client \
-        rmpc \
         handbrake \
         obs-studio \
         v4l2loopback-dkms
@@ -658,10 +682,6 @@ install_media_apps() {
     sudo sed -i 's/^#\?en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
     sudo locale-gen
     echo "LANG=en_US.UTF-8" | sudo tee /etc/locale.conf > /dev/null
-    
-    # Disable system MPD service in favor of user service (already in the dot files)
-    sudo systemctl stop mpd.service 2>/dev/null || true
-    sudo systemctl disable mpd.service 2>/dev/null || true
     
     log_success "Media applications installed"
 }
@@ -713,7 +733,8 @@ install_mail_client() {
         zathura-ps \
         zathura-djvu \
         zathura-cb \
-        libreoffice-still \
+        libreoffice-fresh \
+        evince \
         unzip \
         unrar \
         p7zip
@@ -756,7 +777,8 @@ install_hyprland() {
         networkmanager \
         network-manager-applet \
         brightnessctl \
-        pavucontrol \
+        pamixer \
+        ddcutil \
         waybar \
         hyprpaper \
         hyprpicker \
@@ -822,13 +844,16 @@ install_fonts() {
     log_info "Installing fonts..."
     
     yay_install \
+        noto-fonts \
         noto-fonts-cjk \
-        ttf-font-awesome \
+        noto-fonts-emoji \
+        woff2-font-awesome \
+        ttf-ia-writer \
         ttf-ibmplex-mono-nerd \
         ttf-nerd-fonts-symbols \
         ttf-nerd-fonts-symbols-mono \
         ttf-dejavu-nerd \
-        ttf-jetbrains-mono-nerd
+        ttf-jetbrains-mono-nerd-basic
     
     log_success "Fonts installed"
 }
@@ -838,7 +863,6 @@ install_terminals() {
     log_info "Installing terminals..."
     
     yay_install \
-        alacritty \
         kitty
     
     log_success "Terminals installed"
@@ -851,7 +875,6 @@ install_file_manager() {
     # Install Ranger and dependencies
     yay_install \
         ranger \
-        mc \
         atool \
         elinks \
         ffmpegthumbnailer \
@@ -863,14 +886,12 @@ install_file_manager() {
         ueberzug \
         w3m
     
-    # Install Thunar and network browsing support
+    # Install Nautilus and desktop SMB browsing support via GVfs.
     yay_install \
-        thunar \
-        thunar-volman \
+        nautilus \
+        sushi \
         gvfs \
         gvfs-smb \
-        smbclient \
-        cifs-utils \
         libsecret
     
     log_success "File managers installed"
@@ -933,46 +954,6 @@ set_default_web_browser() {
 
     log_warning "No known browser installed; default http/https handler left unset"
 }
-
-# Install Raspberry Pi tools (rpi)
-install_rpi_tools() {
-    log_info "Installing Raspberry Pi tools..."
-
-    yay_install rpi-imager
-
-    # Override the system .desktop entry to use the wrapper script instead of pkexec,
-    # which doesn't work on Wayland without passing WAYLAND_DISPLAY/XDG_RUNTIME_DIR.
-    mkdir -p "$HOME/.local/share/applications"
-    cat > "$HOME/.local/share/applications/com.raspberrypi.rpi-imager.desktop" << 'EOF'
-[Desktop Entry]
-Type=Application
-Version=1.5
-Name=Raspberry Pi Imager
-Comment=Tool for writing images to SD cards for Raspberry Pi
-Icon=rpi-imager
-Exec=rpi-imager %u
-Categories=Utility;
-StartupNotify=false
-MimeType=x-scheme-handler/rpi-imager;application/vnd.raspberrypi.imager-manifest+json;
-EOF
-
-    log_success "Raspberry Pi tools installed"
-}
-
-# Install electronics/Arduino tools (arduino)
-install_arduino_tools() {
-    log_info "Installing Arduino tools..."
-
-    # CLI + language server from official repos (terminal-first workflow, Neovim autocompletion)
-    sudo pacman -S --needed --noconfirm arduino-cli arduino-language-server
-
-    # Serial port access for board uploads (Arch uses the uucp group)
-    sudo usermod -a -G uucp "$USER"
-
-    log_success "Arduino tools installed"
-    log_warning "Log out and back in for uucp group membership (serial uploads) to take effect"
-}
-
 
 # Hardware Verification Function
 verify_virtualization_support() {
@@ -1082,16 +1063,15 @@ enable_services() {
     # Enable NetworkManager (needed for network connectivity)
     sudo systemctl enable NetworkManager
     
-    # Enable bluetooth service
+    # Enable bluetooth and Thunderbolt services
     sudo systemctl enable bluetooth
+    sudo systemctl enable bolt.service 2>/dev/null || true
     
     # Enable CUPS printing services
     sudo systemctl enable cups.service
     sudo systemctl enable avahi-daemon.service
     
-    # Enable user MPD service
     systemctl --user daemon-reload
-    systemctl --user enable mpd.service 2>/dev/null || true
     systemctl --user enable --now ssh-agent.service 2>/dev/null || true
     
     # Enable gnome-keyring 
@@ -1160,6 +1140,7 @@ PKGEOF
     yay -Syu --noconfirm --answerdiff None --answerclean None
 
     # system/base
+    remove_retired_packages
     install_base_packages
     configure_user_shell
     configure_system_services
@@ -1197,12 +1178,6 @@ PKGEOF
     # ai tools
     install_ai_desktop_apps
 
-
-    # raspberry pi
-    install_rpi_tools
-
-    # electronics / arduino
-    install_arduino_tools
 
     # virtualization
     verify_virtualization_support

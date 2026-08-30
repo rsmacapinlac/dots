@@ -2571,5 +2571,3 @@ config.bind('<Ctrl-->', 'zoom-out')
 # config.bind('y', 'prompt-accept yes', mode='yesno')
 
 ## YT
-config.bind(',m', 'spawn mpv {url}')
-config.bind(',M', 'hint links spawn mpv {hint-url}')

@@ -32,10 +32,10 @@ Configured first-class TUI/terminal tools:
 - `nvim` / Vim — primary editor; Neovim config is in `config/nvim/`, legacy Vim config is in `vimrc` and `vimrc.bundles`.
 - `tmux` — terminal multiplexer and workflow backbone; config in `config/tmux/`, session helpers in `bin/tat`, `bin/desk`, and templates in `config/tmuxinator/`.
 - `neomutt` — terminal email client; config in `config/neomutt/`, account launcher in `bin/neomutt-accounts`, sync via `mbsync`/`bin/sync-mail`, sending via `msmtp`.
-- `ranger` — terminal file manager; config in `config/ranger/`, SMB mount integration documented in `docs/ranger-smb-mounting.md`.
-- `ncmpcpp` and `rmpc` — MPD music clients; configs in `config/ncmpcpp/` and `config/rmpc/`, popup/helper scripts in `bin/rmpc-popup` and `bin/songinfo`.
-- `lazygit` — terminal Git UI installed by setup/maintenance scripts, especially for LXC/dev environments.
-- `htop` — terminal process monitor installed by setup scripts.
+- `ranger` — terminal file manager; config in `config/ranger/`.
+- `cliamp` — terminal music player installed by the Arch setup script.
+- `lazygit` — terminal Git UI installed by setup/maintenance scripts.
+- `htop`/`btop` — terminal process monitors installed by setup scripts.
 - `cava` — terminal audio visualizer; config in `config/cava/`.
 - `beets` — CLI music library manager; config in `config/beets/`.
 - `fastfetch` — terminal system info shown from shell startup when appropriate; config in `config/fastfetch/`.
@@ -45,7 +45,7 @@ Configured first-class TUI/terminal tools:
 Terminal-adjacent or keyboard-first GUI tools:
 - `qutebrowser` — GUI browser, but keyboard-driven/Vim-like; config in `config/qutebrowser/`.
 - `rofi` — graphical launcher/menu used from keyboard-driven workflows; config in `config/rofi/`.
-- `kitty` and `alacritty` — terminal emulators that host the TUI workflow.
+- `kitty` — terminal emulator that hosts the TUI workflow.
 
 When adding new applications, prefer candidates that fit the first list. GUI additions should have a clear reason and should preserve keyboard-driven operation where possible.
 
@@ -54,7 +54,6 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
 - `setup/arch.sh` — full Arch workstation bootstrap script.
 - `setup/macos.sh` — full macOS workstation bootstrap script (Homebrew-based).
-- `setup/lxc.sh` — Debian 12 LXC/headless setup for AI-agent/dev work.
 - `maintenance/arch.sh`, `maintenance/macos.sh`, `maintenance/lxc.sh` — regular update scripts.
 - `config/wallpapers/` — wallpaper scripts and image collections.
 
@@ -85,15 +84,13 @@ bin/neomutt-accounts <macapinlac|gmail|boogienet> [--imap] [--no-sync]
 
 Music/media:
 ```bash
-bin/rmpc-popup
-bin/songinfo
+cliamp
 ```
 
 Setup/maintenance:
 ```bash
 setup/arch.sh        # Arch desktop bootstrap; do not run casually
 setup/macos.sh       # macOS desktop bootstrap; do not run casually
-setup/lxc.sh         # Debian LXC bootstrap; do not run casually
 maintenance/arch.sh
 maintenance/macos.sh
 maintenance/lxc.sh
@@ -141,7 +138,6 @@ This repository references private accounts and local machine details.
 - Prefer reading existing documentation before changing related behavior:
   - Hyprland startup: `docs/hyprland-startup.md`
   - Email/isync: `docs/isync.md`
-  - Ranger SMB: `docs/ranger-smb-mounting.md`
   - Testing the build scripts: `docs/testing-build-scripts.md`
 - If a command may be long-running, interactive, destructive, or require sudo, ask first or use a separate tmux window/pane when instructed.
 - Claude Code historically runs in tmux window 1; use other tmux windows for long-running commands when needed.

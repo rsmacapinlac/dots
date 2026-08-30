@@ -219,26 +219,6 @@ elif [[ -d "/usr/lib/go" ]]; then
 fi
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
-# Bashbunni timer modified
-# Requires https://github.com/caarlos0/timer to be installed.
-
-pomo_notify() {
-  terminal-notify "🍅 Pomodoro" "$1 session done" "normal"
-}
-
-declare -A pomo_options
-pomo_options["work"]="45"
-pomo_options["break"]="10"
-
-pomo () {
-  if [ -n "$1" -a -n "${pomo_options["$1"]}" ]; then
-  val=$1
-  echo $val
-  timer ${pomo_options["$val"]}m
-  pomo_notify "$val"
-  fi
-}
-
 # mise owns the language runtimes (currently Ruby). Two mechanisms, deliberately:
 #
 #   shims    resolve tools in non-interactive contexts that never source this

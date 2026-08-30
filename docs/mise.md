@@ -80,7 +80,7 @@ or maintained with custom download code:
 - `lazygit`: native on Arch/macOS but downloaded and updated manually on LXC.
 - Neovim: native on Arch/macOS but built from source on LXC. Moving it needs a
   deliberate decision about whether an editor is a bootstrap dependency.
-- Release-installed CLIs such as `himalaya`, `gogcli`, `rmpc`, and `fastfetch`
+- Release-installed CLIs such as `himalaya`, `gogcli`, and `fastfetch`
   where mise's `aqua`, `ubi`, or GitHub backends can remove custom updater code.
 
 Keep system packages native when they provide libraries, services, hardware or

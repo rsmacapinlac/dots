@@ -24,10 +24,10 @@ That said, I've been looking at Omarchy and heavily relied on some of their deci
 
 ### Applications
 - **Neomutt**: Terminal email client with multi-account support
-- **Ranger**: Console file manager with SMB mounting
-- **MPD/ncmpcpp/rmpc**: Music player daemon and clients
+- **Ranger**: Console file manager
+- **cliamp**: Terminal music player
 - **Qutebrowser**: Vim-like web browser
-- **Various productivity tools**: Obsidian integration, Pomodoro timer
+- **Various productivity tools**: Obsidian integration
 
 ### Theme & Aesthetics
 - **Catppuccin**: Consistent color scheme across all applications
@@ -98,8 +98,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
   - `mako/`: Notification configuration
 
 - **Terminals & Shells**:
-  - `alacritty/`: Primary terminal emulator with Catppuccin theme
-  - `kitty/`: Alternative terminal with advanced features
+  - `kitty/`: Primary terminal emulator
   - `tmux/`: Terminal multiplexer configuration
 
 - **Development Tools**:
@@ -109,11 +108,9 @@ before the workstation phase, iterating on a failure, and tearing it down.
 
 - **Applications**:
   - `neomutt/`: Email client with multi-account setup
-  - `ranger/`: File manager with SMB mounting capabilities
+  - `ranger/`: Terminal file manager
   - `qutebrowser/`: Web browser configuration
-  - `mpd/`, `ncmpcpp/`, `rmpc/`: Music ecosystem
   - `obsidian/`: Note-taking integration
-  - `pomodux/`: Pomodoro timer configuration
 
 - **Theming**:
   - `wallpapers/`: Curated wallpaper collection
@@ -129,7 +126,6 @@ before the workstation phase, iterating on a failure, and tearing it down.
 
 ### Documentation (`docs/`)
 - `isync.md`: Complete email synchronization setup guide
-- `ranger-smb-mounting.md`: SMB share mounting in Ranger
 - `hyprland-startup.md`: Hyprland startup and display handling
 - `ai-desktop-control.md`: AI desktop control and mobile remote (macOS)
 
@@ -144,7 +140,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 
 ### Hyprland Desktop
 - **Multi-Monitor Support**: Automatic display configuration with autorandr
-- **Custom Waybar**: System monitoring with music integration and power management
+- **Custom Waybar**: System monitoring and power management
 - **Consistent Theming**: Catppuccin colors across all desktop components
 
 ### Development Workflow
@@ -155,7 +151,6 @@ before the workstation phase, iterating on a failure, and tearing it down.
 
 ### Detailed Guides
 - **[Email Setup (isync)](docs/isync.md)**: Complete multi-account email configuration
-- **[Ranger SMB Mounting](docs/ranger-smb-mounting.md)**: Network share integration
 - **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
 - **[AI Desktop Control](docs/ai-desktop-control.md)**: AI desktop control and mobile remote (macOS)
 - **[Install Profiles](setup/archinstall/README.md)**: archinstall configs and which values are hardware-bound

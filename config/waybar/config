@@ -7,9 +7,7 @@
       "hyprland/workspaces",
       "hyprland/window"
     ],
-    // "modules-center": ["custom/music"],
     "modules-right": [
-       "custom/music",
        "pulseaudio",
        "battery",
        "network",
@@ -65,7 +63,9 @@
         "format-icons": {
             "default": ["", "", " "]
         },
-        "on-click": "pavucontrol"
+        "on-click": "pamixer --toggle-mute",
+        "on-scroll-up": "pamixer --increase 5",
+        "on-scroll-down": "pamixer --decrease 5"
     },
     "custom/lock": {
         "tooltip": false,
@@ -76,14 +76,5 @@
         "tooltip": false,
         "on-click": "~/.config/waybar/scripts/powermenu.sh",
         "format": "󰐥"
-    },
-    "custom/music": {
-        "exec": "~/.config/waybar/scripts/music.sh",
-        "interval": 1,
-        "tooltip": true,
-        "tooltip-format": "Click to open rmpc",
-        "on-click": "kitty rmpc",
-        "format": "{}",
-        "max-length": 50
     }
 }

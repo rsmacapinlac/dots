@@ -80,7 +80,7 @@ official `.deb` would not cleanly apply there. It is headless regardless.
 
 `maintenance/arch.sh` → `update_ai_packages()` ensures both. Version upgrades come from the existing `yay -Syu` in `update_system_packages`.
 
-`setup/lxc.sh` installs **no desktop apps at all** — it is headless and deliberately CLI-only (Claude Code, Codex CLI, GitHub CLI, and Pi).
+Headless environments install no desktop apps; they stay deliberately CLI-only (Claude Code, Codex CLI, GitHub CLI, and Pi).
 
 Note that the standalone `codex-app` cask is deprecated upstream and scheduled for removal on 2027-07-12; `chatgpt` is Homebrew's stated replacement and is what this repo installs.
 

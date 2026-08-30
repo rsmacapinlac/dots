@@ -7,9 +7,6 @@ alias r="ranger"
 alias brain="cd '$HOME/Obsidian/Second Brain/' && nvim"
 
 
-# pomodoro app
-alias p="pomodux"
-
 # Ritchie's stuff :)
 
 # Change wallpaper

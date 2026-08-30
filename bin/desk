@@ -17,7 +17,7 @@ setup_desk() {
   tmux new-window -t "$session_name" -n "mail"
   tmux send-keys -t "$session_name:mail" "neomutt" Enter
   tmux new-window -t "$session_name" -n "music"
-  tmux send-keys -t "$session_name:music" "ncmpcpp" Enter
+  tmux send-keys -t "$session_name:music" "cliamp" Enter
   tmux select-window -t "$session_name:shell"
 }
 

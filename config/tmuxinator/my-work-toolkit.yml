@@ -7,4 +7,4 @@ windows:
       panes:
         - nvim
         - claude
-  - rmpc: rmpc
+  - music: cliamp
