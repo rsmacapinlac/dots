@@ -288,9 +288,21 @@ install_aur_helper() {
         log_info "yay not found, installing..."
     fi
     
+    # makepkg needs base-devel, and it will not install it for us: Arch
+    # PKGBUILDs never list base-devel members in makedepends by convention, so
+    # `makepkg -s` cannot pull in what the PKGBUILD does not declare. On a
+    # Minimal archinstall it is absent and the build dies with "Cannot find the
+    # fakeroot binary" / "Cannot find the debugedit binary".
+    #
+    # install_base_packages also installs base-devel, but it runs later and uses
+    # yay_install, which needs the yay being built here — so the prerequisite is
+    # declared locally rather than fixed by reordering main().
+    log_info "Installing build prerequisites (base-devel)..."
+    sudo pacman -S --needed --noconfirm base-devel git
+
     # Remove any existing yay build directory
     rm -rf /tmp/yay
-    
+
     # Clone Yay repository
     git clone https://aur.archlinux.org/yay.git /tmp/yay
     
