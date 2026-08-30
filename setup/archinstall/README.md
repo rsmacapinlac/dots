@@ -32,7 +32,7 @@ Arch ISO.
 
 The full procedure — creating the VM, both bootstrap phases, snapshots,
 iterating on a failure, teardown — is in
-[`docs/rebuild-rehearsal.md`](../../docs/rebuild-rehearsal.md). How this profile
+[`docs/testing-build-scripts.md`](../../docs/testing-build-scripts.md). How this profile
 was adapted from `urakara.json` is under [vm-test.json](#vm-testjson) below.
 
 ## urakara.json

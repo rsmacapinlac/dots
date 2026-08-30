@@ -142,6 +142,6 @@ This repository references private accounts and local machine details.
   - Hyprland startup: `docs/hyprland-startup.md`
   - Email/isync: `docs/isync.md`
   - Ranger SMB: `docs/ranger-smb-mounting.md`
-  - Rebuild rehearsal (VM testing of setup scripts): `docs/rebuild-rehearsal.md`
+  - Testing the build scripts: `docs/testing-build-scripts.md`
 - If a command may be long-running, interactive, destructive, or require sudo, ask first or use a separate tmux window/pane when instructed.
 - Claude Code historically runs in tmux window 1; use other tmux windows for long-running commands when needed.

@@ -128,7 +128,7 @@ fresh machine. Bugs there are invisible on a working system, so a disposable VM
 is the only way to exercise that path. `setup/archinstall/vm-test.json` is the
 rehearsal target.
 
-See **[Rebuild Rehearsal](docs/rebuild-rehearsal.md)** for the full procedure:
+See **[Testing the Build Scripts](docs/testing-build-scripts.md)** for the full procedure:
 creating the VM, running both bootstrap phases at the console, snapshotting
 before the workstation phase, iterating on a failure, and tearing it down.
 
@@ -203,7 +203,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 - **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
 - **[AI Desktop Control](docs/ai-desktop-control.md)**: AI desktop control and mobile remote (macOS)
 - **[Install Profiles](setup/archinstall/README.md)**: archinstall configs and which values are hardware-bound
-- **[Rebuild Rehearsal](docs/rebuild-rehearsal.md)**: exercising the bootstrap end to end in a disposable VM
+- **[Testing the Build Scripts](docs/testing-build-scripts.md)**: exercising the bootstrap end to end in a disposable VM
 
 ## Post-Installation Usage
 
