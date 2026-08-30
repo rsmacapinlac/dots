@@ -342,7 +342,6 @@ install_terminal_apps() {
         imagemagick \
         unzip \
         p7zip \
-        lbdb \
         mpd \
         ncmpcpp \
         mpc \

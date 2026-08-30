@@ -57,10 +57,13 @@ yay_install() {
 # it spawns — makepkg included — inherits the stale copy.
 #
 # perl is the one that bites. It installs pod2man into /usr/bin/core_perl and
-# adds that directory through /etc/profile.d/perlbin.sh, so an AUR build that
-# generates man pages dies with "pod2man: command not found". lbdb does exactly
-# that, and it only happens on a machine where perl was installed during the
-# same session — which is every fresh install, and never a re-run.
+# adds that directory through /etc/profile.d/perlbin.sh, so any AUR build that
+# generates man pages dies with "pod2man: command not found". It only happens on
+# a machine where perl was installed during the same session — which is every
+# fresh install, and never a re-run.
+#
+# Found via lbdb, which has since been dropped as unused. Kept because the
+# problem is general to any AUR package that builds documentation.
 #
 # Only logs when it actually changes something, so calling it from yay_install
 # on every transaction stays quiet.
@@ -712,8 +715,7 @@ install_mail_client() {
         libreoffice-still \
         unzip \
         unrar \
-        p7zip \
-        lbdb
+        p7zip
     
     log_success "Terminal mail client installed"
 }
