@@ -596,9 +596,14 @@ setup_development_tools() {
 install_browsers() {
     log_info "Installing browsers..."
     
+    # chromium is here as a web app host, not as a browsing browser: --app=
+    # windows are a Chromium-only feature, Firefox dropped SSB support, and
+    # qutebrowser has no equivalent. set_default_web_browser() does not consider
+    # it, so installing it does not change the http/https handler.
     yay_install \
         firefox \
         qutebrowser \
+        chromium \
         yt-dlp \
         mpv
     
@@ -1021,9 +1026,27 @@ install_arduino_tools() {
 # Install work tools (work)
 install_work_tools() {
     log_info "Installing work tools..."
-    
-    yay_install icaclient
-    
+
+    # icaclient (Citrix Workspace) cannot be installed unattended. Citrix puts
+    # the tarball behind a click-through licence rather than a fetchable URL, so
+    # makepkg stops with:
+    #
+    #   ERROR: icaclient-x64-<version>.tar.gz was not found in the build
+    #          directory and is not a URL.
+    #
+    # Running it here aborted the whole bootstrap under `set -e`, taking the
+    # remaining steps with it. It is skipped when already present and reported
+    # as a manual follow-up otherwise.
+    if pacman -Q icaclient &> /dev/null; then
+        log_info "icaclient already installed"
+    else
+        log_warning "Skipping icaclient — Citrix requires a manual download."
+        log_warning "  1. Fetch the tarball from:"
+        log_warning "     https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html"
+        log_warning "  2. yay -G icaclient && cd icaclient"
+        log_warning "  3. Put the tarball in that directory, then: makepkg -si"
+    fi
+
     log_success "Work tools installed"
 }
 
