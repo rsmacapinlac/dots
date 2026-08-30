@@ -37,9 +37,57 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Wrapper for yay to prevent hanging on interactive AUR prompts
+# Wrapper for yay to prevent hanging on interactive AUR prompts.
+#
+# Deliberately without --removemake. That flag uninstalls build dependencies
+# after every transaction, and this script runs 30 of them across 16 AUR
+# packages, so shared build deps — go alone is ~250 MB — get downloaded,
+# installed and removed over and over. remove_build_dependencies() sweeps them
+# once at the end instead.
 yay_install() {
-    yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$@"
+    yay -S --needed --noconfirm --answerdiff None --answerclean None "$@"
+}
+
+# Enable parallel package downloads.
+#
+# pacman ships this commented out, and archinstall's own default is 0, which its
+# help text describes as "allows only 1 download at a time". This script then
+# downloads several GB across hundreds of packages, all serially. Enabling it
+# early means every step afterwards benefits, including yay, which shells out to
+# pacman for repo packages.
+configure_pacman_parallel_downloads() {
+    local conf=/etc/pacman.conf
+
+    if grep -qE '^[[:space:]]*ParallelDownloads' "$conf"; then
+        log_info "ParallelDownloads already enabled"
+        return 0
+    fi
+
+    log_info "Enabling parallel package downloads..."
+    if grep -qE '^[[:space:]]*#[[:space:]]*ParallelDownloads' "$conf"; then
+        sudo sed -i 's/^[[:space:]]*#[[:space:]]*ParallelDownloads.*/ParallelDownloads = 5/' "$conf"
+    else
+        sudo sed -i '/^\[options\]/a ParallelDownloads = 5' "$conf"
+    fi
+
+    if grep -qE '^[[:space:]]*ParallelDownloads' "$conf"; then
+        log_success "ParallelDownloads enabled"
+    else
+        log_warning "Could not enable ParallelDownloads; downloads will be serial"
+    fi
+}
+
+# Remove build dependencies left behind by AUR builds.
+#
+# The counterpart to dropping --removemake above: build deps are installed once
+# and swept once, rather than churned on every transaction.
+remove_build_dependencies() {
+    log_info "Removing orphaned build dependencies..."
+    if yay -Yc --noconfirm 2>/dev/null; then
+        log_success "Build dependencies cleaned up"
+    else
+        log_info "Nothing to clean up"
+    fi
 }
 
 # Configure user-level npm globals so Pi packages do not require sudo.
@@ -177,6 +225,9 @@ update_package_mirrors() {
 # Initial setup function for SSH and GPG
 initial_setup() {
     log_info "Update system and install minimal packages required for initial setup..."
+
+    # Enable parallel downloads before anything is fetched.
+    configure_pacman_parallel_downloads
 
     # Update system first
     sudo pacman -Sy --noconfirm
@@ -1127,7 +1178,7 @@ PKGEOF
 
     # Full system upgrade to avoid dependency conflicts
     log_info "Performing full system upgrade..."
-    yay -Syu --noconfirm --answerdiff None --answerclean None --removemake
+    yay -Syu --noconfirm --answerdiff None --answerclean None
 
     # system/base
     install_base_packages
@@ -1183,6 +1234,9 @@ PKGEOF
     
     # Enable all services at the end
     enable_services
+
+    # Sweep AUR build dependencies once, instead of after every transaction
+    remove_build_dependencies
     
     log_success "Workstation Builder installation completed successfully!"
     log_info "Please reboot your system to ensure all changes take effect."
