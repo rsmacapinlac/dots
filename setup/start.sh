@@ -32,7 +32,8 @@ set -euo pipefail
 SCRIPT_FILE="${BASH_SOURCE[0]:-}"
 
 DOTS_REPO="${DOTS_REPO:-rsmacapinlac/dots}"
-DOTS_REF="${DOTS_REF:-main}"
+# Exported so setup/arch.sh clones the same ref it was itself fetched from.
+export DOTS_REF="${DOTS_REF:-main}"
 RAW_BASE="https://raw.githubusercontent.com/${DOTS_REPO}/${DOTS_REF}"
 SETUP_URL="${SETUP_URL:-${RAW_BASE}/setup/arch.sh}"
 API_BASE="https://api.github.com/repos/${DOTS_REPO}/contents/setup/archinstall"

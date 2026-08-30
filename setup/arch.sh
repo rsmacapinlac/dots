@@ -503,8 +503,12 @@ setup_dotfiles() {
     # Fetch over HTTPS: dots is public, so this needs no credentials and works
     # before any SSH key is restored. The push remote is set to SSH afterwards
     # so committing from this machine still works once keys are in place.
+    # DOTS_REF is exported by start.sh and defaults to main. Honouring it here
+    # matters for rehearsals: without it a branch run installs the branch's
+    # setup script but main's dotfiles, so no dotfile change is ever testable.
+    local dots_ref="${DOTS_REF:-main}"
     if [[ ! -d "$HOME/workspace/dots" ]]; then
-        git clone https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
+        git clone --branch "$dots_ref" https://github.com/rsmacapinlac/dots.git "$HOME/workspace/dots"
         git -C "$HOME/workspace/dots" remote set-url --push origin git@github.com:rsmacapinlac/dots.git
     else
         log_info "Dots repository already exists, skipping clone"
