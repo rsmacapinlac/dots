@@ -137,11 +137,22 @@ curl -o ~/Downloads/archlinux-x86_64.iso \
   https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso
 
 virt-install --connect qemu:///system \
-  --name dots-test --memory 8192 --vcpus 4 --cpu host-passthrough \
+  --name dots-test --memory 4096 --vcpus 4 --cpu host-passthrough \
   --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=60,bus=virtio,format=qcow2 \
   --boot uefi --cdrom ~/Downloads/archlinux-x86_64.iso --os-variant archlinux \
   --graphics spice --video virtio
 ```
+
+Size `--memory` against the **host**, not the guest's appetite. 8192 on a
+16 GB laptop that is also running a desktop had the host OOM-killer take out
+qemu mid-install:
+
+```
+kernel: CPU 3/KVM invoked oom-killer
+kernel: Out of memory: Killed process (qemu-system-x86) anon-rss:7283352kB
+```
+
+4096 is enough for the install and the AUR builds.
 
 `--boot uefi` matters: `/boot` is an ESP, and a BIOS guest exercises a different
 path. `--cpu host-passthrough` exposes VMX so the virtualization steps actually
