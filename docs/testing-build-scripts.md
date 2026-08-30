@@ -85,10 +85,12 @@ virsh snapshot-revert dots-test clean-install
 Eject while the domain is stopped. `--config` alone edits the persistent
 definition and leaves a running domain untouched.
 
-One consequence worth knowing: installing the agent runs `sudo`, which caches a
-credential for five minutes. Run `sudo -k` before launching the workstation
-phase, or `check_sudo` is silently satisfied and its password prompt goes
-untested.
+Because the snapshot is taken with the domain shut off, a revert boots with an
+empty `/run` and therefore no cached sudo credential, so `check_sudo` prompts
+for real. That only stops being true if the agent is installed in the *same*
+session as the bootstrap: `sudo` caches a credential for five minutes, which
+silently satisfies `check_sudo` and leaves its password prompt untested. Run
+`sudo -k` first in that case.
 
 ## Iterating on a failure
 
