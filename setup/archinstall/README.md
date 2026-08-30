@@ -22,6 +22,44 @@ hashes, never belongs in this repo, and archinstall regenerates it on each run.
 | file | machine | notes |
 |---|---|---|
 | `urakara.json` | ThinkPad T470s (LENOVO 20L8S0YW00) | GRUB, btrfs, `/dev/nvme0n1` |
+| `vm-test.json` | libvirt VM, 60 GiB virtio disk | rehearsal target, `/dev/vda` |
+
+### Testing a rebuild in a VM
+
+`vm-test.json` exists so the bootstrap can be rehearsed without touching real
+hardware. The repository is public, so the guest can fetch it directly:
+
+```bash
+# Keep the ISO outside the repo — it is ~1.5 GB and .gitignore only helps
+# after the fact.
+curl -o ~/Downloads/archlinux-x86_64.iso \
+  https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso
+
+virt-install --name dots-test --memory 8192 --vcpus 4 --cpu host-passthrough \
+  --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=60,bus=virtio,format=qcow2 \
+  --boot uefi --cdrom ~/Downloads/archlinux-x86_64.iso --os-variant archlinux \
+  --graphics spice --video virtio
+
+# in the guest, from the Arch ISO:
+curl -fsSL -o /tmp/vm.json \
+  https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/archinstall/vm-test.json
+archinstall --config /tmp/vm.json
+```
+
+`--boot uefi` matters: `/boot` is an ESP, and a BIOS guest exercises a
+different path. `--cpu host-passthrough` exposes VMX so the virtualization
+steps in `setup/arch.sh` actually run.
+
+Snapshot after the install and before running the bootstrap, so a failed
+attempt costs a revert instead of a reinstall:
+
+```bash
+virsh snapshot-create-as dots-test clean-install "post-archinstall, pre-bootstrap"
+virsh snapshot-revert  dots-test clean-install
+```
+
+Hyprland and greetd are not meaningfully testable this way — a VM has no real
+GPU, so failures there are usually the VM rather than the configuration.
 
 ## urakara.json
 
@@ -47,6 +85,21 @@ These are specific to this laptop and must be reviewed before use elsewhere:
 
 For a different machine, run `archinstall` interactively, save the config, and
 add it here as a new file rather than editing this one.
+
+`vm-test.json` is a worked example of that adaptation. It differs from
+`urakara.json` in exactly four values — everything else, including the
+subvolume layout and the Timeshift snapshot config, is identical:
+
+| field | urakara | vm-test |
+|---|---|---|
+| `hostname` | `urakara` | `dots-test` |
+| `...device` | `/dev/nvme0n1` | `/dev/vda` |
+| `...partitions[1].size.value` | `999128301568` | `63345524736` |
+| `...partitions[].obj_id` | (this laptop's) | regenerated |
+
+The ESP is untouched at 1 MiB start / 1 GiB size; only the root partition
+depends on disk size. Sizing leaves 4 MiB at the end of the device for the
+GPT secondary header.
 
 The large `mirror_config` block is kept verbatim so this reproduces the original
 install exactly. It can be trimmed to the region selection if it becomes noisy.

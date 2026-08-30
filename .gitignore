@@ -42,3 +42,8 @@ pi/agent/sessions/
 __pycache__/
 *.pyc
 *.pyo
+
+# Installer images — large binaries, keep them outside the repo
+*.iso
+*.img
+*.qcow2
