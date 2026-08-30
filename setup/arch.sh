@@ -118,17 +118,6 @@ remove_build_dependencies() {
     fi
 }
 
-# Configure user-level npm globals for tools that are not yet managed by mise.
-configure_npm_user_prefix() {
-    if ! command -v npm &> /dev/null; then
-        log_warning "npm not found, skipping npm user prefix setup"
-        return 0
-    fi
-
-    mkdir -p "$HOME/.npm-global"
-    npm config set prefix "$HOME/.npm-global"
-    export PATH="$HOME/.npm-global/bin:$PATH"
-}
 
 # Check if running as root
 check_not_root() {
@@ -577,6 +566,12 @@ setup_development_tools() {
     yay_install \
         tmux 
 
+    # Generate the lazy mise launchers (claude, codex, gh, pi). mise itself is
+    # installed in install_base_packages; the script comes from the checked-out
+    # repo rather than ~/.bin so this does not depend on rcup having run.
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/workspace/dots/bin/install-mise-tools"
+
     # Install RVM
     if [[ ! -d "$HOME/.rvm" ]]; then
         curl -sSL https://get.rvm.io | bash
@@ -696,7 +691,11 @@ install_steam() {
 # Install applications - mail (applications/mail)
 install_mail_client() {
     log_info "Installing terminal mail client..."
-    
+
+    # himalaya is in the official repo — install via pacman to avoid the AUR
+    # version which pulls in webkit2gtk (compiled from source)
+    sudo pacman -S --needed --noconfirm himalaya
+
     # Install mail client packages
     yay_install \
         neomutt \
@@ -878,35 +877,6 @@ install_file_manager() {
     log_success "File managers installed"
 }
 
-# Install AI tools (ai)
-install_ai_tools() {
-    log_info "Installing AI tools..."
-
-    # Install agent-browser: headless browser CLI for AI agents
-    # https://github.com/vercel-labs/agent-browser
-    # Install chromium system dependencies (--with-deps only supports apt/dnf/yum)
-    # himalaya is in the official repo — install via pacman to avoid the AUR
-    # version which pulls in webkit2gtk (compiled from source)
-    sudo pacman -S --needed --noconfirm himalaya
-
-    yay_install \
-        gogcli \
-        nss \
-        libdrm \
-        mesa \
-        libxkbcommon \
-        alsa-lib
-    configure_npm_user_prefix
-    npm install -g --allow-scripts=agent-browser agent-browser
-    agent-browser install
-
-    export PATH="$HOME/.local/bin:$PATH"
-    "$HOME/bin/install-mise-tools"
-
-    install_ai_desktop_apps
-
-    log_success "AI tools configured (mise tools install on first use)"
-}
 
 # Install AI desktop apps (GUI companions to the terminal agents).
 # Desktop-only: these are skipped on headless hosts such as the LXC setup.
@@ -1226,7 +1196,7 @@ PKGEOF
     install_file_manager
     
     # ai tools
-    install_ai_tools
+    install_ai_desktop_apps
 
 
     # raspberry pi

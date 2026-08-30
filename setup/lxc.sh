@@ -404,7 +404,7 @@ install_neovim() {
 
 install_mise_tools() {
     export PATH="$HOME/.local/bin:$PATH"
-    "$HOME/bin/install-mise-tools"
+    "$HOME/workspace/dots/bin/install-mise-tools"
     log_success "mise tools configured (install on first use)"
 }
 
