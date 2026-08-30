@@ -107,6 +107,24 @@ prompt() {
     fi
 }
 
+# Run a child command with stdin attached to the terminal.
+#
+# Under `curl ... | bash` this script's stdin is the pipe carrying its own
+# text. A child inherits that, so anything reading the keyboard sees the pipe
+# instead of the terminal: archinstall's TUI draws correctly, because stdout is
+# still the terminal, but arrow keys and every other keypress go nowhere.
+run_interactive() {
+    if [[ -t 0 ]]; then
+        "$@"
+    elif ( : < /dev/tty ) 2>/dev/null; then
+        "$@" < /dev/tty
+    else
+        log_error "No terminal available; cannot run an interactive command."
+        log_error "Re-run this script from a terminal rather than through a pipe."
+        exit 1
+    fi
+}
+
 # ------------------------------------------------------- phase 1: live ISO --
 
 # List the archinstall profiles in the repo. Falls back to a manual entry if
@@ -151,7 +169,7 @@ run_installer_phase() {
     case "$choice" in
         i|I)
             log_info "Starting archinstall with no profile..."
-            archinstall
+            run_interactive archinstall
             ;;
         s|S)
             log_info "Dropping to a shell. Re-run this script when you are ready."
@@ -184,7 +202,7 @@ run_installer_phase() {
             [[ $confirm == yes ]] || { log_info "Aborted."; exit 0; }
 
             log_info "Running archinstall --config $dest ..."
-            archinstall --config "$dest"
+            run_interactive archinstall --config "$dest"
             ;;
     esac
 
