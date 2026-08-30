@@ -853,7 +853,7 @@ install_fonts() {
         ttf-nerd-fonts-symbols \
         ttf-nerd-fonts-symbols-mono \
         ttf-dejavu-nerd \
-        ttf-jetbrains-mono-nerd-basic
+        ttf-jetbrains-mono-nerd
     
     log_success "Fonts installed"
 }
