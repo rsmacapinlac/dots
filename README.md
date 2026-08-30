@@ -1,6 +1,10 @@
-# Dots - Personal Workstation Configuration
+# Dots - Ritchie's personal computer setup. 
 
-My comprehensive dotfiles repository for Arch Linux, macOS, and headless Debian LXC containers, featuring a complete Hyprland-based desktop environment on Arch and consistent Catppuccin theming across all applications.
+I wouldn't go as far as calling this an operation system like Omarchy (that is way better thoughtout) that said, I like my arch setup and I don't think I'm going to be getting rid of it any time soon.
+
+I've tried to optimize this for some hardware that I've owned.
+
+That said, I've been looking at Omarchy and heavily relied on some of their decisions to enhance my own setup.
 
 ## Features
 
@@ -14,7 +18,7 @@ My comprehensive dotfiles repository for Arch Linux, macOS, and headless Debian 
 ### Development Environment
 - **Neovim**: Fully configured with LSP, completion, and plugins
 - **Tmux**: Terminal multiplexer with custom configuration
-- **Alacritty & Kitty**: GPU-accelerated terminal emulators
+- **Kitty**: GPU-accelerated terminal emulators
 - **Git**: Comprehensive configuration with aliases
 - **Zsh**: Enhanced shell with oh-my-zsh and custom aliases
 
@@ -32,52 +36,21 @@ My comprehensive dotfiles repository for Arch Linux, macOS, and headless Debian 
 
 ## Quick Setup
 
-This repository targets three environments: an Arch Linux desktop, a macOS desktop, and headless Debian LXC containers.
-
 ### Arch Linux
 
 A rebuild has two phases separated by a reboot, and the same command is used for
 both. `setup/start.sh` works out which phase it is in from where it is running:
 
 ```bash
+# start with this
+curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
+
+# reboot once its done
+sudo reboot
+
+#... then do it again
 curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
 ```
-
-**On the Arch live ISO** it lists the archinstall profiles in
-`setup/archinstall/`, shows the target disk for confirmation, and runs
-archinstall. The profile carries the disk layout, subvolumes, bootloader,
-locale and timezone but deliberately no credentials — set a root password and
-add a user **with sudo/wheel** in the archinstall menu, or the second phase
-cannot run.
-
-Then eject the installation media, reboot, log in, and run the same command
-again.
-
-**On the installed system** it downloads and runs `setup/arch.sh` to build the
-workstation. You are asked for your password once; the rest is unattended.
-
-Do not pipe `setup/arch.sh` into bash directly. Under `curl … | bash`,
-`BASH_SOURCE[0]` is unset and `$0` is `bash`, so the guard at the end of that
-script is false, `main()` never runs, and it exits successfully having done
-nothing. `start.sh` downloads to a file and runs that instead.
-
-Secrets are never handled by either phase. SSH keys, GPG keys and the password
-store are restored by hand afterwards; the steps are documented at the end of
-`configure_security()` in `setup/arch.sh`.
-
-The workstation phase will:
-- Install all required system packages and dependencies
-- Configure user shell (zsh with oh-my-zsh)
-- Set up system services (Bluetooth, audio, etc.)
-- Install and configure security tools (pass password manager)
-- Install AUR helper (yay)
-- Clone and apply dotfiles using rcm
-- Install development tools (Neovim, tmux, Ruby, etc.)
-- Install applications (browsers, productivity, media, Steam)
-- Set up Hyprland desktop environment with all components
-- Configure fonts, terminals, and file managers
-- Configure mise-backed, first-run installs for Claude Code, Codex CLI, Pi, and
-  GitHub CLI, plus the Claude and ChatGPT desktop apps
 
 ### macOS
 
@@ -104,24 +77,7 @@ control** actually work. Those require manual permission grants that no script
 can perform; `setup/macos.sh` prints a checklist on completion. See
 `docs/ai-desktop-control.md`.
 
-### Debian LXC
-
-For headless containers used for AI-agent and development work:
-
-```bash
-setup/lxc.sh
-```
-
-Command-line only by design — mise-backed, first-run installs for Claude Code,
-Codex CLI, Pi, and GitHub CLI, with no desktop apps. Claude Code Remote Control
-is enabled here too, so an LXC session can be driven from the Claude mobile app.
-
-See `docs/mise.md` for tool ownership, update behavior, and the remaining mise
-migration candidates.
-
-**Note**: These scripts require a regular user account with sudo privileges. Do not run as root.
-
-## Rehearsing a Rebuild
+## Testing the Build Scripts 
 
 The workstation phase runs around 30 steps, most of which only ever execute on a
 fresh machine. Bugs there are invisible on a working system, so a disposable VM
@@ -166,7 +122,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 ### Scripts & Utilities (`bin/`)
 - Custom workflow scripts and automation tools
 
-### Install Profiles (`setup/archinstall/`)
+### Archinstall Install Profiles (`setup/archinstall/`)
 - `urakara.json`: the ThinkPad T470s — GRUB, btrfs, `/dev/nvme0n1`
 - `vm-test.json`: 60 GiB virtio disk, for rehearsing rebuilds
 - `README.md`: what the profiles encode and which values are hardware-bound
@@ -178,7 +134,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 - `ai-desktop-control.md`: AI desktop control and mobile remote (macOS)
 
 ### System Files (Root Level)
-- Shell configurations: `zshrc`, `aliases`, `rvmrc`
+- Shell configurations: `zshrc`, `aliases`
 - Editor configs: `vimrc`, `vimrc.bundles`
 - Email configs: `mbsyncrc`, `msmtprc`
 - Dotfile management: `rcrc`
