@@ -17,8 +17,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
-
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
@@ -143,6 +141,7 @@ install_base_packages() {
         bitwarden-cli \
         wireguard-tools \
         rsync \
+        mise \
         node
     log_success "Base packages installed"
 }
@@ -550,18 +549,6 @@ install_agent_python_deps() {
     fi
 }
 
-install_codex_cli() {
-    if command -v codex &>/dev/null; then
-        log_info "Codex CLI already installed ($(codex --version 2>/dev/null || echo 'unknown version'))"
-        return 0
-    fi
-
-    # OpenAI's Codex CLI ships as a cask that installs a `codex` binary.
-    # https://github.com/openai/codex
-    log_info "Installing Codex CLI..."
-    brew_install_casks codex
-}
-
 install_ai_tools() {
     log_info "Installing AI coding tools..."
 
@@ -569,7 +556,9 @@ install_ai_tools() {
     install_himalaya
     install_gogcli
     install_agent_python_deps
-    install_codex_cli
+
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/bin/install-mise-tools"
 
     if ! command -v agent-browser &>/dev/null; then
         npm install -g agent-browser
@@ -582,29 +571,7 @@ install_ai_tools() {
         agent-browser install || log_warning "agent-browser browser install failed"
     fi
 
-    if ! command -v claude &>/dev/null; then
-        npm install -g @anthropic-ai/claude-code
-        log_success "Claude Code installed"
-    else
-        log_info "Claude Code already installed ($(claude --version 2>/dev/null || echo 'unknown version'))"
-    fi
-
-    if ! command -v pi &>/dev/null; then
-        npm install -g @earendil-works/pi-coding-agent
-        log_success "Pi coding agent installed"
-    else
-        log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version'))"
-    fi
-
-    if command -v pi &>/dev/null; then
-        if pi install "$PI_SUBAGENTS_PACKAGE"; then
-            log_success "Pi subagents package installed"
-        else
-            log_warning "Pi subagents package install failed"
-        fi
-    fi
-
-    log_success "AI tools installed"
+    log_success "AI tools configured (mise tools install on first use)"
 }
 
 main() {

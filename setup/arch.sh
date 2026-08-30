@@ -18,8 +18,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
-
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -120,7 +118,7 @@ remove_build_dependencies() {
     fi
 }
 
-# Configure user-level npm globals so Pi packages do not require sudo.
+# Configure user-level npm globals for tools that are not yet managed by mise.
 configure_npm_user_prefix() {
     if ! command -v npm &> /dev/null; then
         log_warning "npm not found, skipping npm user prefix setup"
@@ -293,6 +291,7 @@ install_base_packages() {
         base-devel \
         linux-headers \
         zsh \
+        mise \
         nodejs \
         npm \
         fastfetch \
@@ -564,10 +563,9 @@ install_development_editors() {
     yay_install \
         neovim \
     
-    # Install editors from AUR
+    # Install GUI editors from AUR. Claude Code is provided by mise on demand.
     yay_install \
-        cursor-bin \
-        claude-code
+        cursor-bin
 
     log_success "Development editors installed"
 }
@@ -902,29 +900,12 @@ install_ai_tools() {
     npm install -g --allow-scripts=agent-browser agent-browser
     agent-browser install
 
-    # Install Codex CLI: OpenAI's terminal coding agent
-    # https://github.com/openai/codex
-    yay_install openai-codex-bin
-
-    # Install pi-coding-agent: minimalist AI coding agent
-    # https://github.com/badlogic/pi-mono
-    yay_install pi-coding-agent
-
-    # Install pi-subagents: subagent orchestration package for Pi
-    # https://pi.dev/packages/@tintinweb/pi-subagents
-    if command -v pi &> /dev/null; then
-        if pi install "$PI_SUBAGENTS_PACKAGE"; then
-            log_success "Pi subagents package installed"
-        else
-            log_warning "Pi subagents package install failed"
-        fi
-    else
-        log_warning "pi not found after install, skipping Pi subagents package"
-    fi
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/bin/install-mise-tools"
 
     install_ai_desktop_apps
 
-    log_success "AI tools installed"
+    log_success "AI tools configured (mise tools install on first use)"
 }
 
 # Install AI desktop apps (GUI companions to the terminal agents).

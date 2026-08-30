@@ -6,7 +6,7 @@
 # - Update all Arch/AUR packages
 # - Update dotfiles via rcup
 # - Update development tools
-# - Update Pi coding agent
+# - Update mise-managed development tools
 
 set -euo pipefail
 
@@ -16,8 +16,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
-
-PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
 
 # Logging functions
 log_info() {
@@ -94,7 +92,7 @@ update_dotfiles() {
     fi
 }
 
-# Configure user-level npm globals so Pi packages do not require sudo.
+# Configure user-level npm globals for tools that are not yet managed by mise.
 configure_npm_user_prefix() {
     if ! command -v npm &> /dev/null; then
         log_warning "npm not found, skipping npm user prefix setup"
@@ -121,69 +119,6 @@ update_npm_packages() {
     fi
 }
 
-# Install/update Pi directly from upstream GitHub releases.  This is needed
-# when the AUR package lags behind upstream (or is marked out-of-date).
-update_pi_from_github_release() {
-    local current_version latest_tag latest_version arch asset_url tmpdir
-
-    if ! command -v curl &> /dev/null || ! command -v python &> /dev/null; then
-        log_warning "curl/python not found, cannot check upstream Pi release"
-        return 1
-    fi
-
-    current_version="$(pi --version 2>/dev/null || echo 0.0.0)"
-    latest_tag="$(python - <<'PY'
-import json, urllib.request
-with urllib.request.urlopen("https://api.github.com/repos/badlogic/pi-mono/releases/latest", timeout=20) as r:
-    print(json.load(r)["tag_name"])
-PY
-)"
-    latest_version="${latest_tag#v}"
-
-    if command -v vercmp &> /dev/null && [[ "$(vercmp "$latest_version" "$current_version")" -le 0 ]]; then
-        log_success "Pi coding agent is already up to date ($current_version)"
-        return 0
-    fi
-
-    case "$(uname -m)" in
-        x86_64) arch="x64" ;;
-        aarch64|arm64) arch="arm64" ;;
-        *)
-            log_warning "Unsupported architecture for Pi upstream release: $(uname -m)"
-            return 1
-            ;;
-    esac
-
-    asset_url="https://github.com/badlogic/pi-mono/releases/download/${latest_tag}/pi-linux-${arch}.tar.gz"
-    tmpdir="$(mktemp -d)"
-
-    log_info "Installing Pi ${latest_version} from upstream GitHub release..."
-    if ! curl -fsSL "$asset_url" -o "$tmpdir/pi.tar.gz" || \
-       ! tar -xzf "$tmpdir/pi.tar.gz" -C "$tmpdir" || \
-       ! sudo rsync -a --delete "$tmpdir/pi/" /opt/pi-coding-agent/ || \
-       ! sudo ln -sfn ../../opt/pi-coding-agent/pi /usr/bin/pi; then
-        rm -rf "$tmpdir"
-        return 1
-    fi
-
-    rm -rf "$tmpdir"
-    log_success "Pi coding agent updated to $(pi --version)"
-}
-
-install_pi_subagents_package() {
-    if ! command -v pi &> /dev/null; then
-        log_warning "pi not found, skipping Pi subagents package"
-        return 0
-    fi
-
-    log_info "Ensuring Pi subagents package is installed..."
-    if pi install "$PI_SUBAGENTS_PACKAGE"; then
-        log_success "Pi subagents package installed"
-    else
-        log_warning "Pi subagents package install failed"
-    fi
-}
-
 # Ensure AI packages are present. Version upgrades are handled by the
 # `yay -Syu` in update_system_packages; this step exists so machines
 # provisioned before these were added pick them up.
@@ -196,7 +131,7 @@ update_ai_packages() {
     fi
 
     local pkg
-    for pkg in claude-desktop chatgpt-desktop openai-codex-bin; do
+    for pkg in claude-desktop chatgpt-desktop; do
         if pacman -Q "$pkg" &>/dev/null; then
             log_info "$pkg already installed"
         elif yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$pkg"; then
@@ -207,72 +142,20 @@ update_ai_packages() {
     done
 }
 
-# Update Pi coding agent and installed Pi packages
-update_pi_coding_agent() {
-    log_info "Updating Pi coding agent..."
+update_mise_tools() {
+    log_info "Updating mise-managed tools..."
 
-    configure_npm_user_prefix
-
-    if command -v pi &> /dev/null; then
-        local pi_path
-        pi_path="$(command -v pi)"
-
-        # Arch/AUR installs are owned by pacman and `pi update` cannot
-        # self-update them. Try yay first, then bypass stale AUR packages by
-        # installing the latest official upstream release into /opt/pi-coding-agent.
-        if pacman -Qo "$pi_path" &> /dev/null; then
-            log_info "Pi is managed by pacman/AUR; checking pi-coding-agent via yay..."
-            local current_pi_version aur_pi_version aur_pi_info
-            current_pi_version="$(pi --version 2>/dev/null || echo 0.0.0)"
-            aur_pi_info="$(yay -Si pi-coding-agent 2>/dev/null || true)"
-            aur_pi_version="$(awk -F': +' '/^Version/ {print $2; exit}' <<< "$aur_pi_info")"
-            aur_pi_version="${aur_pi_version%%-*}"
-
-            if [[ -n "$aur_pi_version" ]] && command -v vercmp &> /dev/null && [[ "$(vercmp "$aur_pi_version" "$current_pi_version")" -gt 0 ]]; then
-                if yay -S --noconfirm --answerdiff None --answerclean None pi-coding-agent; then
-                    log_success "Pi AUR package updated"
-                else
-                    log_warning "Pi coding agent package update failed"
-                fi
-            else
-                log_info "Skipping AUR Pi install; AUR is not newer than installed Pi ($current_pi_version)"
-            fi
-
-            if ! update_pi_from_github_release; then
-                log_warning "Pi upstream release update failed"
-            fi
-
-            # Still update installed Pi packages/extensions from settings.json.
-            if pi update --extensions; then
-                log_success "Pi packages updated"
-            else
-                log_warning "Pi package update failed"
-            fi
-            install_pi_subagents_package
+    if ! command -v mise &>/dev/null; then
+        yay -S --needed --noconfirm mise || {
+            log_warning "mise install failed"
             return 0
-        fi
-
-        # Prefer Pi's own updater for npm/standalone installs so both Pi itself
-        # and any non-pinned Pi packages from ~/.pi/agent/settings.json are kept current.
-        if pi update; then
-            log_success "Pi coding agent updated"
-            install_pi_subagents_package
-            return 0
-        fi
-        log_warning "pi update failed, falling back to npm install"
+        }
     fi
 
-    if command -v npm &> /dev/null; then
-        if sudo npm install -g @earendil-works/pi-coding-agent@latest; then
-            log_success "Pi coding agent updated via npm"
-        else
-            log_warning "Pi coding agent update failed"
-        fi
-    else
-        log_warning "npm not found, skipping Pi coding agent update"
-    fi
-
-    install_pi_subagents_package
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/bin/install-mise-tools"
+    MISE_MINIMUM_RELEASE_AGE=0 mise up
+    log_success "mise-managed tools updated"
 }
 
 # Update Neovim plugins via lazy.nvim
@@ -293,7 +176,7 @@ main() {
     update_dotfiles
     update_npm_packages
     update_ai_packages
-    update_pi_coding_agent
+    update_mise_tools
     update_nvim_plugins
 
     log_success "Maintenance complete!"

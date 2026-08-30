@@ -1,0 +1,33 @@
+#!/bin/bash
+# Install small mise-backed launchers for user-facing development tools.
+
+set -euo pipefail
+
+if ! command -v mise &>/dev/null; then
+    echo "mise is required before installing tool wrappers" >&2
+    exit 1
+fi
+
+install_wrapper() {
+    local package=$1
+    local command=${2:-$package}
+    local bin=${3:-$command}
+    local target="$HOME/.local/bin/$command"
+
+    mkdir -p "$HOME/.local/bin"
+    rm -f "$target"
+    cat > "$target" <<EOF
+#!/bin/bash
+export MISE_MINIMUM_RELEASE_AGE=0
+mise use --global --quiet "$package" || exit 1
+exec mise x "$package" -- "$bin" "\$@"
+EOF
+    chmod +x "$target"
+}
+
+install_wrapper claude
+install_wrapper codex
+install_wrapper gh
+install_wrapper pi
+
+echo "Installed mise wrappers in $HOME/.local/bin"

@@ -69,7 +69,7 @@ official `.deb` would not cleanly apply there. It is headless regardless.
 | `claude` | Claude Desktop — hosts Cowork and Claude Code computer use |
 | `chatgpt` | ChatGPT Desktop — hosts the Codex view, Codex computer use, and the mobile relay target |
 
-`maintenance/macos.sh` → `update_ai_desktop_apps()` ensures both casks plus the `codex` CLI cask are present on machines provisioned before these were added. Version upgrades are handled by the existing `brew upgrade --cask --greedy`.
+`maintenance/macos.sh` → `update_ai_desktop_apps()` ensures both casks are present on machines provisioned before these were added. Version upgrades are handled by the existing `brew upgrade --cask --greedy`.
 
 `setup/arch.sh` → `install_ai_desktop_apps()`:
 
@@ -78,9 +78,9 @@ official `.deb` would not cleanly apply there. It is headless regardless.
 | `claude-desktop` | Claude Desktop — Anthropic's official Linux build |
 | `chatgpt-desktop` | ChatGPT Desktop — repackaged from OpenAI's official `.deb` |
 
-`maintenance/arch.sh` → `update_ai_packages()` ensures both, plus `openai-codex-bin`. Version upgrades come from the existing `yay -Syu` in `update_system_packages`.
+`maintenance/arch.sh` → `update_ai_packages()` ensures both. Version upgrades come from the existing `yay -Syu` in `update_system_packages`.
 
-`setup/lxc.sh` installs **no desktop apps at all** — it is headless and deliberately CLI-only (Claude Code, Codex CLI, Pi).
+`setup/lxc.sh` installs **no desktop apps at all** — it is headless and deliberately CLI-only (Claude Code, Codex CLI, GitHub CLI, and Pi).
 
 Note that the standalone `codex-app` cask is deprecated upstream and scheduled for removal on 2027-07-12; `chatgpt` is Homebrew's stated replacement and is what this repo installs.
 
@@ -124,11 +124,10 @@ Desktop control and the mobile relay require this Mac **awake with the app runni
 
 ## Relationship to the terminal agents
 
-The desktop apps are additive. The existing terminal stack is unchanged and remains the portable layer:
+The desktop apps are additive. The terminal agents remain the portable layer:
 
-- **Claude Code** — npm global on macOS and LXC, AUR on Arch
-- **Codex CLI** — `codex` cask on macOS, `openai-codex-bin` on Arch, `@openai/codex` on LXC
-- **Pi** — configured in `pi/agent/settings.json` with `openai-codex` as the default provider
+- **Claude Code, Codex CLI, GitHub CLI, and Pi** — installed lazily and updated through mise on every platform
+- **Pi configuration** — tracked in `pi/agent/settings.json`, with `openai-codex` as the default provider
 
 Claude Code computer use is hosted by Claude Desktop, so the CLI alone does not provide it. Installing the `claude` cask is what enables that path.
 

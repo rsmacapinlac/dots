@@ -3,7 +3,7 @@
 # LXC Maintenance Script - Keep Debian LXC packages and dotfiles up to date
 #
 # Run regularly to update: system packages, dotfiles, npm globals,
-# neovim plugins, and lazygit.
+# mise tools, neovim plugins, and lazygit.
 #
 
 set -euo pipefail
@@ -13,8 +13,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
-
-PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
 
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
@@ -70,75 +68,20 @@ update_nvim_plugins() {
     fi
 }
 
-update_codex_cli() {
-    log_info "Updating Codex CLI..."
+update_mise_tools() {
+    log_info "Updating mise-managed tools..."
 
-    configure_npm_user_prefix
-
-    if ! command -v npm &>/dev/null; then
-        log_warning "npm not found, skipping Codex CLI update"
-        return 0
-    fi
-
-    if npm install -g @openai/codex@latest; then
-        log_success "Codex CLI updated"
-    else
-        log_warning "Codex CLI update failed"
-    fi
-}
-
-install_pi_subagents_package() {
-    if ! command -v pi &>/dev/null; then
-        log_warning "pi not found, skipping Pi subagents package"
-        return 0
-    fi
-
-    log_info "Ensuring Pi subagents package is installed..."
-    if pi install "$PI_SUBAGENTS_PACKAGE"; then
-        log_success "Pi subagents package installed"
-    else
-        log_warning "Pi subagents package install failed"
-    fi
-}
-
-update_pi_coding_agent() {
-    log_info "Updating Pi coding agent..."
-
-    configure_npm_user_prefix
-
-    if command -v pi &>/dev/null; then
-        # Prefer Pi's own updater, matching the Arch maintenance flow for
-        # npm/standalone installs. This updates Pi itself and installed Pi
-        # packages/extensions from ~/.pi/agent/settings.json when supported.
-        if pi update; then
-            log_success "Pi coding agent updated"
-            install_pi_subagents_package
+    if ! command -v mise &>/dev/null; then
+        curl -fsSL https://mise.run | sh || {
+            log_warning "mise install failed"
             return 0
-        fi
-        log_warning "pi update failed, falling back to npm install"
+        }
     fi
 
-    if command -v npm &>/dev/null; then
-        if npm install -g @earendil-works/pi-coding-agent@latest; then
-            log_success "Pi coding agent updated via npm"
-        else
-            log_warning "Pi coding agent update failed"
-        fi
-    else
-        log_warning "npm not found, skipping Pi coding agent update"
-    fi
-
-    # If we had to update Pi through npm, still try to refresh installed Pi
-    # extensions/packages explicitly, similar to Arch's pacman/AUR branch.
-    if command -v pi &>/dev/null; then
-        if pi update --extensions; then
-            log_success "Pi packages updated"
-        else
-            log_warning "Pi package update failed"
-        fi
-    fi
-
-    install_pi_subagents_package
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/bin/install-mise-tools"
+    MISE_MINIMUM_RELEASE_AGE=0 mise up
+    log_success "mise-managed tools updated"
 }
 
 update_lazygit() {
@@ -175,8 +118,7 @@ main() {
     update_system_packages
     update_dotfiles
     update_npm_packages
-    update_codex_cli
-    update_pi_coding_agent
+    update_mise_tools
     update_nvim_plugins
     update_lazygit
 

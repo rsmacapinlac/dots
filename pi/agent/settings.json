@@ -4,8 +4,5 @@
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "medium",
   "theme": "catppuccin-mocha",
-  "hideThinkingBlock": false,
-  "packages": [
-    "npm:@tintinweb/pi-subagents"
-  ]
+  "hideThinkingBlock": false
 }

@@ -76,7 +76,8 @@ The workstation phase will:
 - Install applications (browsers, productivity, media, Steam)
 - Set up Hyprland desktop environment with all components
 - Configure fonts, terminals, and file managers
-- Install AI tooling (Claude Code, Codex CLI, Pi) and the Claude and ChatGPT desktop apps
+- Configure mise-backed, first-run installs for Claude Code, Codex CLI, Pi, and
+  GitHub CLI, plus the Claude and ChatGPT desktop apps
 
 ### macOS
 
@@ -94,8 +95,8 @@ This script will:
 - Install development tools (Neovim, tmux, Ruby, Go, Python)
 - Install the terminal application stack (ranger, neomutt, mpd/ncmpcpp/rmpc, beets, cava)
 - Install keyboard-friendly GUI apps (kitty, alacritty, qutebrowser, Firefox)
-- Install AI tooling (Claude Code, Codex CLI, Pi, agent-browser) and the Claude
-  and ChatGPT desktop apps
+- Configure mise-backed, first-run installs for Claude Code, Codex CLI, Pi, and
+  GitHub CLI; install agent-browser and the Claude and ChatGPT desktop apps
 
 The Claude and ChatGPT desktop apps install on both macOS and Arch, but macOS is
 the only platform where AI **desktop control** and **phone-to-machine remote
@@ -111,9 +112,12 @@ For headless containers used for AI-agent and development work:
 setup/lxc.sh
 ```
 
-Command-line only by design — Claude Code, Codex CLI, and Pi, with no desktop
-apps. Claude Code Remote Control is enabled here too, so an LXC session can be
-driven from the Claude mobile app.
+Command-line only by design — mise-backed, first-run installs for Claude Code,
+Codex CLI, Pi, and GitHub CLI, with no desktop apps. Claude Code Remote Control
+is enabled here too, so an LXC session can be driven from the Claude mobile app.
+
+See `docs/mise.md` for tool ownership, update behavior, and the remaining mise
+migration candidates.
 
 **Note**: These scripts require a regular user account with sudo privileges. Do not run as root.
 

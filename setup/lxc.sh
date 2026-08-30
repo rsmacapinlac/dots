@@ -22,8 +22,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-PI_SUBAGENTS_PACKAGE="npm:@tintinweb/pi-subagents"
-
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
@@ -145,6 +143,18 @@ install_base_packages() {
     fi
 
     log_success "Base system packages installed"
+}
+
+install_mise() {
+    if command -v mise &>/dev/null; then
+        log_info "mise already installed ($(mise --version))"
+        return 0
+    fi
+
+    log_info "Installing mise..."
+    curl -fsSL https://mise.run | sh
+    export PATH="$HOME/.local/bin:$PATH"
+    log_success "mise installed"
 }
 
 # Install Node.js via NodeSource — avoids the nodejs/npm apt conflict in Debian 12
@@ -392,71 +402,10 @@ install_neovim() {
     log_success "Neovim built and installed from source"
 }
 
-install_gh() {
-    if command -v gh &>/dev/null; then
-        log_info "GitHub CLI already installed, skipping"
-        return 0
-    fi
-
-    log_info "Installing GitHub CLI..."
-
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-        | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-    sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-        | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y gh
-
-    log_success "GitHub CLI installed"
-}
-
-install_claude_code() {
-    if command -v claude &>/dev/null; then
-        log_info "Claude Code already installed ($(claude --version 2>/dev/null || echo 'unknown version')), skipping"
-        return 0
-    fi
-
-    log_info "Installing Claude Code..."
-    npm install -g @anthropic-ai/claude-code
-
-    log_success "Claude Code installed"
-}
-
-install_codex_cli() {
-    if command -v codex &>/dev/null; then
-        log_info "Codex CLI already installed ($(codex --version 2>/dev/null || echo 'unknown version')), skipping"
-        return 0
-    fi
-
-    # OpenAI's Codex CLI: terminal coding agent
-    # https://github.com/openai/codex
-    log_info "Installing Codex CLI..."
-    npm install -g @openai/codex
-
-    log_success "Codex CLI installed"
-}
-
-install_pi_coding_agent() {
-    if command -v pi &>/dev/null; then
-        log_info "Pi coding agent already installed ($(pi --version 2>/dev/null || echo 'unknown version')), skipping"
-    else
-        log_info "Installing Pi coding agent..."
-        npm install -g @earendil-works/pi-coding-agent
-        log_success "Pi coding agent installed"
-    fi
-
-    # Install pi-subagents: subagent orchestration package for Pi
-    # https://pi.dev/packages/@tintinweb/pi-subagents
-    if command -v pi &>/dev/null; then
-        if pi install "$PI_SUBAGENTS_PACKAGE"; then
-            log_success "Pi subagents package installed"
-        else
-            log_warning "Pi subagents package install failed"
-        fi
-    else
-        log_warning "pi not found after install, skipping Pi subagents package"
-    fi
+install_mise_tools() {
+    export PATH="$HOME/.local/bin:$PATH"
+    "$HOME/bin/install-mise-tools"
+    log_success "mise tools configured (install on first use)"
 }
 
 setup_development_tools() {
@@ -507,6 +456,7 @@ main() {
 
     initial_setup
     install_base_packages
+    install_mise
     install_nodejs
     configure_npm
     configure_user_shell
@@ -518,10 +468,7 @@ main() {
     install_lazygit
     install_timer
     install_neovim
-    install_gh
-    install_claude_code
-    install_codex_cli
-    install_pi_coding_agent
+    install_mise_tools
     setup_development_tools
     enable_services
 

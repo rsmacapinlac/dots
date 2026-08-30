@@ -101,12 +101,12 @@ source $ZSH/oh-my-zsh.sh
 # User configuration
 
 # Add custom paths after oh-my-zsh loads
-# If RVM is already active in the inherited environment, do not prepend
-# anything ahead of its Ruby paths or RVM will warn about PATH ordering.
+# mise wrappers lead the normal user PATH. The RVM block at the end restores
+# active Ruby paths ahead of them before sourcing RVM, avoiding its ordering warning.
 if [[ -n "$rvm_path" ]]; then
-  export PATH="$PATH:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
+  export PATH="$HOME/.local/bin:$PATH:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:/var/lib/flatpak/exports/share/applications"
 else
-  export PATH="$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
+  export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
 fi
 
 # export MANPATH="/usr/local/man:$MANPATH"
