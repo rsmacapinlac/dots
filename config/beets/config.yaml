@@ -1,5 +1,5 @@
 directory: ~/Music
-library: ~/.config/beets/musiclibrary.db
+library: ~/.local/share/beets/musiclibrary.db
 
 # Keep filesystem paths portable for MPD playlists and firmware-based players
 # like the HIFI Walker H2. Tags can remain Unicode; this only affects paths.
@@ -40,4 +40,3 @@ embedart:
 match:
   preferred:
     media: ["CD", "Digital Media|File"]
-

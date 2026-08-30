@@ -38,6 +38,9 @@ Thumbs.db
 pi/agent/auth.json
 pi/agent/sessions/
 
+# Beets runtime database (configuration remains tracked)
+config/beets/musiclibrary.db
+
 # Python cache
 __pycache__/
 *.pyc
