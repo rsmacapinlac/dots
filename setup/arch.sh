@@ -62,6 +62,47 @@ check_not_root() {
     fi
 }
 
+# Keep the sudo timestamp warm for the whole run.
+#
+# A full install takes 45-90 minutes and makes dozens of sudo calls directly,
+# plus however many yay and makepkg invoke on their own. sudo's
+# timestamp_timeout defaults to 15 minutes, so without this the run stops to ask
+# for a password partway through — often mid-transaction, where it is easy to
+# miss and easy to leave the machine sitting idle for hours.
+#
+# You still authenticate once, at the start. Going fully passwordless would mean
+# writing a NOPASSWD rule into /etc/sudoers.d, which outlives a crashed script
+# and is a security decision this script should not make on its own.
+SUDO_KEEPALIVE_PID=""
+
+start_sudo_keepalive() {
+    log_info "Priming sudo for the duration of the run..."
+    if ! sudo -v; then
+        log_error "Cannot obtain sudo privileges for $USER."
+        exit 1
+    fi
+
+    # $$ inside the subshell is still this script's PID, so the refresher exits
+    # on its own when the script does. That is deliberate: polling for the
+    # parent means an abnormal exit cannot leave a stray process quietly
+    # refreshing sudo, which a trap alone would not guarantee.
+    (
+        while true; do
+            sleep 50
+            kill -0 "$$" 2>/dev/null || exit 0
+            sudo -n true 2>/dev/null || exit 0
+        done
+    ) &
+    SUDO_KEEPALIVE_PID=$!
+    log_success "sudo will stay unlocked until the script exits"
+}
+
+stop_sudo_keepalive() {
+    [[ -n $SUDO_KEEPALIVE_PID ]] || return 0
+    kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+    SUDO_KEEPALIVE_PID=""
+}
+
 # Detect Linux distribution
 detect_distro() {
     if [[ -f /etc/os-release ]]; then
@@ -1019,7 +1060,11 @@ main() {
         log_error "This script only supports Arch Linux"
         exit 1
     fi
-    
+
+    # Authenticate once here so the rest of the run is unattended.
+    trap stop_sudo_keepalive EXIT
+    start_sudo_keepalive
+
     # Run initial setup first
     initial_setup
     
