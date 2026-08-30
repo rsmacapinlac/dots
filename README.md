@@ -152,6 +152,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 ### Detailed Guides
 - **[Email Setup (isync)](docs/isync.md)**: Complete multi-account email configuration
 - **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
+- **[Arch VM Validation](docs/arch-vm-validation.md)**: post-install package and runtime smoke checks
 - **[AI Desktop Control](docs/ai-desktop-control.md)**: AI desktop control and mobile remote (macOS)
 - **[Install Profiles](setup/archinstall/README.md)**: archinstall configs and which values are hardware-bound
 - **[Testing the Build Scripts](docs/testing-build-scripts.md)**: exercising the bootstrap end to end in a disposable VM
