@@ -1023,32 +1023,6 @@ install_arduino_tools() {
     log_warning "Log out and back in for uucp group membership (serial uploads) to take effect"
 }
 
-# Install work tools (work)
-install_work_tools() {
-    log_info "Installing work tools..."
-
-    # icaclient (Citrix Workspace) cannot be installed unattended. Citrix puts
-    # the tarball behind a click-through licence rather than a fetchable URL, so
-    # makepkg stops with:
-    #
-    #   ERROR: icaclient-x64-<version>.tar.gz was not found in the build
-    #          directory and is not a URL.
-    #
-    # Running it here aborted the whole bootstrap under `set -e`, taking the
-    # remaining steps with it. It is skipped when already present and reported
-    # as a manual follow-up otherwise.
-    if pacman -Q icaclient &> /dev/null; then
-        log_info "icaclient already installed"
-    else
-        log_warning "Skipping icaclient — Citrix requires a manual download."
-        log_warning "  1. Fetch the tarball from:"
-        log_warning "     https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html"
-        log_warning "  2. yay -G icaclient && cd icaclient"
-        log_warning "  3. Put the tarball in that directory, then: makepkg -si"
-    fi
-
-    log_success "Work tools installed"
-}
 
 # Hardware Verification Function
 verify_virtualization_support() {
@@ -1273,8 +1247,6 @@ PKGEOF
     # ai tools
     install_ai_tools
 
-    # work
-    install_work_tools
 
     # raspberry pi
     install_rpi_tools

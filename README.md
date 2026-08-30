@@ -77,7 +77,6 @@ The workstation phase will:
 - Set up Hyprland desktop environment with all components
 - Configure fonts, terminals, and file managers
 - Install AI tooling (Claude Code, Codex CLI, Pi) and the Claude and ChatGPT desktop apps
-- Install work tools (Citrix client)
 
 ### macOS
 
@@ -252,7 +251,6 @@ minutes for a full run.
 ## Key Features & Documentation
 
 ### Hyprland Desktop
-- **Dynamic Keybinding System**: Toggle between normal and Citrix-compatible key mappings
 - **Multi-Monitor Support**: Automatic display configuration with autorandr
 - **Custom Waybar**: System monitoring with music integration and power management
 - **Consistent Theming**: Catppuccin colors across all desktop components
@@ -304,6 +302,24 @@ The dotfiles are managed with `rcm`. After making changes to configurations:
 1. Test changes locally
 2. Commit to the repository
 3. Run `rcup` to apply updates
+
+### Manual Steps
+
+Some things cannot be scripted and are left to do by hand after a rebuild:
+
+- **Secrets** — SSH keys, GPG keys and the password store. The steps are
+  documented at the end of `configure_security()` in `setup/arch.sh`.
+- **Citrix Workspace** (`icaclient`) — Citrix puts the tarball behind a
+  click-through licence rather than a fetchable URL, so `makepkg` cannot
+  retrieve it. Download it from
+  [Citrix](https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html),
+  then:
+
+  ```bash
+  yay -G icaclient && cd icaclient
+  # put the downloaded tarball in this directory
+  makepkg -si
+  ```
 
 ## Customization
 
