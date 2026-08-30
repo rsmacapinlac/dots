@@ -85,7 +85,7 @@
 }
 
 #battery {
-    border-radius: 0px 1rem 1rem 0px;
+    border-radius: 1rem;
     margin-right: 1rem;
 }
 
@@ -93,10 +93,16 @@
     border-radius: 0;
 }
 
+/* pulseaudio and battery are separate pills, each fully rounded.
+   They used to be two halves of one pill — pulseaudio rounded on the left,
+   battery on the right — which broke anywhere battery is hidden, such as a
+   desktop or a VM. The volume pill was then left with a flat, cut-off right
+   edge where battery should have continued it. */
 #pulseaudio {
   color: @maroon;
-  border-radius: 1rem 0px 0px 1rem;
+  border-radius: 1rem;
   margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 #custom-music {
