@@ -2171,7 +2171,7 @@ c.colors.tabs.selected.odd.fg = '#cdd6f4'
 ## Page to open if :open -t/-b/-w is used without URL. Use `about:blank`
 ## for a blank page.
 ## Type: FuzzyUrl
-c.url.default_page = 'https://internal.example/'
+c.url.default_page = 'about:blank'
 
 ## URL segments where `:navigate increment/decrement` will search for a
 ## number.
@@ -2216,7 +2216,7 @@ c.url.searchengines = {
 
 ## Page(s) to open at the start.
 ## Type: List of FuzzyUrl, or FuzzyUrl
-c.url.start_pages = ['https://internal.example']
+c.url.start_pages = ['about:blank']
 
 ## URL parameters to strip when yanking a URL.
 ## Type: List of String
