@@ -35,11 +35,17 @@ Expected:
 
 ### Session-scoped services actually started
 
-`enabled` is not `running`. This session has no session manager, so
-`graphical-session.target` never activates and any unit wanting it stays
-inactive however it was enabled — see
-[`hyprland-startup.md`](hyprland-startup.md). Check what is *running*, not what
-is enabled:
+`enabled` is not `running`, and that gap once hid a broken idle timeout. The
+session runs under uwsm, which activates `graphical-session.target`, so the
+packaged units should be both enabled *and* started — see
+[`hyprland-startup.md`](hyprland-startup.md). If the target is inactive the
+session did not come up through uwsm and every unit below will be silently
+absent. Check the target first, then what is actually *running*:
+
+```bash
+systemctl --user is-active graphical-session.target   # expect: active
+systemctl --user list-units --state=failed            # expect: none
+```
 
 ```bash
 for p in hypridle hyprpaper hyprpolkitagent mako waybar; do
@@ -142,9 +148,11 @@ to verify the hypridle fix from a fresh clone rather than a hand-edited guest.
   committed `conf/autostart.lua`.
 - After reboot: `hypridle`, `waybar`, `hyprpolkitagent` and `Hyprland` all
   running, while `graphical-session.target` was **inactive** and the `hypridle`
-  unit was **disabled / inactive** — i.e. the process is running because
-  `autostart.lua` execs it, not because anything activated the target or the
-  unit. That is the intended design, confirmed rather than assumed.
+  unit was **disabled / inactive** — i.e. the process was running because
+  `autostart.lua` execed it. That was the design *at the time*; the session has
+  since moved to uwsm, where the target activates and these run as units
+  instead. This entry is kept as the record of that run, not as current
+  expected behaviour.
 - `hyprctl configerrors` clean; `applications.sh` still rejects an unknown group
   with exit 1 before any sudo prompt.
 - `hyprpaper` still fails, as expected — see the EGL limitation below.

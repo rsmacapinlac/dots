@@ -4,23 +4,29 @@ This document explains how Hyprland is launched in this system and the rationale
 
 ## Overview
 
-Hyprland is launched via the **greetd** display manager using the official `start-hyprland` wrapper provided by the Hyprland package. This approach ensures proper initialization and avoids compatibility issues.
+Hyprland is launched by the **greetd** display manager through **uwsm**
+(Universal Wayland Session Manager), which in turn runs the official
+`start-hyprland` wrapper:
+
+```
+uwsm start -- start-hyprland
+```
+
+uwsm does not replace `start-hyprland` — it wraps it. Both are in play.
 
 Greetd is not installed by the minimal Archinstall profile. After the first
 reboot into a TTY, `setup/start.sh` dispatches to the core `setup/arch.sh`
-installer, which installs and enables greetd. The following reboot enters the
-user's Hyprland session automatically.
+installer, which installs greetd and `uwsm` and enables greetd. The following
+reboot enters the user's Hyprland session automatically.
 
 ## Startup Method
 
 ### Current Configuration
 
-The system uses the **simple `start-hyprland` wrapper** approach:
-
 - **Display Manager**: greetd
 - **Configuration File**: `/etc/greetd/config.toml`
-- **Startup Command**: `start-hyprland`
-- **Provided By**: Hyprland package (`/usr/bin/start-hyprland`)
+- **Startup Command**: `uwsm start -- start-hyprland`
+- **Provided By**: `uwsm` package, plus `start-hyprland` from the Hyprland package
 
 ### Configuration Example
 
@@ -29,74 +35,80 @@ The system uses the **simple `start-hyprland` wrapper** approach:
 vt = 1
 
 [default_session]
-command = "start-hyprland"
+command = "uwsm start -- start-hyprland"
 user = "greeter"
 
 [initial_session]
-command = "start-hyprland"
+command = "uwsm start -- start-hyprland"
 user = "ritchie"
 ```
 
-## Why start-hyprland?
+## Why uwsm
 
-The `start-hyprland` binary is the official, recommended way to launch Hyprland. It:
+The session is a set of systemd user units, not a pile of orphaned child
+processes. Concretely, uwsm activates `graphical-session-pre.target`,
+`graphical-session.target` and `xdg-desktop-autostart.target`.
 
-- **Properly initializes the Wayland environment** with required variables
-- **Sets up systemd integration** for user services
-- **Handles session management** correctly
-- **Avoids warning messages** like "Hyprland was started without start-hyprland"
-- **Is maintained by the Hyprland team** as the standard startup method
+That last point is the whole reason this repo moved to it. Arch packages ship
+user units declaring `WantedBy=graphical-session.target`:
 
-## Alternative: UWSM (Not Used)
+`hypridle`, `hyprpaper`, `waybar`, `mako`, `hyprpolkitagent`
 
-UWSM (Universal Wayland Session Manager) is **not used for Hyprland startup** and
-is **not installed** by `setup/arch.sh`. It may still be present on machines
-provisioned before the core/optional split.
+**Without a session manager that target never activates**, so those units are
+enabled but never started. This is not theoretical: `hypridle` was enabled and
+never ran on this configuration, which meant no idle timeout and no automatic
+screen lock, and nothing surfaced an error. The old arrangement worked only
+because `conf/autostart.lua` hand-execed a subset of the same programs —
+`hypridle` was simply missing from that list.
 
-- **Package**: `uwsm` — not part of the core install; add it deliberately if wanted
-- **Desktop File**: `/usr/share/wayland-sessions/hyprland-uwsm.desktop` (only if installed)
-- **Status**: Marked as "for advanced users" with "issues and quirks"
+Running under uwsm means:
 
-UWSM is not an *alternative* to `start-hyprland` — it wraps it. Omarchy, for
-example, launches with `uwsm start -- start-hyprland -- -c ~/.config/hypr/hyprland.conf`.
+- Those five services start and stay supervised, with systemd restart policies.
+- The list is maintained by the packages, not by hand in `autostart.lua`.
+- `~/.config/autostart/*.desktop` entries are honoured, because
+  `xdg-desktop-autostart.target` is activated.
+- Session processes die with the session rather than being reparented to init.
 
-### Why We Don't Use UWSM
+### How things get started
 
-1. **Simpler is better** - one less moving part between greetd and the compositor
-2. **Advanced user tool** - UWSM is marked for advanced users with known quirks
-3. **Official support** - `start-hyprland` is the officially supported method
-4. **Avoids compatibility issues** - Prevents warnings and potential problems
+There are two mechanisms, and which one applies depends on whether the program
+ships a unit.
 
-### What that choice costs: `graphical-session.target`
+| Program | Started by |
+|---|---|
+| `hypridle`, `hyprpaper`, `waybar`, `mako`, `hyprpolkitagent` | systemd user units, enabled by `setup/arch.sh` |
+| `nm-applet`, `blueman-applet`, `set_wallpaper`, `bin/hypr-*` | `conf/autostart.lua`, wrapped in `uwsm-app` |
 
-This is the real trade-off, and it is not free.
+`conf/autostart.lua` wraps each remaining command in `uwsm-app` so it lands in
+its own systemd scope. **Do not exec a unit-backed service from
+`autostart.lua`** — that starts a second, unsupervised copy alongside the unit.
 
-UWSM binds `graphical-session.target`. Without a session manager that target
-**never activates**, so any packaged user unit declaring
-`WantedBy=graphical-session.target` is enabled but never started. On a current
-install those units are:
+Two scripts are deliberately systemd-aware for the same reason:
+`restart_waybar` in `bin/hypr-utils` restarts the unit rather than `pkill`ing a
+supervised process, and `config/wallpapers/bin/set_wallpaper` starts
+`hyprpaper.service` rather than forking its own copy.
 
-`fumon`, `hyprpolkitagent`, `hypridle`, `hyprpaper`, `mako`, `waybar`
+### Caveat: PATH
 
-Most are covered by other means: `conf/autostart.lua` execs `hyprpolkitagent`,
-`hyprpaper` and `waybar` directly, and `mako` is D-Bus activated by the first
-notification. `hypridle` had no such cover, so it silently never ran — no idle
-timeout and no automatic lock — until it was added to `conf/autostart.lua`.
+uwsm does not inherit an interactive shell's PATH. Commands launched from
+`autostart.lua` use absolute paths for anything outside the system `PATH` —
+this is a known friction point with custom session scripts.
 
-The consequence to remember: **starting a compositor without a session manager
-means `conf/autostart.lua` is the session manager.** Anything that expects
-`graphical-session.target` must be launched there explicitly, and enabling its
-systemd user unit instead only makes it *look* configured. Verify with:
+## Verifying the session
+
+`enabled` is not `running`, and that distinction is what previously hid a
+broken idle timeout. Check the target and the processes:
 
 ```bash
-systemctl --user is-active graphical-session.target   # inactive here, by design
-grep -l 'WantedBy=graphical-session.target' /usr/lib/systemd/user/*.service
+systemctl --user is-active graphical-session.target    # expect: active
+for p in hypridle hyprpaper waybar mako hyprpolkitagent; do
+  printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
+done
+systemctl --user list-units --state=failed             # expect: none
 ```
 
-Adopting UWSM would remove that maintenance burden. It is a deliberate,
-separate change: it needs `uwsm` added to `install_hyprland`, a greetd command
-change, and its own VM rehearsal — and custom session scripts (this repo runs
-several from `~/.bin`) are a known friction point under `uwsm-app`.
+If `graphical-session.target` is inactive, the session did not come up through
+uwsm and every unit above will be silently absent.
 
 ## Making Changes
 
@@ -144,7 +156,8 @@ hyprctl version
 
 **Cause**: Hyprland was launched directly (via `Hyprland` command) or improperly via UWSM (using `uwsm start hyprland` instead of referencing the desktop file).
 
-**Solution**: Ensure `/etc/greetd/config.toml` uses `command = "start-hyprland"`
+**Solution**: Ensure `/etc/greetd/config.toml` uses
+`command = "uwsm start -- start-hyprland"`
 
 ### Startup Fails After Configuration Change
 
@@ -166,7 +179,7 @@ hyprctl version
 
 4. **Test from TTY:**
    - Press `Ctrl+Alt+F2` to switch to another TTY
-   - Login and manually test: `start-hyprland`
+   - Login and manually test: `uwsm start -- start-hyprland`
    - Check for error messages
 
 ### Environment Variables Not Set
@@ -186,27 +199,6 @@ echo $XDG_CURRENT_DESKTOP
 ```
 
 If these are missing, the wrapper isn't being used correctly.
-
-## Using UWSM for Advanced Use Cases
-
-If you need UWSM for specific functionality, install it (`yay -S uwsm`). You can:
-
-1. **Manually launch with UWSM:**
-   ```bash
-   uwsm start -e -D Hyprland hyprland.desktop
-   ```
-
-2. **Switch greetd to UWSM:**
-   Edit `/etc/greetd/config.toml`:
-   ```toml
-   command = "uwsm start -e -D Hyprland hyprland.desktop"
-   ```
-
-3. **Configure UWSM environment:**
-   - Global vars: `~/.config/uwsm/env`
-   - Hyprland-specific: `~/.config/uwsm/env-hyprland`
-
-**Note**: Document your specific use case if you switch to UWSM.
 
 ## Configuration Files
 
@@ -232,6 +224,8 @@ If you need UWSM for specific functionality, install it (`yay -S uwsm`). You can
 
 **UWSM**: `/usr/share/wayland-sessions/hyprland-uwsm.desktop`
 - Exec: `uwsm start -e -D Hyprland hyprland.desktop`
+- Not used by greetd here: the greetd command invokes `uwsm start` directly
+  against `start-hyprland` rather than going through this desktop file.
 - Available but not used by default
 
 ## References

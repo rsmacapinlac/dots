@@ -119,6 +119,13 @@ enable_internal() {
 
 restart_waybar() {
     log_display "restarting waybar after monitor change"
+    # waybar runs as a systemd user unit under uwsm. pkill'ing it would leave
+    # systemd to restart or fail the unit depending on its policy, and a bare
+    # `waybar &` would add a second unsupervised copy alongside it.
+    if systemctl --user --quiet is-enabled waybar.service 2>/dev/null; then
+        systemctl --user restart waybar.service
+        return
+    fi
     pkill -x waybar 2>/dev/null || true
     sleep 0.5
     nohup waybar >/dev/null 2>&1 &

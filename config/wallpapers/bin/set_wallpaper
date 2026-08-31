@@ -5,9 +5,14 @@ mode="${1:-random}"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Start hyprpaper if not running
+# Start hyprpaper if not running. Under uwsm it is a systemd user unit, so go
+# through systemd rather than forking a second unsupervised copy beside it.
 if ! pgrep -x "hyprpaper" > /dev/null; then
-    hyprpaper &
+    if systemctl --user --quiet is-enabled hyprpaper.service 2>/dev/null; then
+        systemctl --user start hyprpaper.service
+    else
+        hyprpaper &
+    fi
 fi
 
 # Wait for hyprpaper IPC to be ready before issuing commands.  Newer

@@ -220,6 +220,7 @@ install_hyprland() {
     log_info "Installing the Hyprland desktop..."
     yay_install \
         hyprland \
+        uwsm \
         mako \
         libnotify \
         kitty \
@@ -295,11 +296,11 @@ install_greeter() {
 vt = 1
 
 [default_session]
-command = "start-hyprland"
+command = "uwsm start -- start-hyprland"
 user = "greeter"
 
 [initial_session]
-command = "start-hyprland"
+command = "uwsm start -- start-hyprland"
 user = "$USER"
 EOF
     sudo systemctl enable greetd
@@ -318,13 +319,20 @@ enable_core_services() {
     sudo systemctl enable cups.service
     sudo systemctl enable avahi-daemon.service
 
-    # hypridle is deliberately not enabled here: its unit is
-    # WantedBy=graphical-session.target, which nothing activates under
-    # start-hyprland, so enabling it only looks like idle handling is
-    # configured. config/hypr/conf/autostart.lua starts it instead.
     systemctl --user daemon-reload 2>/dev/null || true
     systemctl --user enable ssh-agent.service 2>/dev/null || true
     systemctl --user enable gnome-keyring-daemon 2>/dev/null || true
+
+    # The session runs under uwsm, which activates graphical-session.target, so
+    # these packaged units start and stay supervised. Without a session manager
+    # the target never activates and enabling them would be a no-op -- that is
+    # exactly how hypridle silently never ran. conf/autostart.lua must not also
+    # exec these, or each gets a second, unsupervised copy.
+    local unit
+    for unit in hypridle hyprpaper waybar mako hyprpolkitagent; do
+        systemctl --user enable "$unit.service" 2>/dev/null \
+            || log_warning "Could not enable $unit.service"
+    done
 }
 
 main() {
