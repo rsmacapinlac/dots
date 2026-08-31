@@ -1,0 +1,114 @@
+#!/bin/bash
+# Install Todoist as a Chromium web app.
+#
+# Todoist has no first-party Linux client, and the AUR builds wrap the same web
+# app in Electron -- a second browser engine resident in RAM to render a page
+# Chromium already renders. A --app= window is the same product without that
+# cost, and it inherits ~/.config/chromium-flags.conf, so the keyring pin
+# (--password-store=gnome-libsecret) applies to it for free. See
+# docs/ai-desktop-control.md.
+#
+# Like install-service-nextcloud this is deliberately NOT part of the setup
+# scripts: it is an account-bound app that is useless until you log in, and it
+# needs the network to fetch its icon. Run it once, by hand, after the desktop
+# is up. Safe to rerun -- it overwrites its own icon and launcher in place.
+#
+# Uninstall with:
+#     rm ~/.local/share/applications/todoist.desktop
+#     rm ~/.local/share/icons/hicolor/*/apps/todoist.png
+#     update-desktop-database ~/.local/share/applications
+
+set -euo pipefail
+
+APP_NAME="Todoist"
+APP_URL="https://app.todoist.com/app/"
+MANIFEST_URL="https://app.todoist.com/manifest.json"
+# Chromium derives a WM_CLASS from the URL otherwise, which is both unstable and
+# unusable in a Hyprland windowrule. Pin it so rules and StartupWMClass match.
+APP_CLASS="todoist"
+
+APPS_DIR="$HOME/.local/share/applications"
+ICON_ROOT="$HOME/.local/share/icons/hicolor"
+DESKTOP_FILE="$APPS_DIR/$APP_CLASS.desktop"
+
+[[ "$(uname -s)" == Linux ]] || { echo "This installer is Linux-only." >&2; exit 1; }
+
+command -v chromium &>/dev/null ||
+    { echo "chromium is required; install it via setup/applications.sh" >&2; exit 1; }
+command -v jq &>/dev/null ||
+    { echo "jq is required; run setup/arch.sh first" >&2; exit 1; }
+
+# Icon. The PWA manifest is the only source that offers a launcher-sized icon:
+# todoist.com publishes just 16px and 32px favicons, and has no apple-touch-icon
+# link tag. Its CDN paths are content-hashed, so they have to be read from the
+# manifest at install time rather than pinned here. Prefer 512 then 192 -- both
+# are sizes hicolor indexes, so the icon is found by name.
+echo "Fetching icon from the Todoist PWA manifest..."
+icon_url=""
+icon_size=""
+if manifest=$(curl -fsSL --max-time 15 "$MANIFEST_URL" 2>/dev/null); then
+    for size in 512 192; do
+        icon_url=$(jq -r --arg s "${size}x${size}" \
+            'first(.icons[]? | select(.sizes == $s) | .src) // empty' <<<"$manifest")
+        if [[ -n $icon_url ]]; then
+            icon_size="$size"
+            break
+        fi
+    done
+fi
+
+if [[ -z $icon_url ]]; then
+    # Well-known fallback. 180x180 is not a size hicolor indexes, so it goes in
+    # the 256 bucket and gets scaled down -- worse than the manifest icon, but
+    # better than a launcher entry with no icon at all.
+    echo "Manifest unavailable; falling back to /apple-touch-icon.png." >&2
+    icon_url="https://todoist.com/apple-touch-icon.png"
+    icon_size="256"
+fi
+
+icon_dir="$ICON_ROOT/${icon_size}x${icon_size}/apps"
+mkdir -p "$icon_dir"
+tmp_icon=$(mktemp)
+trap 'rm -f "$tmp_icon"' EXIT
+
+curl -fsSL --max-time 20 -o "$tmp_icon" "$icon_url" ||
+    { echo "Failed to download icon from $icon_url" >&2; exit 1; }
+[[ -s $tmp_icon && $(file -b --mime-type "$tmp_icon") == image/* ]] ||
+    { echo "Downloaded icon is not an image: $icon_url" >&2; exit 1; }
+install -Dm644 "$tmp_icon" "$icon_dir/$APP_CLASS.png"
+gtk-update-icon-cache "$ICON_ROOT" &>/dev/null || true
+
+# Launcher. Chromium reads ~/.config/chromium-flags.conf on top of these, so the
+# password-store pin does not need repeating here.
+mkdir -p "$APPS_DIR"
+cat >"$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=$APP_NAME
+Comment=$APP_NAME web app
+Exec=chromium --app=$APP_URL --class=$APP_CLASS
+Icon=$APP_CLASS
+StartupWMClass=$APP_CLASS
+StartupNotify=true
+Terminal=false
+Categories=Office;ProjectManagement;
+EOF
+
+command -v desktop-file-validate &>/dev/null && desktop-file-validate "$DESKTOP_FILE"
+command -v update-desktop-database &>/dev/null &&
+    update-desktop-database "$APPS_DIR" &>/dev/null || true
+
+cat <<EOF
+
+$APP_NAME installed as a Chromium web app.
+
+  launcher  $DESKTOP_FILE
+  icon      $icon_dir/$APP_CLASS.png (${icon_size}px)
+
+Find it in rofi; it opens in its own window with app_id "$APP_CLASS", so you can
+target it from config/hypr/conf/rules.lua. Log in on first launch -- the session
+persists through the gnome-libsecret store Chromium is pinned to.
+
+Neither file is tracked by rcm; rerun this script after a rebuild.
+EOF
