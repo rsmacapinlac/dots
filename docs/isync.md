@@ -11,9 +11,12 @@ This directory contains the configuration for using **isync** (formerly mbsync) 
 - **Two-way synchronization** - Changes sync both ways
 - **Efficient updates** - Only syncs changes, not entire mailboxes
 
-## Email Accounts Configured
+## Example Accounts
 
-1. **boogienet** (`user@example.net`)
+Three accounts, named as they are throughout this guide. The real ones live in
+the private companion repo's `mbsyncrc`; substitute your own names freely.
+
+1. **personal** (`user@example.net`)
    - Host: `mail.hostedemail.com`
    - Folders: INBOX, Sent Items, Drafts, Trash, Spam
 
@@ -21,7 +24,7 @@ This directory contains the configuration for using **isync** (formerly mbsync) 
    - Host: `imap.gmail.com`
    - Folders: INBOX, [Gmail]/Sent Mail, [Gmail]/Drafts, [Gmail]/Trash, [Gmail]/All Mail, [Gmail]/Spam
 
-3. **macapinlac** (`user@example.com`)
+3. **work** (`user@example.com`)
    - Host: `imap.gmail.com` (Google Workspace)
    - Folders: INBOX, [Gmail]/Sent Mail, [Gmail]/Drafts, [Gmail]/Trash, [Gmail]/All Mail, [Gmail]/Spam
 
@@ -31,7 +34,7 @@ After synchronization, your emails will be stored in:
 
 ```
 ~/.mail/
-├── boogienet/
+├── personal/
 │   ├── INBOX/
 │   ├── Sent Items/
 │   ├── Drafts/
@@ -45,7 +48,7 @@ After synchronization, your emails will be stored in:
 │   │   ├── Trash/
 │   │   ├── All Mail/
 │   │   └── Spam/
-└── macapinlac/
+└── work/
     ├── INBOX/
     └── [Gmail]/
         ├── Sent Mail/
@@ -118,8 +121,8 @@ sync-mail sync
 Sync specific account:
 ```bash
 sync-mail gmail
-sync-mail boogienet
-sync-mail macapinlac
+sync-mail personal
+sync-mail work
 ```
 
 ### Check Status
@@ -160,12 +163,12 @@ mbsync -n -a
 ```muttrc
 set folder = "imaps://mail.hostedemail.com:993"
 set imap_user = "user@example.net"
-set imap_pass = "`pass email/boogienet.com | head -1 | tr -d '\n'`"
+set imap_pass = "`pass email/personal.example | head -1 | tr -d '\n'`"
 ```
 
 **Local Maildir Configuration:**
 ```muttrc
-set folder = "~/.mail/boogienet"
+set folder = "~/.mail/personal"
 # No IMAP settings needed
 ```
 
