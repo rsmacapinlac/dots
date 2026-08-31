@@ -23,7 +23,7 @@ a lazy tool or running maintenance is an explicit request for the current
 release rather than mise's normal release cooldown.
 
 The launchers are generated rather than tracked as four copies so their behavior
-stays identical. `~/.local/bin` precedes legacy npm, Homebrew, and AUR locations
+stays identical. `~/.local/bin` precedes legacy npm and AUR locations
 in `PATH`, allowing existing machines to migrate without automatically deleting
 their previous installations. Those old packages may be removed manually after
 the mise-backed commands have been verified.
@@ -31,7 +31,6 @@ the mise-backed commands have been verified.
 ## Setup and maintenance
 
 - Arch installs mise with pacman/yay.
-- macOS installs mise with Homebrew.
 - Debian LXC installs mise with the official installer into `~/.local/bin`.
 - Setup generates the launchers but does not download the four tools.
 - Maintenance regenerates the launchers and runs
@@ -53,8 +52,8 @@ or maintained with custom download code:
   system scripts and packaged Python modules. Arch installs Node.js and Go only
   through the optional `development` application group.
 - `agent-browser`: currently an npm global and a natural lazy npm-backed tool.
-- `lazygit`: native on Arch/macOS but downloaded and updated manually on LXC.
-- Neovim: native on Arch/macOS but built from source on LXC. Moving it needs a
+- `lazygit`: native on Arch but downloaded and updated manually on LXC.
+- Neovim: native on Arch but built from source on LXC. Moving it needs a
   deliberate decision about whether an editor is a bootstrap dependency.
 - Release-installed CLIs such as `himalaya`, `gogcli`, and `fastfetch`
   where mise's `aqua`, `ubi`, or GitHub backends can remove custom updater code.

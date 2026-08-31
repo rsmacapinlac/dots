@@ -5,9 +5,8 @@ if [[ "$TERM" == "linux" ]]; then
 fi
 
 # Do not let a stale exported FPATH from tmux or a parent shell replace zsh's
-# function search path. Homebrew zsh upgrades can leave FPATH pointing at a
-# removed Cellar version, which breaks oh-my-zsh autoloads such as compinit,
-# add-zsh-hook, colors, and is-at-least.
+# function search path. A stale entry pointing at a removed zsh version breaks
+# oh-my-zsh autoloads such as compinit, add-zsh-hook, colors, and is-at-least.
 if [[ -n "$FPATH" ]]; then
   _dots_reset_fpath=0
   for _dots_fpath_dir in ${(s.:.)FPATH}; do
@@ -24,10 +23,8 @@ if [[ -n "$FPATH" ]]; then
     _dots_saved_fpath="${FPATH}"
     fpath=()
     for _dots_fpath_dir in ${(s.:.)_dots_saved_fpath} \
-      /opt/homebrew/share/zsh/site-functions \
       /usr/local/share/zsh/site-functions \
       /usr/share/zsh/site-functions \
-      /opt/homebrew/share/zsh/functions \
       /usr/local/share/zsh/functions \
       /usr/share/zsh/$ZSH_VERSION/functions \
       /usr/share/zsh/functions; do

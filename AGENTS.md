@@ -9,8 +9,13 @@ This repo is a Linux dotfiles/workstation configuration managed by `rcm` (`rcup`
 
 Target:
 - Arch Linux (full desktop environment)
-- Macos (full desktop environment)
 - Debian LXC / headless environments
+
+macOS is not a target here. Its bootstrap lives in the companion `dots-macos`
+repository, which clones this one for the shared configuration and overrides
+`zshrc`, `zshenv` and `bin/pinentry-wrapper` with Darwin-aware copies. When
+changing any of those three, the macOS copy has to be updated by hand -- `rcm`
+overrides whole files, so there is no shared base to inherit from.
 
 ## Principles and repository patterns
 
@@ -60,8 +65,7 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 - `setup/applications.sh` — interactive or group-based optional Arch application installer.
 - `setup/services/` — one-shot installers for account-bound apps (Nextcloud, Todoist). Deliberately not wired into the bootstrap scripts; run by hand after the desktop is up.
 - `setup/install-mise-tools` — installs the mise-backed launchers in `~/.local/bin`; called by the setup and maintenance scripts.
-- `setup/macos.sh` — full macOS workstation bootstrap script (Homebrew-based).
-- `maintenance/arch.sh`, `maintenance/macos.sh`, `maintenance/lxc.sh` — regular update scripts.
+- `maintenance/arch.sh`, `maintenance/lxc.sh` — regular update scripts.
 - `config/wallpapers/` — wallpaper scripts and image collections.
 
 ## Common commands
@@ -100,9 +104,7 @@ setup/arch.sh        # Arch desktop bootstrap; do not run casually
 setup/applications.sh # select optional Arch application groups
 setup/services/nextcloud.sh # optional; run once, by hand
 setup/services/todoist.sh   # optional; run once, by hand
-setup/macos.sh       # macOS desktop bootstrap; do not run casually
 maintenance/arch.sh
-maintenance/macos.sh
 maintenance/lxc.sh
 ```
 

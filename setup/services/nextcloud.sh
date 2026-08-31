@@ -11,8 +11,7 @@
 #     setup/services/nextcloud.sh
 #
 # Uninstall with:
-#     yay -Rns nextcloud-client      # Arch
-#     brew uninstall --cask nextcloud # macOS
+#     yay -Rns nextcloud-client
 
 set -euo pipefail
 
@@ -37,12 +36,6 @@ case "$(uname -s)" in
             echo "No Wayland session detected; start it from your session with:"
             echo "    uwsm-app -- nextcloud --background"
         fi
-        ;;
-    Darwin)
-        command -v brew &>/dev/null || { echo "Homebrew is required; run setup/macos.sh first" >&2; exit 1; }
-        echo "Installing nextcloud..."
-        brew install --cask nextcloud
-        open -a Nextcloud || true
         ;;
     *)
         echo "Unsupported platform: $(uname -s)" >&2

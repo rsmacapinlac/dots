@@ -86,17 +86,8 @@ plugins=(
 # no tmux pane — pays for an ssh-add, and a passphrase is never prompted for at
 # shell startup.
 #
-# Arch: ssh-agent runs as a systemd user service with a fixed socket path
-# macOS: no launchd-managed socket; use a fixed socket and start agent if needed
-if [[ "$(uname -s)" == "Linux" ]]; then
-    export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
-elif [[ "$(uname -s)" == "Darwin" ]]; then
-    export SSH_AUTH_SOCK="$HOME/.ssh/ssh-agent.sock"
-    if ! ssh-add -l &>/dev/null; then
-        rm -f "$SSH_AUTH_SOCK"
-        ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
-    fi
-fi
+# ssh-agent runs as a systemd user service with a fixed socket path.
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
 
 source $ZSH/oh-my-zsh.sh
 
@@ -109,8 +100,8 @@ export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/lo
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
-# Use a real UTF-8 locale so terminal/TUI apps display non-ASCII text consistently.
-# macOS does not provide C.UTF-8; Arch should also have en_US.UTF-8 generated.
+# Use a real UTF-8 locale so terminal/TUI apps display non-ASCII text
+# consistently. Arch needs en_US.UTF-8 generated in /etc/locale.gen.
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
@@ -206,7 +197,7 @@ if [[ -z "$TMUX" ]]; then
 fi
 
 # Created by `pipx` on 2023-10-10 04:12:28
-# Guarded and $HOME-relative: the literal /home/ritchie path does not exist on macOS.
+# Guarded: pipx wrote this unconditionally, and the directory may not exist.
 [[ -d "$HOME/.local/bin" ]] && export PATH="$PATH:$HOME/.local/bin"
 
 # Modern Go configuration

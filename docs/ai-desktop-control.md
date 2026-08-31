@@ -2,7 +2,9 @@
 
 This document covers the vendor AI desktop apps this repo installs (Claude Desktop and ChatGPT Desktop) and the two capabilities they host: **desktop control** (letting an agent drive the machine directly) and **mobile remote control** (driving an agent on this machine from a phone).
 
-Read the distinction carefully: **the apps install on both macOS and Arch; the two capabilities are macOS-only.** Installing the app on Arch does not get you desktop control.
+Read the distinction carefully: **the apps install on Arch, but the two capabilities are macOS-only.** Installing the app on Arch does not get you desktop control.
+
+macOS is no longer set up from this repository — see the `dots-macos` companion. The macOS columns below stay because they are why the Arch answer is "no", not because anything here configures a Mac.
 
 ## Overview
 
@@ -62,15 +64,6 @@ official `.deb` would not cleanly apply there. It is headless regardless.
 
 ## What the scripts install
 
-`setup/macos.sh` → `install_ai_desktop_apps()`:
-
-| Cask | Provides |
-|---|---|
-| `claude` | Claude Desktop — hosts Cowork and Claude Code computer use |
-| `chatgpt` | ChatGPT Desktop — hosts the Codex view, Codex computer use, and the mobile relay target |
-
-`maintenance/macos.sh` → `update_ai_desktop_apps()` ensures both casks are present on machines provisioned before these were added. Version upgrades are handled by the existing `brew upgrade --cask --greedy`.
-
 `setup/applications.sh ai-desktop`:
 
 | AUR package | Provides |
@@ -84,45 +77,30 @@ missing optional groups.
 
 Headless environments install no desktop apps; they stay deliberately CLI-only (Claude Code, Codex CLI, GitHub CLI, and Pi).
 
-Note that the standalone `codex-app` cask is deprecated upstream and scheduled for removal on 2027-07-12; `chatgpt` is Homebrew's stated replacement and is what this repo installs.
 
 ## Manual steps
 
-**These cannot be scripted.** macOS TCC permissions (Accessibility, Screen Recording) are only grantable through a user-driven consent prompt by design, and the in-app toggles live behind each vendor's account. `setup/macos.sh` prints this checklist on completion via `report_ai_capability_steps()`.
+Desktop control and the phone-to-machine relay need macOS permission grants
+that cannot be scripted — TCC consent prompts are user-driven by design, and
+the in-app toggles live behind each vendor's account. Those steps moved with
+the rest of macOS to the `dots-macos` companion, whose bootstrap prints the
+checklist on completion.
 
-### Claude — desktop control
-
-1. Open Claude Desktop and sign in. Requires a **Pro or Max** plan; Team and Enterprise plans do not have computer use.
-2. Settings → General (under Desktop app) → enable **Computer use**.
-3. This is a research preview. Claude prompts for permission per application as it goes, and some applications are off-limits by default.
+One capability does apply here:
 
 ### Claude — mobile remote control
 
-Already enabled repo-wide, no per-machine step. `claude/settings.json` sets:
+Enabled by configuration rather than a per-machine step. The private dotfiles
+repository sets, in `claude/settings.json`:
 
 ```json
 "remoteControlAtStartup": true,
 "agentPushNotifEnabled": true
 ```
 
-Because `claude/` maps to `~/.claude/` through rcm, every endpoint that runs `rcup` gets this — including the LXC, where it is the most useful remote path available.
-
-### Codex — desktop control
-
-1. Open ChatGPT Desktop and switch to the **Codex** view.
-2. System Settings → Privacy & Security → grant both **Accessibility** and **Screen Recording**.
-3. Grant these to the helper app **"Codex Computer Use"**, not to ChatGPT itself. This is the step most likely to be missed.
-
-### Codex — mobile remote control
-
-1. In Codex for Mac, generate the pairing QR code.
-2. Scan it from the ChatGPT mobile app.
-
-Traffic goes through OpenAI's relay layer; this Mac is never directly exposed to the public internet.
-
-### Both
-
-Desktop control and the mobile relay require this Mac **awake with the app running**. Neither survives sleep, and neither is a substitute for SSH access to a headless host.
+Because `claude/` maps to `~/.claude/` through rcm, every endpoint that runs
+`rcup` gets it — including the LXC, where it is the most useful remote path
+available.
 
 ## Relationship to the terminal agents
 
@@ -136,12 +114,6 @@ Claude Code computer use is hosted by Claude Desktop, so the CLI alone does not 
 ## Troubleshooting
 
 **Claude has no "Computer use" toggle.** Check the plan first — Team and Enterprise are excluded. Then update the app; the toggle only appears on current builds.
-
-**Codex can see the screen but cannot click, or vice versa.** Both Accessibility *and* Screen Recording are required, and both must be granted to "Codex Computer Use" rather than to ChatGPT. Granting only one produces partial, confusing failures.
-
-**Mobile shows the session but nothing runs.** Confirm the Mac is awake and the app is open. For Claude specifically, verify you are in a Remote Control session and not Cowork — Cowork on mobile executes in the cloud and will never touch this machine.
-
-**A macOS permission is stuck in a bad state.** `tccutil reset Accessibility` and `tccutil reset ScreenCapture` clear the grants and let the consent prompt reappear. There is no supported way to grant them non-interactively.
 
 **Login does nothing — no browser window appears (Arch).** Both apps delegate
 their OAuth login to the system browser. `chatgpt-desktop`'s `.desktop` entry

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Platform-aware pinentry dispatcher for gpg-agent.
+# Pinentry dispatcher for gpg-agent.
 # Deployed by rcm to ~/.bin/; referenced from ~/.gnupg/gpg-agent.conf.
 #
 # Candidates are probed with --version before being exec'd. A pinentry binary
@@ -15,20 +15,10 @@ try_exec() {
     exec "$bin" "$@"
 }
 
-case "$(uname -s)" in
-    Darwin)
-        exec /opt/homebrew/bin/pinentry-mac "$@"
-        ;;
-    Linux)
-        if [[ -n "${WAYLAND_DISPLAY:-}" ]] || [[ -n "${DISPLAY:-}" ]]; then
-            for candidate in pinentry-gnome3 pinentry-gtk pinentry-qt; do
-                try_exec "/usr/bin/$candidate" "$@"
-            done
-        fi
-        try_exec /usr/bin/pinentry-curses "$@"
-        exec /usr/bin/pinentry "$@"
-        ;;
-    *)
-        exec pinentry "$@"
-        ;;
-esac
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] || [[ -n "${DISPLAY:-}" ]]; then
+    for candidate in pinentry-gnome3 pinentry-gtk pinentry-qt; do
+        try_exec "/usr/bin/$candidate" "$@"
+    done
+fi
+try_exec /usr/bin/pinentry-curses "$@"
+exec /usr/bin/pinentry "$@"

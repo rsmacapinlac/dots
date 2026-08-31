@@ -68,28 +68,18 @@ setup/applications.sh all
 
 ### macOS
 
-For a complete macOS workstation setup:
+macOS lives in its own repository now:
+[`dots-macos`](https://github.com/rsmacapinlac/dots-macos). It holds the
+Homebrew bootstrap, the maintenance script, and macOS builds of the three
+config files that needed a Darwin branch. It clones this repository for
+everything else.
 
 ```bash
-setup/macos.sh
+git clone https://github.com/rsmacapinlac/dots-macos.git ~/workspace/dots-macos
+~/workspace/dots-macos/setup/macos.sh
 ```
 
-This script will:
-- Install Homebrew and the base package set
-- Configure the user shell (zsh with Oh My Zsh)
-- Set up security tools (pass, GnuPG pinentry, PassFF native host)
-- Clone and apply dotfiles using rcm
-- Install development tools (Neovim, tmux, Go, and Python)
-- Install the terminal application stack (ranger, neomutt, mpd/ncmpcpp/rmpc, beets, cava)
-- Install keyboard-friendly GUI apps (kitty, alacritty, qutebrowser, Firefox)
-- Configure mise-backed, first-run installs for Claude Code, Codex CLI, Pi, and
-  GitHub CLI; install agent-browser and the Claude and ChatGPT desktop apps
-
-The Claude and ChatGPT desktop apps install on both macOS and Arch, but macOS is
-the only platform where AI **desktop control** and **phone-to-machine remote
-control** actually work. Those require manual permission grants that no script
-can perform; `setup/macos.sh` prints a checklist on completion. See
-`docs/ai-desktop-control.md`.
+This repository targets Linux: Arch for the desktop, Debian for headless LXC.
 
 ## Testing the Build Scripts 
 
@@ -148,7 +138,7 @@ the bootstrap scripts and run once, by hand, after the desktop is up.
 ### Documentation (`docs/`)
 - `isync.md`: Complete email synchronization setup guide
 - `hyprland-startup.md`: Hyprland startup and display handling
-- `ai-desktop-control.md`: AI desktop control and mobile remote (macOS)
+- `ai-desktop-control.md`: the AI desktop apps, and which of their capabilities work here
 
 ### System Files (Root Level)
 - Shell configurations: `zshrc`, `aliases`
@@ -193,7 +183,7 @@ desktop still comes up and neomutt still starts — it just has no accounts.
 - **[Email Setup (isync)](docs/isync.md)**: Complete multi-account email configuration
 - **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
 - **[Arch VM Validation](docs/arch-vm-validation.md)**: post-install package and runtime smoke checks
-- **[AI Desktop Control](docs/ai-desktop-control.md)**: AI desktop control and mobile remote (macOS)
+- **[AI Desktop Control](docs/ai-desktop-control.md)**: the AI desktop apps, and which of their capabilities work here
 - **[Install Profiles](setup/archinstall/README.md)**: archinstall configs and which values are hardware-bound
 - **[Testing the Build Scripts](docs/testing-build-scripts.md)**: exercising the bootstrap end to end in a disposable VM
 
@@ -310,8 +300,6 @@ session, instead of every new shell paying for an `ssh-add`:
 ```
 Host *
     AddKeysToAgent yes
-    # macOS only — store the passphrase in the login keychain:
-    # UseKeychain yes
 ```
 
 `~/.ssh` is deliberately not managed by `rcm`: `rcup` would symlink files back
@@ -330,9 +318,8 @@ The configuration is designed to be modular and easily customizable:
 
 ## Requirements
 
-- **Arch Linux** (primary target), **macOS**, or **Debian 12** (headless LXC)
+- **Arch Linux** (primary target) or **Debian 12** (headless LXC)
 - **Hyprland** compositor (Arch desktop)
-- **Homebrew** (macOS)
 - **Zsh** shell
 - **Git** for repository management
 - **rcm** for dotfile management
