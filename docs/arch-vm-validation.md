@@ -132,6 +132,23 @@ Record the tested commit, profile, date, selected optional groups, and any VM
 limitations. Do not retain an old “last confirmed” result after changing the
 installer; validation claims must correspond to the current scripts.
 
+### 2026-08-30 — commit `0ec4cf7` (branch `fix-hypridle-activation`), profile `vm-test.json`
+
+Re-run from the `clean-install` snapshot with `DOTS_REF=fix-hypridle-activation`,
+to verify the hypridle fix from a fresh clone rather than a hand-edited guest.
+
+- Core phase completed; `enable_core_services` ran without the hypridle enable.
+- Fresh clone landed on `0ec4cf7`, clean tree, and rcm's symlink resolved to the
+  committed `conf/autostart.lua`.
+- After reboot: `hypridle`, `waybar`, `hyprpolkitagent` and `Hyprland` all
+  running, while `graphical-session.target` was **inactive** and the `hypridle`
+  unit was **disabled / inactive** — i.e. the process is running because
+  `autostart.lua` execs it, not because anything activated the target or the
+  unit. That is the intended design, confirmed rather than assumed.
+- `hyprctl configerrors` clean; `applications.sh` still rejects an unknown group
+  with exit 1 before any sudo prompt.
+- `hyprpaper` still fails, as expected — see the EGL limitation below.
+
 ### 2026-08-30 — commit `bf3da51`, profile `vm-test.json`
 
 Full rebuild from a wiped disk, driven from the VM console.
