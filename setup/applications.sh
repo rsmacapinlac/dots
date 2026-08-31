@@ -16,6 +16,7 @@ readonly APPLICATION_GROUPS=(
     gaming
     virtualization
     security
+    work
     syncthing
 )
 
@@ -32,6 +33,7 @@ With no arguments, opens an fzf multi-select menu. Available groups:
   gaming         Steam and its runtime dependencies
   virtualization QEMU, libvirt, virt-manager, and supporting tools
   security       Bitwarden Desktop, Mise-managed bw, and WireGuard
+  work           Work applications (Citrix Workspace)
   syncthing      Syncthing and its user service
   all            Every optional group
 EOF
@@ -63,6 +65,7 @@ ai-desktop	Claude Desktop and ChatGPT Desktop
 gaming	Steam and its runtime dependencies
 virtualization	QEMU, libvirt, virt-manager, and supporting tools
 security	Bitwarden Desktop, Mise-managed bw, and WireGuard
+work	Work applications (Citrix Workspace)
 syncthing	Syncthing and its user service
 EOF
     )
@@ -267,6 +270,36 @@ install_security() {
     "$HOME/workspace/dots/bin/install-mise-tools" bw
 }
 
+install_citrix() {
+    # The AUR recipe discovers Citrix's signed download URL, but Citrix removes
+    # old releases before the recipe is always updated. Keep this verified
+    # fallback in sync with the current release and checksum on Citrix's site.
+    local fallback_version=26.04.10.1
+    local fallback_sha256=8c0a22cad4a4cda802cb5d3bb09b89779d20f68ba5e454b86485354c557356b5
+    local build_root aur_version
+
+    log_info "Installing Citrix Workspace..."
+    build_root=$(mktemp -d -t dots-icaclient.XXXXXX)
+    (
+        trap 'rm -rf "$build_root"' EXIT
+        cd "$build_root"
+        yay -G icaclient
+        cd icaclient
+
+        aur_version=$(sed -n 's/^pkgver=//p' PKGBUILD)
+        if (( $(vercmp "$aur_version" "$fallback_version") < 0 )); then
+            log_warning "AUR icaclient $aur_version is behind Citrix $fallback_version; applying the verified local bump"
+            sed -i \
+                -e "s/^pkgver=.*/pkgver=$fallback_version/" \
+                -e 's/^pkgrel=.*/pkgrel=1/' \
+                -e "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('$fallback_sha256')/" \
+                PKGBUILD
+        fi
+
+        makepkg -si --needed --noconfirm
+    )
+}
+
 install_syncthing() {
     log_info "Installing Syncthing..."
     yay_install syncthing
@@ -283,6 +316,7 @@ install_group() {
         gaming) install_gaming ;;
         virtualization) install_virtualization ;;
         security) install_security ;;
+        work) install_citrix ;;
         syncthing) install_syncthing ;;
     esac
 }

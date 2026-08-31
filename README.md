@@ -214,17 +214,47 @@ Some things cannot be scripted and are left to do by hand after a rebuild:
 
 - **Secrets** — SSH keys, GPG keys and the password store. The steps are
   documented below. The core installer intentionally creates no secrets.
-- **Citrix Workspace** (`icaclient`) — Citrix puts the tarball behind a
-  click-through licence rather than a fetchable URL, so `makepkg` cannot
-  retrieve it. Download it from
-  [Citrix](https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html),
-  then:
+- **Citrix Workspace** (`icaclient`) — install it with
+  `setup/applications.sh work`. The installer uses the AUR recipe when it is
+  current and applies a verified local version/checksum bump when necessary.
+  The AUR PKGBUILD *does* fetch the
+  tarball on its own: it scrapes a signed, time-limited URL off the Citrix
+  download page, so no click-through download is needed. What breaks instead is
+  version drift. Citrix serves only the current release, while the PKGBUILD
+  pins `pkgver` and filters the page for that exact version:
+
+  ```bash
+  _dl_urls="$(echo "$_dl_urls_" | grep -F "$pkgver.tar.gz?__gda__")"
+  ```
+
+  When the AUR package falls behind Citrix — as of 2026-08-31 it pins
+  `26.04.0.105` while Citrix ships `26.04.10.1`, flagged out-of-date since
+  2026-08-15 — that filter matches nothing, the source URL comes out empty and
+  `makepkg` fails. The old tarball is gone from Citrix's servers, so
+  downloading it by hand does not help either.
+
+  Check the AUR first; if it has caught up, plain `yay -S icaclient` works. If
+  it has not, bump it locally:
 
   ```bash
   yay -G icaclient && cd icaclient
-  # put the downloaded tarball in this directory
+  # 1. set pkgver to the version Citrix currently serves, and pkgrel=1
+  # 2. replace sha256sums_x86_64 with the new tarball's checksum
+  #    (makepkg will print the expected value on the first mismatch)
   makepkg -si
   ```
+
+  A local bump means `yay` sees your build as newer than the AUR's and stops
+  offering updates — recheck the AUR before a `maintenance/arch.sh` run.
+
+  Dependencies: `libc++`, `libc++abi`, `libxml2-legacy` and `libxp` all come
+  from `extra`. The PKGBUILD's optdepends are stale — it names `webkit2gtk` and
+  `libsoup`, which no longer exist in the repos (they are now `webkit2gtk-4.1`
+  and `libsoup3`, providing newer ABIs than Citrix links against). Only
+  `selfservice` needs them, and satisfying it means pulling AUR `webkit2gtk`
+  (4.0 ABI) plus AUR `libsoup` (2.4 ABI). The `wfica` session client itself
+  links cleanly without either. `libsane.so.1` (`sane`) and `libfuse3.so.3`
+  (`fuse3`) are optional and only affect scanner and drive redirection.
 
 ### Restoring secrets
 
