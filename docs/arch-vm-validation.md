@@ -47,6 +47,20 @@ systemctl --user is-active graphical-session.target   # expect: active
 systemctl --user list-units --state=failed            # expect: none
 ```
 
+`active` is not healthy either. A unit whose process keeps dying is restarted
+by systemd and still reports `ActiveState=active`, so a crash loop looks
+identical to a working service. Check the restart counter:
+
+```bash
+for u in hypridle hyprpaper waybar mako hyprpolkitagent; do
+  printf '%-18s %s' "$u" "$(systemctl --user show "$u" -p NRestarts --value)"; echo
+done
+```
+
+Expect `0`. Anything climbing is a service that cannot start — under the old
+non-systemd arrangement it would simply have been absent, which was at least
+obvious.
+
 ```bash
 for p in hypridle hyprpaper hyprpolkitagent mako waybar; do
   printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
@@ -137,6 +151,30 @@ CPU vendor and must not apply model-specific CPU, memory, or governor tuning.
 Record the tested commit, profile, date, selected optional groups, and any VM
 limitations. Do not retain an old “last confirmed” result after changing the
 installer; validation claims must correspond to the current scripts.
+
+### 2026-08-30 — commit `52399e1` (branch `standardize-on-uwsm`), profile `vm-test.json`
+
+First rehearsal of the uwsm session. Full core phase from the `clean-install`
+snapshot with `DOTS_REF=standardize-on-uwsm`, then reboot.
+
+- `uwsm` installed; `/etc/greetd/config.toml` carries
+  `uwsm start -- start-hyprland` for both sessions; all five units enabled into
+  `~/.config/systemd/user/graphical-session.target.wants/`.
+- After reboot the desktop came up, and **`graphical-session.target` is
+  active** — the fact the whole design depends on. `hypridle`, `hyprpaper`,
+  `waybar`, `mako` and `hyprpolkitagent` are all `enabled / active`, one process
+  each, no duplicates, and no failed units.
+- `uwsm-app` wrapping works, including for a custom script from `~/.bin`:
+  `app-Hyprland-nm\x2dapplet-*.scope` and
+  `app-Hyprland-hypr\x2dmonitor\x2dwatch-*.scope` are both running. The PATH
+  friction seen in Omarchy's tracker did not materialise here — absolute paths
+  in `conf/autostart.lua` were enough.
+- `hyprctl configerrors` clean; `Ctrl+Return` opens Kitty.
+- `hyprpaper` restarted twice (`NRestarts=2`) and holds no wallpaper
+  (`hyprctl hyprpaper listactive` is empty), so the session shows Hyprland's
+  built-in background. This is the VM's EGL limitation, not the session change
+  — but note it now presents as an *active* unit rather than an absent process,
+  which is harder to spot. `set_wallpaper` also still exits 0 in this case.
 
 ### 2026-08-30 — commit `0ec4cf7` (branch `fix-hypridle-activation`), profile `vm-test.json`
 
