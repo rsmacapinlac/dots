@@ -153,8 +153,22 @@ the bootstrap scripts and run once, by hand, after the desktop is up.
 ### System Files (Root Level)
 - Shell configurations: `zshrc`, `aliases`
 - Editor configs: `vimrc`, `vimrc.bundles`
-- Email configs: `mbsyncrc`, `msmtprc`
 - Dotfile management: `rcrc`
+
+### Private Companion Repository
+
+This repo is public and holds configuration that is true for any workstation.
+Anything true only for one person — mail accounts, git identity, agent
+settings naming private repositories — lives in a separate private repo, and
+`rcrc` lists both:
+
+```sh
+DOTFILES_DIRS="$HOME/workspace/dots $HOME/workspace/dots-crispy-meme"
+```
+
+`rcm` walks both trees, so a file in either lands at the same destination.
+Clone them side by side before running `rcup`. Without the private repo the
+desktop still comes up; mail and git identity are what go missing.
 
 ## Key Features & Documentation
 

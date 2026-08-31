@@ -1,2 +1,5 @@
 EXCLUDES="README.md LICENSE docs setup maintenance ./AGENTS.md ./CLAUDE.md gnupg/gpg-agent.conf"
-DOTFILES_DIRS="$HOME/workspace/dots"
+# Two source trees: this public repo, and the private one holding identity
+# (mail accounts, git [user], agent settings). rcm walks both, so a file in
+# either lands at the same destination. See AGENTS.md, "Security and privacy".
+DOTFILES_DIRS="$HOME/workspace/dots $HOME/workspace/dots-crispy-meme"

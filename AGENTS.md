@@ -52,6 +52,7 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 ## Notable files and directories
 
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
+  `DOTFILES_DIRS` lists this repo and the private identity repo; `rcm` deploys from both.
 - `setup/start.sh` — detects the live ISO or installed system and dispatches the appropriate bootstrap phase.
 - `setup/archinstall/install.sh` — live-ISO Archinstall profile selector.
 - `setup/arch.sh` — post-Archinstall core Hyprland workstation bootstrap.
@@ -132,11 +133,29 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 
 ## Security and privacy
 
-This repository references private accounts and local machine details.
+This repository is public. Configuration that identifies one person lives in a
+separate private repo, and `rcrc` lists both in `DOTFILES_DIRS` so `rcm`
+deploys from each. Identity currently held privately: `mbsyncrc`, `msmtprc`,
+`config/neomutt/accounts/`, `gitconfig`, and `claude/settings.json`.
+
+Before adding a file, decide which tree it belongs in:
+
+- Would it be wrong or useless on someone else's machine? It is identity, and
+  belongs in the private repo. Real names, addresses, account lists, GPG
+  signing keys, and anything naming a private repository all qualify.
+- Is it a fact about one machine rather than one person? Prefer generating it
+  during setup over tracking it, the way `gnupg/gpg-agent.conf` is excluded
+  here and written by `setup/arch.sh`.
+- Otherwise it is a preference, and belongs here.
 
 - Do not add secrets, tokens, private keys, passwords, or local-only network share details.
+- Internal hostnames are covered by that rule. Do not commit anything under a
+  private domain, including in browser bookmarks, docs, or example configs.
 - Email configs retrieve passwords through `pass`; preserve that pattern.
 - Be careful with files under `gnupg/`, mail configs, SSH/GPG setup sections, and setup scripts that copy sensitive material.
+- Tracked build artifacts can outlive the source they came from. A `.pyc`
+  kept both hostnames as string constants after `config.py` was cleaned, and
+  `.gitignore` does not untrack what git already tracks.
 
 ## Agent workflow notes
 

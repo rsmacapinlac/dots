@@ -80,7 +80,7 @@ Run the setup script to configure isync:
 ```
 
 This will:
-- Copy the configuration to `~/.mbsyncrc`
+- Verify `~/.mbsyncrc` is in place (rcm deploys it from the private repo)
 - Set proper file permissions
 - Create necessary directories
 
@@ -92,16 +92,18 @@ Download all your emails (this may take a while):
 ~/workspace/dots/bin/sync-mail init
 ```
 
-### 4. Update Neomutt Configuration
+### 4. Choose a Neomutt Account Configuration
 
-The local maildir configurations are available at:
-- `config/neomutt/accounts/boogienet-local`
-- `config/neomutt/accounts/gmail-local`
-- `config/neomutt/accounts/macapinlac-local`
+Account configs live in the **private** companion repo, not this one, because
+they carry addresses, a real name, and a GPG signing key. Each account has two
+variants under `config/neomutt/accounts/`:
 
-To use these instead of the IMAP versions, either:
-- Rename the files (e.g., `boogienet-local` → `boogienet`)
-- Or update your Neomutt main configuration to use the `-local` versions
+- `<account>` — local maildir, reads what `mbsync` has already downloaded
+- `<account>-imap` — talks to the server directly, no local mail
+
+`bin/neomutt-accounts` selects between them with `--imap`; see its `--help`.
+Generic neomutt configuration (`neomuttrc`, `colors`, `mappings`, `mailcap`)
+stays in the public repo.
 
 ## Usage
 
