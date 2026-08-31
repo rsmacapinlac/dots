@@ -43,14 +43,6 @@ run_interactive() {
     fi
 }
 
-check_internet() {
-    log_info "Checking internet connectivity..."
-    if ! ping -c 1 github.com &>/dev/null; then
-        log_error "No internet connection. Use iwctl for Wi-Fi and try again."
-        exit 1
-    fi
-}
-
 list_profiles() {
     curl -fsSL "$API_BASE" 2>/dev/null \
         | grep -oE '"name": *"[^"]+\.json"' \
@@ -63,8 +55,6 @@ main() {
         log_error "The live-ISO installer must run as root."
         exit 1
     fi
-
-    check_internet
 
     local profiles=() choice
     mapfile -t profiles < <(list_profiles)

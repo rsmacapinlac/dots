@@ -33,6 +33,23 @@ Expected:
 - `Ctrl+Return` opens Kitty and `Ctrl+Space` opens Rofi.
 - Network, audio, brightness, lock, lid, and display commands exist.
 
+### Session-scoped services actually started
+
+`enabled` is not `running`. This session has no session manager, so
+`graphical-session.target` never activates and any unit wanting it stays
+inactive however it was enabled — see
+[`hyprland-startup.md`](hyprland-startup.md). Check what is *running*, not what
+is enabled:
+
+```bash
+for p in hypridle hyprpaper hyprpolkitagent mako waybar; do
+  printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
+done
+```
+
+Expected: all five RUNNING. `hypridle` in particular has no fallback — if it is
+not running there is no idle timeout and no automatic lock.
+
 ## Core package checks
 
 ```bash
@@ -114,3 +131,26 @@ CPU vendor and must not apply model-specific CPU, memory, or governor tuning.
 Record the tested commit, profile, date, selected optional groups, and any VM
 limitations. Do not retain an old “last confirmed” result after changing the
 installer; validation claims must correspond to the current scripts.
+
+### 2026-08-30 — commit `bf3da51`, profile `vm-test.json`
+
+Full rebuild from a wiped disk, driven from the VM console.
+
+- Live-ISO phase: profile listing, destructive confirmation (`/dev/vda`,
+  `dots-test`), Archinstall completed in 2m22s with no errors.
+- Core phase: completed twice — once from the first install, once from a
+  reverted `clean-install` snapshot. `sudo` prompts correctly through the
+  `curl | bash` pipe.
+- Desktop: greetd auto-started Hyprland; Waybar up; `hyprctl configerrors`
+  clean; `Ctrl+Return` opened Kitty; zsh default shell; JetBrains/BlexMono Nerd
+  Font resolved; btrfs; `en_US.UTF-8`.
+- `setup/applications.sh`: `--help` correct; an unknown group exits 1 *before*
+  any sudo prompt or upgrade; the fzf menu renders and ESC cancels with exit 0.
+- **Found:** `hypridle` was enabled but never running (no idle timeout, no
+  automatic lock), reproduced on real hardware. Fixed by starting it from
+  `conf/autostart.lua`; this result predates that fix.
+- VM limitations: no battery module, software rendering only. `hyprpaper` did
+  not stay running in the VM, so the session showed Hyprland's built-in
+  background rather than a configured wallpaper; it runs correctly on real
+  hardware, so this reads as the VM's missing GPU rather than a config fault.
+  Optional groups beyond the interface checks were not installed.

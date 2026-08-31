@@ -318,10 +318,13 @@ enable_core_services() {
     sudo systemctl enable cups.service
     sudo systemctl enable avahi-daemon.service
 
+    # hypridle is deliberately not enabled here: its unit is
+    # WantedBy=graphical-session.target, which nothing activates under
+    # start-hyprland, so enabling it only looks like idle handling is
+    # configured. config/hypr/conf/autostart.lua starts it instead.
     systemctl --user daemon-reload 2>/dev/null || true
     systemctl --user enable ssh-agent.service 2>/dev/null || true
     systemctl --user enable gnome-keyring-daemon 2>/dev/null || true
-    systemctl --user enable hypridle.service 2>/dev/null || true
 }
 
 main() {

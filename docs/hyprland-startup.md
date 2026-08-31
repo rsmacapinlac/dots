@@ -57,13 +57,46 @@ provisioned before the core/optional split.
 - **Desktop File**: `/usr/share/wayland-sessions/hyprland-uwsm.desktop` (only if installed)
 - **Status**: Marked as "for advanced users" with "issues and quirks"
 
+UWSM is not an *alternative* to `start-hyprland` — it wraps it. Omarchy, for
+example, launches with `uwsm start -- start-hyprland -- -c ~/.config/hypr/hyprland.conf`.
+
 ### Why We Don't Use UWSM
 
-1. **Simpler is better** - The official wrapper is more maintainable
+1. **Simpler is better** - one less moving part between greetd and the compositor
 2. **Advanced user tool** - UWSM is marked for advanced users with known quirks
-3. **No clear benefit** - For our use case, UWSM adds complexity without advantages
-4. **Official support** - `start-hyprland` is the officially supported method
-5. **Avoids compatibility issues** - Prevents warnings and potential problems
+3. **Official support** - `start-hyprland` is the officially supported method
+4. **Avoids compatibility issues** - Prevents warnings and potential problems
+
+### What that choice costs: `graphical-session.target`
+
+This is the real trade-off, and it is not free.
+
+UWSM binds `graphical-session.target`. Without a session manager that target
+**never activates**, so any packaged user unit declaring
+`WantedBy=graphical-session.target` is enabled but never started. On a current
+install those units are:
+
+`fumon`, `hyprpolkitagent`, `hypridle`, `hyprpaper`, `mako`, `waybar`
+
+Most are covered by other means: `conf/autostart.lua` execs `hyprpolkitagent`,
+`hyprpaper` and `waybar` directly, and `mako` is D-Bus activated by the first
+notification. `hypridle` had no such cover, so it silently never ran — no idle
+timeout and no automatic lock — until it was added to `conf/autostart.lua`.
+
+The consequence to remember: **starting a compositor without a session manager
+means `conf/autostart.lua` is the session manager.** Anything that expects
+`graphical-session.target` must be launched there explicitly, and enabling its
+systemd user unit instead only makes it *look* configured. Verify with:
+
+```bash
+systemctl --user is-active graphical-session.target   # inactive here, by design
+grep -l 'WantedBy=graphical-session.target' /usr/lib/systemd/user/*.service
+```
+
+Adopting UWSM would remove that maintenance burden. It is a deliberate,
+separate change: it needs `uwsm` added to `install_hyprland`, a greetd command
+change, and its own VM rehearsal — and custom session scripts (this repo runs
+several from `~/.bin`) are a known friction point under `uwsm-app`.
 
 ## Making Changes
 

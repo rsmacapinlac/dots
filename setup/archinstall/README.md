@@ -46,8 +46,11 @@ Captured from archinstall 3.0.9, verified against the running machine.
 - **bootloader** GRUB, 1 GiB fat32 ESP at `/boot`
 - **root** btrfs on `/dev/nvme0n1p2`, `compress=zstd`, subvolumes
   `@` → `/`, `@home` → `/home`, `@log` → `/var/log`, `@pkg` → `/var/cache/pacman/pkg`
-- **snapshots** `snapshot_config.type = Timeshift` — archinstall wires this up,
-  not `setup/arch.sh`
+- **snapshots** none. `snapshot_config` is `null` in both profiles — archinstall
+  wires up nothing. `setup/arch.sh` installs the `timeshift-autosnap` pacman
+  hook (which pulls in `timeshift`), but neither the profile nor the installer
+  creates `/etc/timeshift/timeshift.json`, so snapshots are not configured on a
+  fresh build. Configure Timeshift by hand if you want them.
 - **profile** `Minimal`, no greeter, no gfx driver, `packages: []` — the core
   desktop comes from `setup/arch.sh`; deferred software comes from
   `setup/applications.sh`
@@ -69,7 +72,7 @@ add it here as a new file rather than editing this one.
 
 `vm-test.json` is a worked example of that adaptation. It differs from
 `urakara.json` in exactly four values — everything else, including the
-subvolume layout and the Timeshift snapshot config, is identical:
+subvolume layout, is identical:
 
 | field | urakara | vm-test |
 |---|---|---|

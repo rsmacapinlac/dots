@@ -36,6 +36,7 @@ check_internet() {
     log_info "Checking internet connectivity..."
     if ! ping -c 1 github.com &>/dev/null; then
         log_error "No internet connection."
+        log_error "Connect first: iwctl on the live ISO, nmcli on the installed system."
         exit 1
     fi
 }

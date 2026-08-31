@@ -12,6 +12,12 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("nm-applet")
     hl.exec_cmd("blueman-applet")
     hl.exec_cmd("hyprpaper")
+    -- hypridle ships WantedBy=graphical-session.target, but that target is only
+    -- activated by a session manager (uwsm). This session is launched by
+    -- start-hyprland, so the target never activates and the packaged unit never
+    -- starts -- leaving no idle timeout and no automatic lock. Start it here
+    -- instead, the same way hyprpaper and the applets are started.
+    hl.exec_cmd("hypridle")
     hl.exec_cmd(home .. "/.config/wallpapers/bin/set_wallpaper --initial")
     -- hl.exec_cmd("gnome-keyring-daemon --start --components=secrets,ssh")
     -- Nextcloud is opt-in (bin/install-service-nextcloud), so guard the exec:

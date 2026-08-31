@@ -18,6 +18,12 @@ You *must*:
 curl -o /tmp/archlinux-x86_64.iso \
   https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso
 
+# Verify it. A truncated or corrupt ISO wastes a full rehearsal before it fails.
+curl -fsSL -o /tmp/sha256sums.txt \
+  https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt
+grep 'archlinux-x86_64.iso$' /tmp/sha256sums.txt \
+  | sed 's#archlinux-x86_64.iso#/tmp/archlinux-x86_64.iso#' | sha256sum -c -
+
 virt-install --connect qemu:///system \
   --name dots-test --memory 4096 --vcpus 4 --cpu host-passthrough \
   --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=60,bus=virtio,format=qcow2 \
@@ -78,6 +84,25 @@ sudo systemctl enable --now qemu-guest-agent
 `systemctl` warns that the unit has no install config; that is expected, since
 it is udev-activated. Confirm it came up with `guest-ping` from the host, then
 snapshot:
+
+> **Check the unit file, not just `guest-ping`.** Because the agent is
+> udev-activated, `qemu-ga` can be running while its systemd unit is unusable —
+> so `guest-ping` succeeds and the agent still disappears after the core phase's
+> daemon-reloads and the next reboot. This has happened: a corrupt download left
+> `/usr/lib/systemd/system/qemu-guest-agent.service` at **0 bytes**, which
+> systemd treats as *masked*. Verify both:
+>
+> ```bash
+> test -s /usr/lib/systemd/system/qemu-guest-agent.service && echo unit-ok
+> systemctl is-active qemu-guest-agent          # expect: active
+> ```
+>
+> If the unit is empty, the cached package is corrupt. Clear it and reinstall:
+>
+> ```bash
+> sudo find /var/cache/pacman/pkg -name '*.pkg.tar.zst' -delete
+> sudo pacman -Sy --noconfirm --overwrite '/usr/*' qemu-guest-agent
+> ```
 
 ```bash
 virsh qemu-agent-command dots-test '{"execute":"guest-ping"}'   # => {"return":{}}
