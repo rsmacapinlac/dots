@@ -204,6 +204,30 @@ is absent, which is worth knowing when checking Waybar styling. Hardware checks
 must remain vendor-neutral. Steam and virtualization are optional, large
 downloads and should be validated separately from the core rehearsal.
 
+**EGL does not work in this VM, and that has teeth.** `eglInitialize` fails
+(`EGL_NOT_INITIALIZED`, `DRI2: failed to create screen`), Mesa falls back to
+`kms_swrast`, and that fallback wants DRM dumb buffers on the card instead of
+the render node — which the compositor already holds as DRM master. Anything
+using EGL therefore dies with `DRM_IOCTL_MODE_CREATE_DUMB failed: Permission
+denied`. `hyprpaper` is the visible casualty: it exits, and the session falls
+back to Hyprland's built-in background.
+
+Adding 3D acceleration gets further but not all the way:
+
+```bash
+virt-xml dots-test --edit --video model.type=virtio,model.acceleration.accel3d=yes
+virt-xml dots-test --add-device --graphics egl-headless
+```
+
+That creates a render node and lets `hyprpaper` start when launched by hand,
+but it still fails at session start. Enabling spice's own GL
+(`--graphics gl.enable=yes`) did not work here — qemu refused to start with
+`invalid video codec`.
+
+So: **wallpaper and any other GPU-dependent behaviour cannot be validated in
+this VM.** Verify those on real hardware, and do not record a VM failure of
+that kind as a configuration defect.
+
 ## Tearing it down
 
 ```bash

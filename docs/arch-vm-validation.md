@@ -149,8 +149,17 @@ Full rebuild from a wiped disk, driven from the VM console.
 - **Found:** `hypridle` was enabled but never running (no idle timeout, no
   automatic lock), reproduced on real hardware. Fixed by starting it from
   `conf/autostart.lua`; this result predates that fix.
-- VM limitations: no battery module, software rendering only. `hyprpaper` did
-  not stay running in the VM, so the session showed Hyprland's built-in
-  background rather than a configured wallpaper; it runs correctly on real
-  hardware, so this reads as the VM's missing GPU rather than a config fault.
-  Optional groups beyond the interface checks were not installed.
+- VM limitations: no battery module, and **no working EGL**, which the
+  rehearsal cannot paper over. `hyprpaper` does not stay running, so the
+  session shows Hyprland's built-in background instead of a wallpaper. Traced
+  in the guest: `eglInitialize` fails with `EGL_NOT_INITIALIZED (DRI2: failed
+  to create screen)`, Mesa falls back to `kms_swrast`, that fallback needs DRM
+  dumb buffers on the card rather than the render node, and Hyprland already
+  holds DRM master there — so `DRM_IOCTL_MODE_CREATE_DUMB` returns
+  `Permission denied`. Device permissions are *not* the problem: `getfacl`
+  shows `user:<user>:rw-` on the card via logind's seat ACL.
+
+  Consequence: **any GPU-dependent behaviour is out of scope for this VM.**
+  Do not read a wallpaper failure here as a config fault, and do not read a
+  wallpaper success on existing hardware as proof the fresh-install path
+  works. Optional groups beyond the interface checks were not installed.
