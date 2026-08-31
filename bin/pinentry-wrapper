@@ -1,18 +1,32 @@
 #!/bin/bash
 # Platform-aware pinentry dispatcher for gpg-agent.
-# Deployed by rcm to ~/bin/; referenced from ~/.gnupg/gpg-agent.conf.
+# Deployed by rcm to ~/.bin/; referenced from ~/.gnupg/gpg-agent.conf.
+#
+# Candidates are probed with --version before being exec'd. A pinentry binary
+# can be present but unusable -- Arch ships pinentry-qt while its Qt6 backend
+# dependency (kguiaddons) is only an optional dep, so the binary exists and
+# dies on a missing libKF6GuiAddons.so.6. exec has no fallback, so the check
+# has to happen first.
+try_exec() {
+    local bin=$1
+    shift
+    [[ -x $bin ]] || return 1
+    "$bin" --version >/dev/null 2>&1 || return 1
+    exec "$bin" "$@"
+}
+
 case "$(uname -s)" in
     Darwin)
         exec /opt/homebrew/bin/pinentry-mac "$@"
         ;;
     Linux)
         if [[ -n "${WAYLAND_DISPLAY:-}" ]] || [[ -n "${DISPLAY:-}" ]]; then
-            exec /usr/bin/pinentry-qt "$@" 2>/dev/null || \
-            exec /usr/bin/pinentry-gtk-2 "$@" 2>/dev/null || \
-            exec /usr/bin/pinentry-curses "$@"
-        else
-            exec /usr/bin/pinentry-curses "$@"
+            for candidate in pinentry-gnome3 pinentry-gtk pinentry-qt; do
+                try_exec "/usr/bin/$candidate" "$@"
+            done
         fi
+        try_exec /usr/bin/pinentry-curses "$@"
+        exec /usr/bin/pinentry "$@"
         ;;
     *)
         exec pinentry "$@"
