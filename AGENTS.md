@@ -31,7 +31,7 @@ Target:
 Configured first-class TUI/terminal tools:
 - `nvim` / Vim — primary editor; Neovim config is in `config/nvim/`, legacy Vim config is in `vimrc` and `vimrc.bundles`.
 - `tmux` — terminal multiplexer and workflow backbone; config in `config/tmux/`, session helper in `bin/tat`.
-- `neomutt` — terminal email client; generic config in `config/neomutt/`. The account configs and the `neomutt-accounts`/`sync-mail` scripts are identity and live in the private repo; both scripts deploy to `~/.bin` and are on `PATH`.
+- `neomutt` — terminal email client. `config/neomutt/` here is the account-free default (UI, colors, mappings, mailcap). The personal `neomuttrc`, the accounts, and the `neomutt-accounts`/`sync-mail` scripts live in the private repo and override these; both scripts deploy to `~/.bin` and are on `PATH`.
 - `ranger` — terminal file manager; config in `config/ranger/`.
 - `cliamp` — terminal music player installed by the Arch setup script.
 - `lazygit` — terminal Git UI installed by setup/maintenance scripts.
@@ -52,7 +52,8 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 ## Notable files and directories
 
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
-  `DOTFILES_DIRS` lists this repo and the private identity repo; `rcm` deploys from both.
+  `DOTFILES_DIRS` lists the private identity repo first, then this one; `rcm` takes the
+  first tree providing a path, so private files override public defaults.
 - `setup/start.sh` — detects the live ISO or installed system and dispatches the appropriate bootstrap phase.
 - `setup/archinstall/install.sh` — live-ISO Archinstall profile selector.
 - `setup/arch.sh` — post-Archinstall core Hyprland workstation bootstrap.
@@ -133,11 +134,19 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 
 ## Security and privacy
 
-This repository is public. Configuration that identifies one person lives in a
-separate private repo, and `rcrc` lists both in `DOTFILES_DIRS` so `rcm`
-deploys from each. Identity currently held privately: `mbsyncrc`, `msmtprc`,
-`config/neomutt/accounts/`, `gitconfig`, `claude/settings.json`, and the mail
-scripts `bin/sync-mail` and `bin/neomutt-accounts` with their zsh completion.
+This repository is public and holds defaults. Configuration that identifies
+one person lives in a separate private repo, which `rcrc` lists **first** in
+`DOTFILES_DIRS`: `rcm` deploys the first tree providing a path, so private
+files override public defaults. Reversing that order silently shadows the
+real config with the default, which is a failure mode worth remembering.
+
+Identity currently held privately: `mbsyncrc`, `msmtprc`, the personal
+`config/neomutt/neomuttrc` and `config/neomutt/accounts/`, `gitconfig`,
+`claude/settings.json`, and the mail scripts `bin/sync-mail` and
+`bin/neomutt-accounts` with their zsh completion.
+
+Where a public default is useful, keep one and let the private tree override
+it, the way `config/neomutt/neomuttrc` ships an account-free default here.
 
 Before adding a file, decide which tree it belongs in:
 

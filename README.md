@@ -157,18 +157,22 @@ the bootstrap scripts and run once, by hand, after the desktop is up.
 
 ### Private Companion Repository
 
-This repo is public and holds configuration that is true for any workstation.
-Anything true only for one person — mail accounts, git identity, agent
-settings naming private repositories — lives in a separate private repo, and
-`rcrc` lists both:
+This repo is public and holds configuration that is true for any workstation,
+including sensible defaults. Anything true only for one person — mail accounts
+and the neomuttrc that binds them, git identity, agent settings naming private
+repositories — lives in a separate private repo, listed **first**:
 
 ```sh
-DOTFILES_DIRS="$HOME/workspace/dots $HOME/workspace/dots-crispy-meme"
+DOTFILES_DIRS="$HOME/workspace/dots-crispy-meme $HOME/workspace/dots"
 ```
 
-`rcm` walks both trees, so a file in either lands at the same destination.
+`rcm` deploys the first tree that provides a given path, so private files
+override the public defaults. The order is load-bearing: reversed, the public
+default `neomuttrc` would shadow the real one and mail would quietly stop
+working.
+
 Clone them side by side before running `rcup`. Without the private repo the
-desktop still comes up; mail and git identity are what go missing.
+desktop still comes up and neomutt still starts — it just has no accounts.
 
 ## Key Features & Documentation
 

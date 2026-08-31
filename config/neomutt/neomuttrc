@@ -69,12 +69,25 @@ set wait_key = no
 source ~/.config/neomutt/colors
 source ~/.config/neomutt/mappings
 
-# Account switching configuration
-# Default account: macapinlac
-source ~/.config/neomutt/accounts/macapinlac
-
-# Account switching macros (gi1/gi2/gi3 to switch between accounts)
-# gi1 = macapinlac, gi2 = boogienet, gi3 = gmail
-macro index,pager gi1 '<enter-command>source ~/.config/neomutt/accounts/macapinlac<enter><change-folder>!<enter>' "Switch to macapinlac account"
-macro index,pager gi2 '<enter-command>source ~/.config/neomutt/accounts/boogienet<enter><change-folder>!<enter>' "Switch to boogienet account"
-macro index,pager gi3 '<enter-command>source ~/.config/neomutt/accounts/gmail<enter><change-folder>!<enter>' "Switch to gmail account"
+# Account configuration
+#
+# This file deliberately sources no account. Accounts name a person -- real
+# name, addresses, signing key -- so they are not tracked here. neomutt
+# starts fine without them, reading the local spool.
+#
+# To add your own, drop one file per account in
+# ~/.config/neomutt/accounts/, each setting at least:
+#
+#   set realname  = "Your Name"
+#   set from      = "you@example.com"
+#   set folder    = "~/.mail/<account>"
+#   set spoolfile = "+INBOX"
+#   set sendmail  = "/usr/bin/msmtp -a <account>"
+#
+# then source the default one and bind the rest, for example:
+#
+#   source ~/.config/neomutt/accounts/work
+#   macro index,pager gi1 '<enter-command>source ~/.config/neomutt/accounts/work<enter><change-folder>!<enter>' "Switch to work"
+#
+# Keeping those lines in a private overlay rather than here is what lets this
+# file stay public. See the repository README, "Private Companion Repository".

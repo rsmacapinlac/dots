@@ -1,5 +1,9 @@
 EXCLUDES="README.md LICENSE docs setup maintenance ./AGENTS.md ./CLAUDE.md gnupg/gpg-agent.conf"
-# Two source trees: this public repo, and the private one holding identity
-# (mail accounts, git [user], agent settings). rcm walks both, so a file in
-# either lands at the same destination. See AGENTS.md, "Security and privacy".
-DOTFILES_DIRS="$HOME/workspace/dots $HOME/workspace/dots-crispy-meme"
+# Two source trees: the private repo holding identity (mail accounts and
+# config, git [user], agent settings), and this public one holding defaults.
+#
+# ORDER MATTERS. rcm deploys the first tree that provides a given path, so
+# the private repo must come first for its files to override the public
+# defaults. Reverse these and the public default neomuttrc would shadow the
+# real one, and mail would silently stop working.
+DOTFILES_DIRS="$HOME/workspace/dots-crispy-meme $HOME/workspace/dots"
