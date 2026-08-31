@@ -132,7 +132,6 @@ This repository references private accounts and local machine details.
 
 - Do not add secrets, tokens, private keys, passwords, or local-only network share details.
 - Email configs retrieve passwords through `pass`; preserve that pattern.
-- Ranger SMB share definitions belong in untracked `config/ranger/smb_shares.json`; only edit the example template unless asked otherwise.
 - Be careful with files under `gnupg/`, mail configs, SSH/GPG setup sections, and setup scripts that copy sensitive material.
 
 ## Agent workflow notes

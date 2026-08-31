@@ -1,9 +1,3 @@
-# SMB Shares Configuration (contains sensitive network paths)
-config/ranger/smb_shares.json
-
-# Mount points created by Ranger
-mnt/
-
 # New computer setup folder (contains sensitive SSH keys, GPG keys, and setup scripts)
 newcomputer/
 
