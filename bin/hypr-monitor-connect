@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$HOME/.bin/hypr-utils"
-
-if is_lid_closed; then
-    disable_internal
-fi
-
-restart_waybar

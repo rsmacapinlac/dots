@@ -36,6 +36,11 @@ With no arguments, opens an fzf multi-select menu. Available groups:
   work           Work applications (Citrix Workspace)
   syncthing      Syncthing and its user service
   all            Every optional group
+
+Account-bound apps are not installed here. They are useless until you sign in,
+so they ship as one-shot installers you run by hand after the desktop is up:
+  setup/services/nextcloud.sh   Nextcloud sync client
+  setup/services/todoist.sh     Todoist as a Chromium web app
 EOF
 }
 
@@ -267,7 +272,7 @@ install_virtualization() {
 install_security() {
     log_info "Installing optional security applications..."
     yay_install bitwarden wireguard-tools openresolv
-    "$HOME/workspace/dots/bin/install-mise-tools" bw
+    "$HOME/workspace/dots/setup/install-mise-tools" bw
 }
 
 install_citrix() {

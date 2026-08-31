@@ -6,7 +6,7 @@ mise owns portable user-facing development tools.
 
 ## Lazy tools
 
-`bin/install-mise-tools` creates launchers in `~/.local/bin` for:
+`setup/install-mise-tools` creates launchers in `~/.local/bin` for:
 
 - `claude`
 - `codex`

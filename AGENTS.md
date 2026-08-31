@@ -30,7 +30,7 @@ Target:
 
 Configured first-class TUI/terminal tools:
 - `nvim` / Vim — primary editor; Neovim config is in `config/nvim/`, legacy Vim config is in `vimrc` and `vimrc.bundles`.
-- `tmux` — terminal multiplexer and workflow backbone; config in `config/tmux/`, session helpers in `bin/tat`, `bin/desk`, and templates in `config/tmuxinator/`.
+- `tmux` — terminal multiplexer and workflow backbone; config in `config/tmux/`, session helper in `bin/tat`.
 - `neomutt` — terminal email client; config in `config/neomutt/`, account launcher in `bin/neomutt-accounts`, sync via `mbsync`/`bin/sync-mail`, sending via `msmtp`.
 - `ranger` — terminal file manager; config in `config/ranger/`.
 - `cliamp` — terminal music player installed by the Arch setup script.
@@ -56,6 +56,8 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 - `setup/archinstall/install.sh` — live-ISO Archinstall profile selector.
 - `setup/arch.sh` — post-Archinstall core Hyprland workstation bootstrap.
 - `setup/applications.sh` — interactive or group-based optional Arch application installer.
+- `setup/services/` — one-shot installers for account-bound apps (Nextcloud, Todoist). Deliberately not wired into the bootstrap scripts; run by hand after the desktop is up.
+- `setup/install-mise-tools` — installs the mise-backed launchers in `~/.local/bin`; called by the setup and maintenance scripts.
 - `setup/macos.sh` — full macOS workstation bootstrap script (Homebrew-based).
 - `maintenance/arch.sh`, `maintenance/macos.sh`, `maintenance/lxc.sh` — regular update scripts.
 - `config/wallpapers/` — wallpaper scripts and image collections.
@@ -94,6 +96,8 @@ Setup/maintenance:
 ```bash
 setup/arch.sh        # Arch desktop bootstrap; do not run casually
 setup/applications.sh # select optional Arch application groups
+setup/services/nextcloud.sh # optional; run once, by hand
+setup/services/todoist.sh   # optional; run once, by hand
 setup/macos.sh       # macOS desktop bootstrap; do not run casually
 maintenance/arch.sh
 maintenance/macos.sh
@@ -120,7 +124,7 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 - Prefer small, focused edits. Do not reformat large configs unnecessarily.
 - Keep executable scripts executable when creating or moving them.
 - Use existing helper/logging patterns (`log_info`, `log_success`, etc.) in setup and maintenance scripts.
-- Hyprland is configured in Lua. `config/hypr/hyprland.lua` is a thin loader; keep real configuration in modules under `config/hypr/conf/` and `require` them in dependency order. `conf/switches.lua` must load after `conf/monitors.lua` — switch binds silently stop firing when declared alongside `hl.monitor()` calls.
+- Hyprland is configured in Lua. `config/hypr/hyprland.lua` is a thin loader; keep real configuration in modules under `config/hypr/conf/` and `require` them in dependency order.
 - `$HOME` does not expand in the Lua config. Build paths with `os.getenv("HOME") .. "/..."`.
 - `hyprlock`, `hypridle`, and `hyprpaper` stay in hyprlang; only Hyprland itself moved to Lua. The Catppuccin palette therefore exists twice: `config/hypr/conf/mocha.lua` for Hyprland and `config/hypr/mocha.conf` for hyprlock. Update both together.
 - For Neovim, keep plugin declarations in `config/nvim/lua/core/plugins.lua` and plugin-specific setup under `config/nvim/lua/core/plugins_config/`.

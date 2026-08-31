@@ -2,7 +2,7 @@
 #
 # Print a Caps Lock warning for the hyprlock screen.
 #
-# Called from the `capslock` label in config/hypr/hyprlock.conf on a short
+# Called from the `capslock` label in hyprlock.conf, its neighbour, on a short
 # poll. Prints nothing when Caps Lock is off so the label stays invisible.
 #
 # Usage: hyprlock-capslock [color]

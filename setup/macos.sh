@@ -572,7 +572,7 @@ install_ai_tools() {
     install_agent_python_deps
 
     export PATH="$HOME/.local/bin:$PATH"
-    "$HOME/workspace/dots/bin/install-mise-tools"
+    "$HOME/workspace/dots/setup/install-mise-tools"
 
     if ! command -v agent-browser &>/dev/null; then
         npm install -g agent-browser

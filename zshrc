@@ -105,7 +105,7 @@ source $ZSH/oh-my-zsh.sh
 # Add custom paths after oh-my-zsh loads.
 # mise wrappers lead the user PATH; mise activation at the end of this file
 # prepends the active toolchain ahead of them.
-export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH:/var/lib/flatpak/exports/share/applications"
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 

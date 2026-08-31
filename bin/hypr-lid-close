@@ -1,4 +1,0 @@
-#!/bin/sh
-. "$HOME/.bin/hypr-utils"
-
-disable_internal

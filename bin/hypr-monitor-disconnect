@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$HOME/.bin/hypr-utils"
-
-if ! has_external_monitors && ! is_lid_closed; then
-    enable_internal
-fi
-
-restart_waybar

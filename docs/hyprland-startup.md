@@ -77,16 +77,14 @@ ships a unit.
 | Program | Started by |
 |---|---|
 | `hypridle`, `hyprpaper`, `waybar`, `mako`, `hyprpolkitagent` | systemd user units, enabled by `setup/arch.sh` |
-| `nm-applet`, `blueman-applet`, `set_wallpaper`, `bin/hypr-*` | `conf/autostart.lua`, wrapped in `uwsm-app` |
+| `nm-applet`, `blueman-applet`, `set_wallpaper` | `conf/autostart.lua`, wrapped in `uwsm-app` |
 
 `conf/autostart.lua` wraps each remaining command in `uwsm-app` so it lands in
 its own systemd scope. **Do not exec a unit-backed service from
 `autostart.lua`** — that starts a second, unsupervised copy alongside the unit.
 
-Two scripts are deliberately systemd-aware for the same reason:
-`restart_waybar` in `bin/hypr-utils` restarts the unit rather than `pkill`ing a
-supervised process, and `config/wallpapers/bin/set_wallpaper` starts
-`hyprpaper.service` rather than forking its own copy.
+`config/wallpapers/bin/set_wallpaper` is deliberately systemd-aware for the
+same reason: it starts `hyprpaper.service` rather than forking its own copy.
 
 ### Caveat: PATH
 

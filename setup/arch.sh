@@ -94,7 +94,6 @@ install_core_packages() {
         tldr \
         fastfetch \
         jq \
-        socat \
         pinentry \
         polkit-kde-agent
 }
@@ -164,7 +163,7 @@ setup_dotfiles() {
 configure_terminal_tools() {
     log_info "Configuring tmux and Mise-backed tools..."
     export PATH="$HOME/.local/bin:$PATH"
-    "$HOME/workspace/dots/bin/install-mise-tools"
+    "$HOME/workspace/dots/setup/install-mise-tools"
 
     install_tmux_plugins
 }
@@ -275,13 +274,6 @@ install_hyprland() {
         hyprlock \
         hyprcursor \
         hyprpolkitagent
-
-    sudo mkdir -p /etc/systemd/logind.conf.d
-    sudo tee /etc/systemd/logind.conf.d/lid.conf >/dev/null <<'EOF'
-[Login]
-HandleLidSwitch=ignore
-HandleLidSwitchDocked=ignore
-EOF
 }
 
 install_fonts() {

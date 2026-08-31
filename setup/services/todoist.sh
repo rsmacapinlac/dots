@@ -8,10 +8,12 @@
 # (--password-store=gnome-libsecret) applies to it for free. See
 # docs/ai-desktop-control.md.
 #
-# Like install-service-nextcloud this is deliberately NOT part of the setup
-# scripts: it is an account-bound app that is useless until you log in, and it
-# needs the network to fetch its icon. Run it once, by hand, after the desktop
-# is up. Safe to rerun -- it overwrites its own icon and launcher in place.
+# Like setup/services/nextcloud.sh this is deliberately NOT wired into the
+# bootstrap scripts: it is an account-bound app that is useless until you log
+# in, and it needs the network to fetch its icon. Run it once, by hand, after
+# the desktop is up:
+#     setup/services/todoist.sh
+# Safe to rerun -- it overwrites its own icon and launcher in place.
 #
 # Uninstall with:
 #     rm ~/.local/share/applications/todoist.desktop

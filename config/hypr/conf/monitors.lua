@@ -1,8 +1,5 @@
 -- Monitors
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
---
--- Lid switch binds live in conf/switches.lua and are loaded after this file on
--- purpose; switch binds stop firing if declared alongside hl.monitor() calls.
 
 hl.monitor({
     output   = "eDP-1",

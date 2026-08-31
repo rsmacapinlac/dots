@@ -31,7 +31,7 @@ Expected:
 - Hyprland and Waybar are running.
 - `hyprctl configerrors` prints no errors.
 - `Ctrl+Return` opens Kitty and `Ctrl+Space` opens Rofi.
-- Network, audio, brightness, lock, lid, and display commands exist.
+- Network, audio, brightness, lock, and display commands exist.
 
 ### Session-scoped services actually started
 
@@ -168,7 +168,9 @@ snapshot with `DOTS_REF=standardize-on-uwsm`, then reboot.
   `app-Hyprland-nm\x2dapplet-*.scope` and
   `app-Hyprland-hypr\x2dmonitor\x2dwatch-*.scope` are both running. The PATH
   friction seen in Omarchy's tracker did not materialise here — absolute paths
-  in `conf/autostart.lua` were enough.
+  in `conf/autostart.lua` were enough. (`hypr-monitor-watch` has since been
+  removed along with the rest of the clamshell handling; the uwsm-app finding
+  still stands and now applies to `set_wallpaper`.)
 - `hyprctl configerrors` clean; `Ctrl+Return` opens Kitty.
 - `hyprpaper` restarted twice (`NRestarts=2`) and holds no wallpaper
   (`hyprctl hyprpaper listactive` is empty), so the session shows Hyprland's

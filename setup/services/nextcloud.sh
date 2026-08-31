@@ -1,13 +1,14 @@
 #!/bin/bash
 # Install and start the Nextcloud sync client.
 #
-# This is deliberately NOT part of the setup scripts. A sync client is useless
-# until it has been pointed at a server and authenticated in a browser, so
-# installing it unattended during a rebuild just leaves an unconfigured client
-# sitting in the tray. On Arch it is also one of the slower AUR builds, which is
-# a poor thing to put between a fresh machine and a usable desktop.
+# This is deliberately NOT wired into the bootstrap scripts. A sync client is
+# useless until it has been pointed at a server and authenticated in a browser,
+# so installing it unattended during a rebuild just leaves an unconfigured
+# client sitting in the tray. On Arch it is also one of the slower AUR builds,
+# which is a poor thing to put between a fresh machine and a usable desktop.
 #
-# Run it once, by hand, after the desktop is up.
+# Run it once, by hand, after the desktop is up:
+#     setup/services/nextcloud.sh
 #
 # Uninstall with:
 #     yay -Rns nextcloud-client      # Arch

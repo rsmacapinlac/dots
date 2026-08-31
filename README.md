@@ -117,7 +117,6 @@ and tearing it down.
 
 - **Development Tools**:
   - `nvim/`: Neovim with Lua-based modular configuration
-  - `tmuxinator/`: Tmux session templates
   - `git/`: Git configuration and aliases
 
 - **Applications**:
@@ -132,6 +131,13 @@ and tearing it down.
 
 ### Scripts & Utilities (`bin/`)
 - Custom workflow scripts and automation tools
+
+### Optional Service Installers (`setup/services/`)
+- `nextcloud.sh`: Nextcloud sync client
+- `todoist.sh`: Todoist as a Chromium web app
+
+Account-bound apps that are useless until you sign in, so they are kept out of
+the bootstrap scripts and run once, by hand, after the desktop is up.
 
 ### Archinstall Install Profiles (`setup/archinstall/`)
 - `urakara.json`: the ThinkPad T470s — GRUB, btrfs, `/dev/nvme0n1`
@@ -154,8 +160,8 @@ and tearing it down.
 
 ### Hyprland Desktop
 - **Multi-Monitor Support**: Declarative per-output rules in
-  `config/hypr/conf/monitors.lua`, with hotplug and lid handling by the
-  `bin/hypr-*` scripts
+  `config/hypr/conf/monitors.lua`. Lid handling is left to systemd-logind
+  defaults (closing the lid suspends); there is no clamshell mode.
 - **Custom Waybar**: System monitoring and power management
 - **Consistent Theming**: Catppuccin colors across all desktop components
 

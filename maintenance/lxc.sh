@@ -79,8 +79,8 @@ update_mise_tools() {
     fi
 
     export PATH="$HOME/.local/bin:$PATH"
-    if [[ -x "$HOME/workspace/dots/bin/install-mise-tools" ]]; then
-        "$HOME/workspace/dots/bin/install-mise-tools"
+    if [[ -x "$HOME/workspace/dots/setup/install-mise-tools" ]]; then
+        "$HOME/workspace/dots/setup/install-mise-tools"
     else
         log_warning "dots checkout not found, skipping mise wrapper refresh"
         return 0
