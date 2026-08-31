@@ -212,21 +212,46 @@ using EGL therefore dies with `DRM_IOCTL_MODE_CREATE_DUMB failed: Permission
 denied`. `hyprpaper` is the visible casualty: it exits, and the session falls
 back to Hyprland's built-in background.
 
-Adding 3D acceleration gets further but not all the way:
+Three graphics configurations were tried, and all fail the same way. Do not
+spend time on this again:
 
-```bash
-virt-xml dots-test --edit --video model.type=virtio,model.acceleration.accel3d=yes
-virt-xml dots-test --add-device --graphics egl-headless
+| Config | Result |
+|---|---|
+| No acceleration (the `virt-install` above) | EGL fails immediately; `hyprpaper` never starts |
+| `--video ...accel3d=yes` + `--graphics egl-headless` | `hyprpaper` starts, dies on render |
+| spice GL + virgl as the sole GL display | `hyprpaper` starts, dies on render |
+
+The signature is precise and identical each time:
+
+```
+hyprctl hyprpaper listactive   → ipc=0                    # healthy
+set_wallpaper --initial        → exit 0                   # "succeeds"
+hyprctl hyprpaper listactive   → wire handshake failed    # now dead
 ```
 
-That creates a render node and lets `hyprpaper` start when launched by hand,
-but it still fails at session start. Enabling spice's own GL
-(`--graphics gl.enable=yes`) did not work here — qemu refused to start with
-`invalid video codec`.
+`hyprpaper` idles happily and dies the moment it has to *render* an image, on
+GBM buffer allocation. Ruled out along the way, each by direct check rather
+than inference:
+
+- **Environment** — uwsm finalizes correctly; `systemctl --user show-environment`
+  carries `WAYLAND_DISPLAY`, `HYPRLAND_INSTANCE_SIGNATURE` and friends.
+- **Permissions** — `getfacl /dev/dri/card*` shows the logind seat ACL granting
+  the user `rw`.
+- **A startup race** — it dies even when `hyprpaper` is fully up and answering
+  IPC first.
+
+Notes if you try anyway: spice GL needs a *local socket* listen, which
+disconnects `virt-viewer` (`spice://127.0.0.1:5900` stops working) — revert
+`<listen type='address'/>` to get the viewer back. QEMU also refuses more than
+one OpenGL display, so `egl-headless` and spice GL are mutually exclusive.
 
 So: **wallpaper and any other GPU-dependent behaviour cannot be validated in
 this VM.** Verify those on real hardware, and do not record a VM failure of
 that kind as a configuration defect.
+
+Unrelated to the GPU and worth fixing on its own: `set_wallpaper` returns exit
+0 when the IPC wait loop times out, so a dead `hyprpaper` produces no wallpaper
+and no error.
 
 ## Tearing it down
 
