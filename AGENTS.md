@@ -31,7 +31,7 @@ Target:
 Configured first-class TUI/terminal tools:
 - `nvim` / Vim — primary editor; Neovim config is in `config/nvim/`, legacy Vim config is in `vimrc` and `vimrc.bundles`.
 - `tmux` — terminal multiplexer and workflow backbone; config in `config/tmux/`, session helper in `bin/tat`.
-- `neomutt` — terminal email client; config in `config/neomutt/`, account launcher in `bin/neomutt-accounts`, sync via `mbsync`/`bin/sync-mail`, sending via `msmtp`.
+- `neomutt` — terminal email client; generic config in `config/neomutt/`. The account configs and the `neomutt-accounts`/`sync-mail` scripts are identity and live in the private repo; both scripts deploy to `~/.bin` and are on `PATH`.
 - `ranger` — terminal file manager; config in `config/ranger/`.
 - `cliamp` — terminal music player installed by the Arch setup script.
 - `lazygit` — terminal Git UI installed by setup/maintenance scripts.
@@ -83,9 +83,9 @@ hyprctl binds          # verify modmasks after touching conf/binds.lua
 Email:
 ```bash
 mbsync -a
-bin/sync-mail sync
-bin/sync-mail status
-bin/neomutt-accounts <macapinlac|gmail|boogienet> [--imap] [--no-sync]
+sync-mail sync       # from the private repo, on PATH via ~/.bin
+sync-mail status
+neomutt-accounts <account> [--imap] [--no-sync]
 ```
 
 Music/media:
@@ -136,13 +136,16 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 This repository is public. Configuration that identifies one person lives in a
 separate private repo, and `rcrc` lists both in `DOTFILES_DIRS` so `rcm`
 deploys from each. Identity currently held privately: `mbsyncrc`, `msmtprc`,
-`config/neomutt/accounts/`, `gitconfig`, and `claude/settings.json`.
+`config/neomutt/accounts/`, `gitconfig`, `claude/settings.json`, and the mail
+scripts `bin/sync-mail` and `bin/neomutt-accounts` with their zsh completion.
 
 Before adding a file, decide which tree it belongs in:
 
 - Would it be wrong or useless on someone else's machine? It is identity, and
   belongs in the private repo. Real names, addresses, account lists, GPG
-  signing keys, and anything naming a private repository all qualify.
+  signing keys, and anything naming a private repository all qualify. Code
+  counts too: a script that hardcodes one person's accounts is identity, not
+  logic, until it is parameterised.
 - Is it a fact about one machine rather than one person? Prefer generating it
   during setup over tracking it, the way `gnupg/gpg-agent.conf` is excluded
   here and written by `setup/arch.sh`.

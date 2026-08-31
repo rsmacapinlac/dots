@@ -76,7 +76,7 @@ sudo apt install isync
 Run the setup script to configure isync:
 
 ```bash
-~/workspace/dots/bin/sync-mail setup
+sync-mail setup
 ```
 
 This will:
@@ -89,7 +89,7 @@ This will:
 Download all your emails (this may take a while):
 
 ```bash
-~/workspace/dots/bin/sync-mail init
+sync-mail init
 ```
 
 ### 4. Choose a Neomutt Account Configuration
@@ -101,7 +101,8 @@ variants under `config/neomutt/accounts/`:
 - `<account>` — local maildir, reads what `mbsync` has already downloaded
 - `<account>-imap` — talks to the server directly, no local mail
 
-`bin/neomutt-accounts` selects between them with `--imap`; see its `--help`.
+`neomutt-accounts` selects between them with `--imap`; see its `--help`.
+It lives in the private repo too, and deploys to `~/.bin`.
 Generic neomutt configuration (`neomuttrc`, `colors`, `mappings`, `mailcap`)
 stays in the public repo.
 
@@ -111,21 +112,21 @@ stays in the public repo.
 
 Sync all accounts:
 ```bash
-~/workspace/dots/bin/sync-mail sync
+sync-mail sync
 ```
 
 Sync specific account:
 ```bash
-~/workspace/dots/bin/sync-mail gmail
-~/workspace/dots/bin/sync-mail boogienet
-~/workspace/dots/bin/sync-mail macapinlac
+sync-mail gmail
+sync-mail boogienet
+sync-mail macapinlac
 ```
 
 ### Check Status
 
 View synchronization status:
 ```bash
-~/workspace/dots/bin/sync-mail status
+sync-mail status
 ```
 
 ### Manual isync Commands
@@ -186,7 +187,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=%h/workspace/dots/bin/sync-mail sync
+ExecStart=%h/.bin/sync-mail sync
 StandardOutput=journal
 StandardError=journal
 
@@ -222,7 +223,7 @@ Add to your crontab:
 crontab -e
 
 # Add this line to sync every 5 minutes
-*/5 * * * * ~/workspace/dots/bin/sync-mail sync >/dev/null 2>&1
+*/5 * * * * $HOME/.bin/sync-mail sync >/dev/null 2>&1
 ```
 
 ## Troubleshooting
@@ -273,7 +274,7 @@ mbsync -V -a
 
 To migrate from direct IMAP to local maildir:
 
-1. Run initial sync: `~/workspace/dots/bin/sync-mail init`
+1. Run initial sync: `sync-mail init`
 2. Update Neomutt configuration to use local maildir versions
 3. Test email access and composition
 4. Set up automatic synchronization
