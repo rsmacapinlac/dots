@@ -129,13 +129,18 @@ disable_passwordless_sudo() {
         SUDO_WATCHER_PID=""
     fi
 
-    if [[ -e $SUDO_NOPASSWD_FILE ]]; then
-        if sudo -n rm -f "$SUDO_NOPASSWD_FILE" 2>/dev/null; then
-            log_info "Passwordless sudo rule removed."
-        else
-            log_warning "Remove the leftover sudo rule manually:"
-            log_warning "    sudo rm -f $SUDO_NOPASSWD_FILE"
-        fi
+    # /etc/sudoers.d is 0750 root:root, so a plain [[ -e ]] by the invoking
+    # user is always false and would silently skip the removal below, leaving
+    # NOPASSWD: ALL in place for good. Probe through sudo instead.
+    if ! sudo -n test -e "$SUDO_NOPASSWD_FILE" 2>/dev/null; then
+        return 0
+    fi
+
+    if sudo -n rm -f "$SUDO_NOPASSWD_FILE" 2>/dev/null; then
+        log_info "Passwordless sudo rule removed."
+    else
+        log_warning "Remove the leftover sudo rule manually:"
+        log_warning "    sudo rm -f $SUDO_NOPASSWD_FILE"
     fi
 }
 
