@@ -4,7 +4,7 @@ I wouldn't go as far as calling this an operation system like Omarchy (that is w
 
 I've tried to optimize this for some hardware that I've owned.
 
-That said, I've been looking at Omarchy and heavily relied on some of their decisions to enhance my own setup.
+I've been looking at Omarchy and heavily relied on (Read: blatantly copied) some of their decisions to enhance my own setup.
 
 ## Features
 
@@ -135,7 +135,7 @@ and tearing it down.
 
 ### Archinstall Install Profiles (`setup/archinstall/`)
 - `urakara.json`: the ThinkPad T470s — GRUB, btrfs, `/dev/nvme0n1`
-- `vm-test.json`: 60 GiB virtio disk, for rehearsing rebuilds
+- `vm-test.json`: 30 GiB virtio disk, for rehearsing rebuilds
 - `install.sh`: live-ISO profile selection and Archinstall execution
 - `README.md`: what the profiles encode and which values are hardware-bound
 

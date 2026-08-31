@@ -26,7 +26,7 @@ hashes, never belongs in this repo, and archinstall regenerates it on each run.
 | file | machine | notes |
 |---|---|---|
 | `urakara.json` | ThinkPad T470s (LENOVO 20L8S0YW00) | GRUB, btrfs, `/dev/nvme0n1` |
-| `vm-test.json` | libvirt VM, 60 GiB virtio disk | rehearsal target, `/dev/vda` |
+| `vm-test.json` | libvirt VM, 30 GiB virtio disk | rehearsal target, `/dev/vda` |
 
 ### Testing a rebuild in a VM
 
@@ -79,7 +79,7 @@ subvolume layout, is identical:
 |---|---|---|
 | `hostname` | `urakara` | `dots-test` |
 | `...device` | `/dev/nvme0n1` | `/dev/vda` |
-| `...partitions[1].size.value` | `999128301568` | `63345524736` |
+| `...partitions[1].size.value` | `999128301568` | `31133270016` |
 | `...partitions[].obj_id` | (this laptop's) | regenerated |
 
 The ESP is untouched at 1 MiB start / 1 GiB size; only the root partition

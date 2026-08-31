@@ -5,7 +5,19 @@ optional application groups installed from the finished Hyprland desktop. Many
 core steps only execute on a fresh machine, so a disposable VM is the only way
 to exercise the complete path.
 
-`setup/archinstall/vm-test.json` targets a 60 GiB virtio disk and is structurally identical to the real machine's profile apart from the device, disk size and hostname.
+`setup/archinstall/vm-test.json` targets a 30 GiB virtio disk and is structurally identical to the real machine's profile apart from the device, disk size and hostname.
+
+30 GiB is sized from a measured run, not guessed: the core phase uses about
+6 GB, and `applications.sh all` takes it to **16 GB** — and that figure is
+optimistic, since it was measured with a freshly cleared package cache and
+before Timeshift snapshots had accumulated. Leave headroom for both, plus the
+slack btrfs wants to avoid behaving badly when near-full.
+
+**Changing the size means changing two things.** The `--disk size=` below and
+`partitions[1].size.value` in `vm-test.json` must agree, or Archinstall tries to
+create a partition larger than the disk and fails at partitioning. The profile
+value is the disk size minus the 1 GiB ESP start offset (`1074790400`) minus
+4 MiB for the GPT backup header — for 30 GiB that is `31133270016`.
 
 You *must*:
 - Test as if you're the user. Send keys to the virtual machine as a user would with a keyboard.
@@ -26,7 +38,7 @@ grep 'archlinux-x86_64.iso$' /tmp/sha256sums.txt \
 
 virt-install --connect qemu:///system \
   --name dots-test --memory 4096 --vcpus 4 --cpu host-passthrough \
-  --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=60,bus=virtio,format=qcow2 \
+  --disk path=/var/lib/libvirt/images/dots-test.qcow2,size=30,bus=virtio,format=qcow2 \
   --boot uefi --cdrom /tmp/archlinux-x86_64.iso --os-variant archlinux \
   --graphics spice --video virtio
 ```
@@ -60,13 +72,7 @@ In the archinstall menu you **must** set a root password and add a user **with s
 
 ## Snapshot before the core phase
 
-Reverting takes seconds; reinstalling takes an hour. Do this after Archinstall
-finishes and before running the core phase.
-
-Install `qemu-guest-agent` before taking the snapshot, so every revert lands on
-a system the host can already inspect. It is **test instrumentation only** —
-never part of a real rebuild, and deliberately not in `setup/arch.sh` — but
-baking it into the baseline saves reinstalling it by hand after every revert.
+Install `qemu-guest-agent` before taking the snapshot. 
 
 ```bash
 virsh destroy dots-test                              # the ISO ignores ACPI shutdown
@@ -81,9 +87,7 @@ sudo pacman -Sy --noconfirm qemu-guest-agent
 sudo systemctl enable --now qemu-guest-agent
 ```
 
-`systemctl` warns that the unit has no install config; that is expected, since
-it is udev-activated. Confirm it came up with `guest-ping` from the host, then
-snapshot:
+`systemctl` warns that the unit has no install config; that is expected, since it is udev-activated. Confirm it came up with `guest-ping` from the host, then snapshot:
 
 > **Check the unit file, not just `guest-ping`.** Because the agent is
 > udev-activated, `qemu-ga` can be running while its systemd unit is unusable —
