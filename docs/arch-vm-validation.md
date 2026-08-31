@@ -175,6 +175,18 @@ snapshot with `DOTS_REF=standardize-on-uwsm`, then reboot.
   built-in background. This is the VM's EGL limitation, not the session change
   — but note it now presents as an *active* unit rather than an absent process,
   which is harder to spot. `set_wallpaper` also still exits 0 in this case.
+- Core packages all present, `uwsm 0.26.7-1` among them, and the four mise
+  launchers (`claude`, `codex`, `gh`, `pi`) exist in `~/.local/bin` unused.
+- Optional installer exercised for real with `applications.sh syncthing`: it
+  ran one full system upgrade, installed `syncthing 2.1.3-1`, and left
+  `syncthing.service` **enabled and active**. No package from any other group
+  was pulled in — the core/optional boundary holds — and no user unit was
+  failed afterwards.
+- Timeshift, confirmed on the built system rather than inferred from the
+  profiles: `timeshift` is installed (pulled in by `timeshift-autosnap`) and
+  `00-timeshift-autosnap.hook` is present, but `/etc/timeshift/timeshift.json`
+  does **not** exist. The hook no-ops silently on a pacman transaction rather
+  than failing it, so nothing breaks — snapshots simply are not configured.
 
 ### 2026-08-30 — commit `0ec4cf7` (branch `fix-hypridle-activation`), profile `vm-test.json`
 
