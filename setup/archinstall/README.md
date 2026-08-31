@@ -46,11 +46,12 @@ Captured from archinstall 3.0.9, verified against the running machine.
 - **bootloader** GRUB, 1 GiB fat32 ESP at `/boot`
 - **root** btrfs on `/dev/nvme0n1p2`, `compress=zstd`, subvolumes
   `@` → `/`, `@home` → `/home`, `@log` → `/var/log`, `@pkg` → `/var/cache/pacman/pkg`
-- **snapshots** none. `snapshot_config` is `null` in both profiles — archinstall
-  wires up nothing. `setup/arch.sh` installs the `timeshift-autosnap` pacman
-  hook (which pulls in `timeshift`), but neither the profile nor the installer
-  creates `/etc/timeshift/timeshift.json`, so snapshots are not configured on a
-  fresh build. Configure Timeshift by hand if you want them.
+- **snapshots** `snapshot_config` is `null` in both profiles — archinstall wires
+  up nothing. `setup/arch.sh` handles it instead: it installs the
+  `timeshift-autosnap` pacman hook (which pulls in `timeshift`) and writes
+  `/etc/timeshift/timeshift.json` in BTRFS mode against the detected root UUID,
+  so `pacman -Syu` takes a snapshot first. It relies on the `@` / `@home`
+  layout below, and leaves an existing config alone.
 - **profile** `Minimal`, no greeter, no gfx driver, `packages: []` — the core
   desktop comes from `setup/arch.sh`; deferred software comes from
   `setup/applications.sh`
