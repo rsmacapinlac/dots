@@ -1,0 +1,20 @@
+# Override of /usr/share/applications/slack.desktop.
+#
+# slack-desktop is a bare Electron binary (/usr/bin/slack is a symlink into
+# /usr/lib/slack) with no launcher wrapper and no flags.conf, so the os_crypt
+# backend has to be pinned on the command line. See the Claude override and
+# docs/ai-desktop-control.md for the reasoning.
+#
+# Copied verbatim from the packaged entry apart from --password-store. Re-sync
+# if the slack-desktop package changes its Exec line.
+[Desktop Entry]
+Name=Slack
+StartupWMClass=Slack
+Comment=Slack Desktop
+GenericName=Slack Client for Linux
+Exec=/usr/bin/slack --gtk-version=3 --password-store=gnome-libsecret -s %U
+Icon=slack
+Type=Application
+StartupNotify=true
+Categories=GNOME;GTK;Network;InstantMessaging;
+MimeType=x-scheme-handler/slack;

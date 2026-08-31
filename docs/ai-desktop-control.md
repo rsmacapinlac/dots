@@ -182,18 +182,48 @@ unknown desktop and falls back to the plaintext backend without ever trying the
 Secret Service. Both apps have libsecret support compiled in; it is purely a
 detection failure. Logins succeed and then evaporate on restart.
 
-Fixed repo-wide in `config/hypr/conf/env.lua` by setting
-`XDG_CURRENT_DESKTOP=Hyprland:GNOME`. This is a session variable, so it takes
-effect on the next Hyprland login, not on `hyprctl reload`. To confirm the
-backend before logging out:
+The instinctive fix is to make the sniff succeed by setting
+`XDG_CURRENT_DESKTOP=Hyprland:GNOME`, and it does work. This repo used it for a
+while. It was replaced, for two reasons.
+
+First, it only nudges autodetection; it does not pin anything. If detection ever
+flips between the gnome-libsecret (v11) and basic (v10) keys, the damage is worse
+than logins not saving: already-stored cookies and passwords become
+undecryptable, and the app silently discards them. Pinning the backend
+explicitly removes that whole failure class.
+
+Second, any value other than the exact literal `Hyprland` makes Hyprland toast
+"Your XDG_CURRENT_DESKTOP environment seems to be managed externally" on every
+login. The wording is misleading — `CCompositor::performUserChecks` simply string-
+compares against `Hyprland` and warns on mismatch — but silencing it needs
+`misc:disable_xdg_env_checks`, which trades a real diagnostic for cosmetics.
+
+So `config/hypr/conf/env.lua` now sets the bare `XDG_CURRENT_DESKTOP=Hyprland`,
+which also keeps `xdg-desktop-portal` matching `hyprland-portals.conf`
+(`default=hyprland;gtk`) so screenshots, screencast, and global shortcuts stay on
+`xdg-desktop-portal-hyprland`. The backend is pinned per app instead, using
+whatever mechanism each one exposes:
+
+| App | Mechanism |
+| --- | --- |
+| `chromium` | `config/chromium-flags.conf` → `~/.config/chromium-flags.conf`. The Arch launcher reads it and skips `#` comment lines; `chromium --help` prints the flags it actually detected. |
+| `claude-desktop` | `local/share/applications/com.anthropic.Claude.desktop` — a bare Electron binary with no wrapper and no flags file, so the switch goes on the `Exec` lines. |
+| `slack-desktop` | `local/share/applications/slack.desktop` — same situation. |
+
+The two `.desktop` files are overrides: `~/.local/share/applications` takes
+precedence over `/usr/share/applications`. They are verbatim copies of the
+packaged entries apart from the added switch, so **re-sync them if either
+package changes its `Exec` lines or Actions** — a stale override silently keeps
+the old command line.
+
+`XDG_CURRENT_DESKTOP` is a session variable, so a change to it takes effect on
+the next Hyprland login, not on `hyprctl reload`. The `--password-store` pins are
+per-launch and take effect as soon as the app is restarted. To verify:
 
 ```bash
-XDG_CURRENT_DESKTOP=Hyprland:GNOME claude-desktop   # then re-check main.log
-secret-tool store --label=probe test probe          # verifies the keyring itself
+chromium --help                              # confirm the flag is detected
+secret-tool store --label=probe test probe   # verifies the keyring itself
 ```
 
-Keep `Hyprland` first in that list. `xdg-desktop-portal` walks the entries in
-order and uses the first matching `<desktop>-portals.conf`, which must stay
-`hyprland-portals.conf` (`default=hyprland;gtk`) so screenshots, screencast, and
-global shortcuts keep going to `xdg-desktop-portal-hyprland`. Reversing it to
-`GNOME:Hyprland` would hand those to the GTK portal and break screen sharing.
+Then restart claude-desktop and re-check `~/.config/Claude/logs/main.log` — the
+`backend=` field should no longer read `basic_text`.
