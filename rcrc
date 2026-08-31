@@ -1,2 +1,2 @@
-EXCLUDES="README.md LICENSE docs setup maintenance ./AGENTS.md ./CLAUDE.md"
+EXCLUDES="README.md LICENSE docs setup maintenance ./AGENTS.md ./CLAUDE.md gnupg/gpg-agent.conf"
 DOTFILES_DIRS="$HOME/workspace/dots"

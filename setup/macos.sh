@@ -203,12 +203,22 @@ configure_gnupg() {
     mkdir -p "$HOME/.gnupg"
     chmod 700 "$HOME/.gnupg"
 
-    # Break symlink so the injected pinentry path doesn't land in the dotfiles repo
+    # rcm deliberately does not manage this file (see EXCLUDES in rcrc): the
+    # pinentry path below is absolute and machine-specific, so it must never be
+    # written back to the repo. Machines set up before that exclusion may still
+    # have the symlink, so break it first.
     if [[ -L "$conf" ]]; then
         cp "$conf" "$conf.tmp" && mv "$conf.tmp" "$conf"
     fi
+    touch "$conf"
 
-    if ! grep -q "^pinentry-program " "$conf" 2>/dev/null; then
+    if ! grep -q "^default-cache-ttl " "$conf"; then
+        printf '# Default cache TTL (2 hours)\ndefault-cache-ttl 7200\n' >> "$conf"
+    fi
+    if ! grep -q "^max-cache-ttl " "$conf"; then
+        printf '\n# Maximum cache TTL (12 hours)\nmax-cache-ttl 43200\n' >> "$conf"
+    fi
+    if ! grep -q "^pinentry-program " "$conf"; then
         echo "pinentry-program $HOME/.bin/pinentry-wrapper" >> "$conf"
     fi
 

@@ -214,13 +214,27 @@ install_core_security() {
     local gpg_conf="$HOME/.gnupg/gpg-agent.conf"
     mkdir -p "$HOME/.gnupg"
     chmod 700 "$HOME/.gnupg"
+
+    # rcm deliberately does not manage this file (see EXCLUDES in rcrc): the
+    # pinentry path below is absolute and machine-specific, so it must never be
+    # written back to the repo. Machines set up before that exclusion may still
+    # have the symlink, so break it first.
     if [[ -L $gpg_conf ]]; then
         cp "$gpg_conf" "$gpg_conf.tmp"
         mv "$gpg_conf.tmp" "$gpg_conf"
     fi
-    if ! grep -q '^pinentry-program ' "$gpg_conf" 2>/dev/null; then
+    touch "$gpg_conf"
+
+    if ! grep -q '^default-cache-ttl ' "$gpg_conf"; then
+        printf '# Default cache TTL (2 hours)\ndefault-cache-ttl 7200\n' >> "$gpg_conf"
+    fi
+    if ! grep -q '^max-cache-ttl ' "$gpg_conf"; then
+        printf '\n# Maximum cache TTL (12 hours)\nmax-cache-ttl 43200\n' >> "$gpg_conf"
+    fi
+    if ! grep -q '^pinentry-program ' "$gpg_conf"; then
         echo "pinentry-program $HOME/.bin/pinentry-wrapper" >> "$gpg_conf"
     fi
+
     gpgconf --kill gpg-agent 2>/dev/null || true
 
     log_warning "SSH/GPG keys and the password store are not restored automatically."
