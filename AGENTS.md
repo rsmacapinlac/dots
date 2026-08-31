@@ -144,8 +144,12 @@ real config with the default, which is a failure mode worth remembering.
 
 Identity currently held privately: `mbsyncrc`, `msmtprc`, the personal
 `config/neomutt/neomuttrc` and `config/neomutt/accounts/`, `gitconfig`,
-`claude/settings.json`, and the mail scripts `bin/sync-mail` and
-`bin/neomutt-accounts` with their zsh completion.
+`claude/settings.json`, the mail scripts `bin/sync-mail` and
+`bin/neomutt-accounts` with their zsh completion, and the device-specific
+`bin/sync-hifiwalker` and `bin/backup-workspace`.
+
+What is left in `bin/` is generic: `tat`, `terminal-notify`, and
+`pinentry-wrapper`, which `setup/arch.sh` writes into `gpg-agent.conf`.
 
 Where a public default is useful, keep one and let the private tree override
 it, the way `config/neomutt/neomuttrc` ships an account-free default here.
