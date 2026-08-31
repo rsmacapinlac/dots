@@ -14,7 +14,9 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd(home .. "/.config/wallpapers/bin/set_wallpaper --initial")
     -- hl.exec_cmd("gnome-keyring-daemon --start --components=secrets,ssh")
-    hl.exec_cmd("nextcloud --background")
+    -- Nextcloud is opt-in (bin/install-service-nextcloud), so guard the exec:
+    -- an unguarded one fails silently at every login on a machine without it.
+    hl.exec_cmd("sh -c 'command -v nextcloud >/dev/null && exec nextcloud --background'")
     hl.exec_cmd(home .. "/.bin/hypr-display-init")
     hl.exec_cmd("sh -c 'sleep 4; . \"$HOME/.bin/hypr-utils\"; restart_waybar'")
     hl.exec_cmd(home .. "/.bin/hypr-monitor-watch")

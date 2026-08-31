@@ -13,7 +13,7 @@ That said, I've been looking at Omarchy and heavily relied on some of their deci
 - **Waybar**: Customizable status bar with system monitoring
 - **Rofi**: Application launcher and window switcher
 - **Mako**: Lightweight notification daemon
-- **Swww**: Wallpaper manager for Wayland
+- **Hyprpaper**: Wallpaper manager for Wayland
 
 ### Development Environment
 - **Neovim**: Fully configured with LSP, completion, and plugins
@@ -38,18 +38,32 @@ That said, I've been looking at Omarchy and heavily relied on some of their deci
 
 ### Arch Linux
 
-A rebuild has two phases separated by a reboot, and the same command is used for
-both. `setup/start.sh` works out which phase it is in from where it is running:
+A rebuild has three stages and the same bootstrap command is used for the first
+two. `setup/start.sh` detects whether it is running on the live ISO or the
+installed system:
 
 ```bash
 # start with this
 curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
 
-# reboot once its done
+# reboot into the installed system, log in at the TTY, then run it again
 sudo reboot
 
-#... then do it again
 curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
+
+# reboot into Hyprland, then choose any optional application groups
+sudo reboot
+~/workspace/dots/setup/applications.sh
+```
+
+The first invocation delegates to `setup/archinstall/install.sh`. The second
+installs the core Hyprland workstation through `setup/arch.sh`. Optional
+software is deliberately deferred until the machine boots into its usable
+desktop; select groups interactively or name them explicitly:
+
+```bash
+setup/applications.sh media mail
+setup/applications.sh all
 ```
 
 ### macOS
@@ -62,10 +76,10 @@ setup/macos.sh
 
 This script will:
 - Install Homebrew and the base package set
-- Configure user shell (zsh with oh-my-zsh) and npm user globals
+- Configure the user shell (zsh with Oh My Zsh)
 - Set up security tools (pass, GnuPG pinentry, PassFF native host)
 - Clone and apply dotfiles using rcm
-- Install development tools (Neovim, tmux, Ruby, Go, Python)
+- Install development tools (Neovim, tmux, Go, and Python)
 - Install the terminal application stack (ranger, neomutt, mpd/ncmpcpp/rmpc, beets, cava)
 - Install keyboard-friendly GUI apps (kitty, alacritty, qutebrowser, Firefox)
 - Configure mise-backed, first-run installs for Claude Code, Codex CLI, Pi, and
@@ -79,14 +93,14 @@ can perform; `setup/macos.sh` prints a checklist on completion. See
 
 ## Testing the Build Scripts 
 
-The workstation phase runs around 30 steps, most of which only ever execute on a
-fresh machine. Bugs there are invisible on a working system, so a disposable VM
-is the only way to exercise that path. `setup/archinstall/vm-test.json` is the
-rehearsal target.
+The core phase contains many steps that only execute on a fresh machine. Bugs
+there are invisible on a working system, so a disposable VM is the only way to
+exercise that path. `setup/archinstall/vm-test.json` is the rehearsal target.
 
 See **[Testing the Build Scripts](docs/testing-build-scripts.md)** for the full procedure:
 creating the VM, running both bootstrap phases at the console, snapshotting
-before the workstation phase, iterating on a failure, and tearing it down.
+before the core phase, verifying the Hyprland boot, installing optional groups,
+and tearing it down.
 
 ## Repository Structure
 
@@ -122,6 +136,7 @@ before the workstation phase, iterating on a failure, and tearing it down.
 ### Archinstall Install Profiles (`setup/archinstall/`)
 - `urakara.json`: the ThinkPad T470s — GRUB, btrfs, `/dev/nvme0n1`
 - `vm-test.json`: 60 GiB virtio disk, for rehearsing rebuilds
+- `install.sh`: live-ISO profile selection and Archinstall execution
 - `README.md`: what the profiles encode and which values are hardware-bound
 
 ### Documentation (`docs/`)
@@ -134,12 +149,13 @@ before the workstation phase, iterating on a failure, and tearing it down.
 - Editor configs: `vimrc`, `vimrc.bundles`
 - Email configs: `mbsyncrc`, `msmtprc`
 - Dotfile management: `rcrc`
-- Screen layouts: `screenlayout/`
 
 ## Key Features & Documentation
 
 ### Hyprland Desktop
-- **Multi-Monitor Support**: Automatic display configuration with autorandr
+- **Multi-Monitor Support**: Declarative per-output rules in
+  `config/hypr/conf/monitors.lua`, with hotplug and lid handling by the
+  `bin/hypr-*` scripts
 - **Custom Waybar**: System monitoring and power management
 - **Consistent Theming**: Catppuccin colors across all desktop components
 
@@ -197,7 +213,7 @@ The dotfiles are managed with `rcm`. After making changes to configurations:
 Some things cannot be scripted and are left to do by hand after a rebuild:
 
 - **Secrets** — SSH keys, GPG keys and the password store. The steps are
-  documented at the end of `configure_security()` in `setup/arch.sh`.
+  documented below. The core installer intentionally creates no secrets.
 - **Citrix Workspace** (`icaclient`) — Citrix puts the tarball behind a
   click-through licence rather than a fetchable URL, so `makepkg` cannot
   retrieve it. Download it from
@@ -209,6 +225,44 @@ Some things cannot be scripted and are left to do by hand after a rebuild:
   # put the downloaded tarball in this directory
   makepkg -si
   ```
+
+### Restoring secrets
+
+From the removable backup containing `ssh/` and `gpg/`:
+
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+cp ssh/* ~/.ssh/
+chmod 600 ~/.ssh/*
+chmod 644 ~/.ssh/*.pub ~/.ssh/known_hosts
+
+gpg --import gpg/public.pgp
+gpg --pinentry-mode loopback --import gpg/private.pgp
+fpr=$(gpg --list-secret-keys --with-colons \
+  | awk -F: '/^sec:/{w=1;next} /^fpr:/&&w{print $10;w=0}')
+echo "$fpr:6:" | gpg --import-ownertrust
+
+ssh-add ~/.ssh/id_rsa
+git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
+```
+
+The explicit permissions matter when restoring from a vfat drive. Verify GPG
+encryption and decryption before trusting the restored password store.
+
+The shell does not load SSH keys into the agent — it only points at it. Add this
+to `~/.ssh/config` so a key is added on first use and stays cached for the
+session, instead of every new shell paying for an `ssh-add`:
+
+```
+Host *
+    AddKeysToAgent yes
+    # macOS only — store the passphrase in the login keychain:
+    # UseKeychain yes
+```
+
+`~/.ssh` is deliberately not managed by `rcm`: `rcup` would symlink files back
+into this repository, and the `cp ssh/* ~/.ssh/` above would then write through
+those symlinks. Keep it machine-local.
 
 ## Customization
 

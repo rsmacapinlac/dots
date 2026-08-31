@@ -1,18 +1,22 @@
 # archinstall profiles
 
-Saved `archinstall` configurations — the layer *below* `setup/arch.sh`.
+Saved `archinstall` configurations and the live-ISO installer entry point.
 
-`setup/arch.sh` assumes a booting Arch system with a user account. These files
-describe how that system is partitioned and installed, so a rebuild does not
-depend on remembering the disk layout.
+`install.sh` is downloaded and launched by `setup/start.sh` on the Arch ISO. It
+lists these profiles, shows the destructive device and hostname fields, requires
+an explicit `yes`, and then runs Archinstall. `setup/arch.sh` does not run until
+after the new system has booted with a normal sudo-capable user.
 
 ## Usage
 
+Run the repository bootstrap from the live ISO:
+
 ```bash
-archinstall --config urakara.json
+curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash
 ```
 
-Then set credentials interactively when prompted.
+Choose a saved profile or the interactive Archinstall option. Set credentials
+interactively when prompted.
 
 Do **not** reuse a saved `user_credentials.json`. It holds argon2id password
 hashes, never belongs in this repo, and archinstall regenerates it on each run.
@@ -30,8 +34,8 @@ hashes, never belongs in this repo, and archinstall regenerates it on each run.
 hardware. The repository is public, so the guest can fetch it directly from the
 Arch ISO.
 
-The full procedure — creating the VM, both bootstrap phases, snapshots,
-iterating on a failure, teardown — is in
+The full procedure — creating the VM, both bootstrap phases, snapshots, core
+desktop validation, optional application groups, and teardown — is in
 [`docs/testing-build-scripts.md`](../../docs/testing-build-scripts.md). How this profile
 was adapted from `urakara.json` is under [vm-test.json](#vm-testjson) below.
 
@@ -44,8 +48,9 @@ Captured from archinstall 3.0.9, verified against the running machine.
   `@` → `/`, `@home` → `/home`, `@log` → `/var/log`, `@pkg` → `/var/cache/pacman/pkg`
 - **snapshots** `snapshot_config.type = Timeshift` — archinstall wires this up,
   not `setup/arch.sh`
-- **profile** `Minimal`, no greeter, no gfx driver, `packages: []` — every
-  package and all desktop configuration comes from `setup/arch.sh`
+- **profile** `Minimal`, no greeter, no gfx driver, `packages: []` — the core
+  desktop comes from `setup/arch.sh`; deferred software comes from
+  `setup/applications.sh`
 - **locale** `en_US.UTF-8`, `us` keymap, `America/Vancouver`, NTP on, swap on
 
 ### Hardware-bound values

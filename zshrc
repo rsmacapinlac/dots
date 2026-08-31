@@ -79,7 +79,13 @@ plugins=(
   dotenv
 )
 
-# SSH agent — platform-conditional startup
+# SSH agent — platform-conditional startup.
+#
+# This points at (or starts) the agent and deliberately loads no keys. Keys are
+# added on first use by `AddKeysToAgent yes` in ~/.ssh/config, so no shell — and
+# no tmux pane — pays for an ssh-add, and a passphrase is never prompted for at
+# shell startup.
+#
 # Arch: ssh-agent runs as a systemd user service with a fixed socket path
 # macOS: no launchd-managed socket; use a fixed socket and start agent if needed
 if [[ "$(uname -s)" == "Linux" ]]; then
@@ -90,10 +96,6 @@ elif [[ "$(uname -s)" == "Darwin" ]]; then
         rm -f "$SSH_AUTH_SOCK"
         ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
     fi
-fi
-
-if ! ssh-add -l &>/dev/null; then
-    find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' -exec ssh-add {} \;
 fi
 
 source $ZSH/oh-my-zsh.sh
@@ -219,13 +221,12 @@ elif [[ -d "/usr/lib/go" ]]; then
 fi
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 
-# mise owns the language runtimes (currently Ruby). Two mechanisms, deliberately:
+# mise owns user-selected language runtimes. Two mechanisms, deliberately:
 #
 #   shims    resolve tools in non-interactive contexts that never source this
 #            file - scripts, ssh commands, editors
-#   activate hooks the prompt so a directory's .ruby-version switches versions
-#            the way RVM used to, and prepends the real toolchain ahead of the
-#            shims
+#   activate hooks the prompt so project-local tool versions switch on directory
+#            changes and prepends the real toolchain ahead of the shims
 #
 # Both are guarded so a machine without mise still gets a working shell.
 if command -v mise &>/dev/null; then

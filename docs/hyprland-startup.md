@@ -6,6 +6,11 @@ This document explains how Hyprland is launched in this system and the rationale
 
 Hyprland is launched via the **greetd** display manager using the official `start-hyprland` wrapper provided by the Hyprland package. This approach ensures proper initialization and avoids compatibility issues.
 
+Greetd is not installed by the minimal Archinstall profile. After the first
+reboot into a TTY, `setup/start.sh` dispatches to the core `setup/arch.sh`
+installer, which installs and enables greetd. The following reboot enters the
+user's Hyprland session automatically.
+
 ## Startup Method
 
 ### Current Configuration
@@ -44,10 +49,12 @@ The `start-hyprland` binary is the official, recommended way to launch Hyprland.
 
 ## Alternative: UWSM (Not Used)
 
-UWSM (Universal Wayland Session Manager) is installed on this system but **not used for Hyprland startup**:
+UWSM (Universal Wayland Session Manager) is **not used for Hyprland startup** and
+is **not installed** by `setup/arch.sh`. It may still be present on machines
+provisioned before the core/optional split.
 
-- **Package**: `uwsm` (kept installed for potential advanced use)
-- **Desktop File**: `/usr/share/wayland-sessions/hyprland-uwsm.desktop`
+- **Package**: `uwsm` — not part of the core install; add it deliberately if wanted
+- **Desktop File**: `/usr/share/wayland-sessions/hyprland-uwsm.desktop` (only if installed)
 - **Status**: Marked as "for advanced users" with "issues and quirks"
 
 ### Why We Don't Use UWSM
@@ -72,7 +79,7 @@ If you need to change how Hyprland starts:
 2. **Update the dotfiles for future installations:**
    ```bash
    vim ~/workspace/dots/setup/arch.sh
-   # Edit the install_greeter() function around line 550
+   # Edit the install_greeter() function
    ```
 
 3. **Apply changes (logs you out!):**
@@ -149,7 +156,7 @@ If these are missing, the wrapper isn't being used correctly.
 
 ## Using UWSM for Advanced Use Cases
 
-If you need UWSM for specific functionality, it's already installed. You can:
+If you need UWSM for specific functionality, install it (`yay -S uwsm`). You can:
 
 1. **Manually launch with UWSM:**
    ```bash
@@ -180,7 +187,7 @@ If you need UWSM for specific functionality, it's already installed. You can:
 ### Dotfiles Setup Script
 
 **File**: `~/workspace/dots/setup/arch.sh`
-- Function: `install_greeter()` (lines 544-562)
+- Function: `install_greeter()`
 - Automatically generates greetd config during system setup
 - Keeps configuration consistent across installations
 

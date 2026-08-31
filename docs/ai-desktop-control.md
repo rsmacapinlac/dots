@@ -71,14 +71,16 @@ official `.deb` would not cleanly apply there. It is headless regardless.
 
 `maintenance/macos.sh` → `update_ai_desktop_apps()` ensures both casks are present on machines provisioned before these were added. Version upgrades are handled by the existing `brew upgrade --cask --greedy`.
 
-`setup/arch.sh` → `install_ai_desktop_apps()`:
+`setup/applications.sh ai-desktop`:
 
 | AUR package | Provides |
 |---|---|
 | `claude-desktop` | Claude Desktop — Anthropic's official Linux build |
 | `chatgpt-desktop` | ChatGPT Desktop — repackaged from OpenAI's official `.deb` |
 
-`maintenance/arch.sh` → `update_ai_packages()` ensures both. Version upgrades come from the existing `yay -Syu` in `update_system_packages`.
+The applications are optional. Once installed, version upgrades come from the
+existing `yay -Syu` in `maintenance/arch.sh`; maintenance does not install
+missing optional groups.
 
 Headless environments install no desktop apps; they stay deliberately CLI-only (Claude Code, Codex CLI, GitHub CLI, and Pi).
 
@@ -159,9 +161,9 @@ xdg-settings get default-web-browser          # chatgpt.desktop means it was hij
 xdg-settings set default-web-browser firefox.desktop
 ```
 
-`install_ai_desktop_apps` in `setup/arch.sh` now pins this after installing the
-apps, and only when no default is already set, so a deliberate choice survives a
-rerun. Setting the http/https default does not disturb the `codex://` and
+The `ai-desktop` group in `setup/applications.sh` pins this after installing the
+apps, and only when no default is already set, so a deliberate choice survives
+a rerun. Setting the http/https default does not disturb the `codex://` and
 `claude://` deep-link handlers, which stay mapped to their own apps.
 
 **"Sign-in won't be saved on this device — install and unlock a system keyring"

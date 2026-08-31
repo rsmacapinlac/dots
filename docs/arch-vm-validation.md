@@ -1,138 +1,116 @@
 # Arch VM validation
 
-Use this after a `dots-test` workstation run to verify that the Arch setup still
-installs, removes, and launches the expected desktop/TUI software.
+Use this after a `dots-test` rebuild to verify the core/optional installer
+boundary and the resulting Hyprland session.
 
-## Install path tested
+## Core path
 
 Run from the VM console as the normal user, not through `guest-exec`:
 
 ```bash
-DOTS_REF=main bash -c 'curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash'
+DOTS_REF=main bash -c 'curl -fsSL \
+  https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.sh | bash'
 ```
 
-After the script completes, reboot and confirm Hyprland comes up.
+After it completes, reboot. Greetd should enter the user's Hyprland session
+automatically.
 
 ## Session checks
 
 ```bash
 pgrep -a Hyprland
 pgrep -a waybar
-HYPR_SIG=$(ls -1 /run/user/1000/hypr | head -1)
-XDG_RUNTIME_DIR=/run/user/1000 HYPRLAND_INSTANCE_SIGNATURE="$HYPR_SIG" hyprctl configerrors
+HYPR_SIG=$(find /run/user/1000/hypr -mindepth 1 -maxdepth 1 -printf '%f\n' | head -1)
+XDG_RUNTIME_DIR=/run/user/1000 \
+  HYPRLAND_INSTANCE_SIGNATURE="$HYPR_SIG" \
+  hyprctl configerrors
 ```
 
 Expected:
-- Hyprland is running.
-- Waybar is running.
+
+- Hyprland and Waybar are running.
 - `hyprctl configerrors` prints no errors.
+- `Ctrl+Return` opens Kitty and `Ctrl+Space` opens Rofi.
+- Network, audio, brightness, lock, lid, and display commands exist.
 
-## Package checks
-
-Expected direct installs:
+## Core package checks
 
 ```bash
 pacman -Q \
-  cliamp btop tldr bolt ddcutil aether nautilus gvfs-smb sushi pamixer \
-  libreoffice-fresh evince noto-fonts noto-fonts-emoji woff2-font-awesome \
-  ttf-ia-writer ttf-jetbrains-mono-nerd qutebrowser kitty
+  hyprland greetd waybar rofi mako kitty \
+  firefox qutebrowser \
+  networkmanager bluez pipewire wireplumber bolt cups avahi \
+  neovim tmux ranger nautilus sushi gvfs-smb \
+  mise pass pass-otp gnome-keyring timeshift-autosnap
 ```
 
-Expected retired packages to be absent as direct/user-facing tools:
+Optional packages must not be pulled in directly by core:
 
 ```bash
-for p in alacritty arduino-cli arduino-language-server krdc mc mpc mpd mpv \
-  ncmpcpp pavucontrol python-pyacoustid rmpc rpi-imager speech-dispatcher \
-  telegram-desktop thunar thunar-volman timer-bin libreoffice-still; do
-  pacman -Q "$p" >/dev/null 2>&1 && echo "PRESENT $p" || echo "absent $p"
+for package in cursor-bin chromium obs-studio neomutt claude-desktop \
+  chatgpt-desktop steam virt-manager bitwarden syncthing; do
+  pacman -Q "$package" >/dev/null 2>&1 \
+    && echo "PRESENT $package" \
+    || echo "optional/absent $package"
 done
 ```
 
-Note: `smbclient`, `cifs-utils`, and `python-requests` may still be installed as
-transitive dependencies. They should not be explicitly declared by `setup/arch.sh`.
+Some may appear as transitive dependencies; confirm unexpected packages with
+`pactree -r <package>` before treating them as a boundary failure.
 
-## Removed dotfile paths
+## Core runtime checks
 
-```bash
-for p in \
-  ~/.config/awesome \
-  ~/.config/alacritty \
-  ~/.config/mpd \
-  ~/.config/ncmpcpp \
-  ~/.config/rmpc \
-  ~/.config/pomodux; do
-  test -e "$p" && echo "PRESENT $p" || echo "absent $p"
-done
-```
-
-Expected: all absent.
-
-## Runtime smoke tests
-
-Run these from a Kitty terminal inside the Hyprland session.
-
-Terminal/TUI tools:
+Run these inside Kitty:
 
 ```bash
-cliamp --version
-cliamp        # verify the TUI opens, then quit
-btop          # verify the TUI opens, then quit with q
-tldr tar
+nvim --version
+tmux -V
+ranger --version
+mise --version
+pass --version
+firefox --version
+qutebrowser --version
+nautilus --version
 pamixer --get-volume
-boltctl
-ddcutil detect    # no DDC display in a VM is acceptable; command should run
+playerctl --version
+boltctl --version
+ddcutil detect       # no DDC display in a VM is acceptable
 ```
 
-Document/viewer tools:
+Confirm the lazy agent launchers exist without invoking them, since first use
+downloads their current releases:
 
 ```bash
-libreoffice --headless --version
-
-tmp=$(mktemp -d)
-echo 'LibreOffice conversion smoke test' > "$tmp/test.txt"
-libreoffice --headless --convert-to pdf --outdir "$tmp" "$tmp/test.txt"
-test -s "$tmp/test.pdf"
-
-evince --version
-evince "$tmp/test.pdf"
+for command in claude codex gh pi; do
+  test -x "$HOME/.local/bin/$command" || echo "MISSING $command"
+done
 ```
 
-GUI apps:
+## Optional installer checks
+
+Verify help, rejection, interactive cancellation, and explicit selection:
 
 ```bash
-qutebrowser about:blank &
-nautilus --new-window "$HOME" &
-aether &
-evince "$tmp/test.pdf" &
-
-pgrep -u "$USER" -x qutebrowser
-pgrep -u "$USER" -x nautilus
-pgrep -u "$USER" -x aether
-pgrep -u "$USER" -x evince
-hyprctl clients | grep -E 'class:|title:'
+setup/applications.sh --help
+setup/applications.sh not-a-group       # must fail before sudo or upgrades
+setup/applications.sh                   # open fzf, then cancel with Esc
+setup/applications.sh media mail
 ```
 
-Font checks:
+After installing selected groups, verify only their packages and services. For
+example, Syncthing is its own group:
 
 ```bash
-fc-match 'Noto Sans'
-fc-match 'Noto Color Emoji'
-fc-match 'iA Writer Mono S'
-fc-match 'JetBrainsMono Nerd Font'
-fc-match 'Font Awesome 6 Free'
+setup/applications.sh syncthing
+pacman -Q syncthing
+systemctl --user is-enabled syncthing.service
 ```
 
-Expected: each resolves to an installed font file.
+The virtualization group must select `kvm_intel` or `kvm_amd` from the detected
+CPU vendor and must not apply model-specific CPU, memory, or governor tuning.
 
-## Last confirmed result
+## Result recording
 
-The post-refactor VM validation completed successfully:
-
-- `setup/start.sh` completed from the console as user `ritchie`.
-- Reboot entered Hyprland automatically.
-- Waybar launched.
-- `hyprctl configerrors` was clean.
-- `cliamp`, `btop`, and `tldr` ran in Kitty.
-- `qutebrowser`, `nautilus`, `aether`, and `evince` launched as Hyprland windows.
-- LibreOffice ran headless and converted a text file to PDF.
-- Retired package/config checks passed, excluding allowed transitive dependencies.
+Record the tested commit, profile, date, selected optional groups, and any VM
+limitations. Do not retain an old “last confirmed” result after changing the
+installer; validation claims must correspond to the current scripts.

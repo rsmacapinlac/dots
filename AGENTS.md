@@ -52,7 +52,10 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 ## Notable files and directories
 
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
-- `setup/arch.sh` — full Arch workstation bootstrap script.
+- `setup/start.sh` — detects the live ISO or installed system and dispatches the appropriate bootstrap phase.
+- `setup/archinstall/install.sh` — live-ISO Archinstall profile selector.
+- `setup/arch.sh` — post-Archinstall core Hyprland workstation bootstrap.
+- `setup/applications.sh` — interactive or group-based optional Arch application installer.
 - `setup/macos.sh` — full macOS workstation bootstrap script (Homebrew-based).
 - `maintenance/arch.sh`, `maintenance/macos.sh`, `maintenance/lxc.sh` — regular update scripts.
 - `config/wallpapers/` — wallpaper scripts and image collections.
@@ -90,6 +93,7 @@ cliamp
 Setup/maintenance:
 ```bash
 setup/arch.sh        # Arch desktop bootstrap; do not run casually
+setup/applications.sh # select optional Arch application groups
 setup/macos.sh       # macOS desktop bootstrap; do not run casually
 maintenance/arch.sh
 maintenance/macos.sh

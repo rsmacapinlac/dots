@@ -1,8 +1,15 @@
 # Testing the build scripts
 
-The workstation phase runs around 30 steps, most of which only ever execute on a fresh machine. Bugs there are invisible on a working system. A disposable VM is the only way to exercise that path.
+The rebuild has a live-ISO Archinstall phase, a post-reboot core phase, and
+optional application groups installed from the finished Hyprland desktop. Many
+core steps only execute on a fresh machine, so a disposable VM is the only way
+to exercise the complete path.
 
 `setup/archinstall/vm-test.json` targets a 60 GiB virtio disk and is structurally identical to the real machine's profile apart from the device, disk size and hostname.
+
+You *must*:
+- Test as if you're the user. Send keys to the virtual machine as a user would with a keyboard.
+- Show the virtual machine using the viewer, so the work can be monitored by a human.
 
 ## Creating the VM
 
@@ -45,9 +52,10 @@ curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.
 
 In the archinstall menu you **must** set a root password and add a user **with sudo/wheel** — the profile deliberately carries no credentials.
 
-## Snapshot before bootstrapping
+## Snapshot before the core phase
 
-Reverting takes seconds; reinstalling takes an hour. Do this after archinstall finishes and before running the workstation phase.
+Reverting takes seconds; reinstalling takes an hour. Do this after Archinstall
+finishes and before running the core phase.
 
 Install `qemu-guest-agent` before taking the snapshot, so every revert lands on
 a system the host can already inspect. It is **test instrumentation only** —
@@ -92,7 +100,7 @@ session as the bootstrap: `sudo` caches a credential for five minutes, which
 silently satisfies `check_sudo` and leaves its password prompt untested. Run
 `sudo -k` first in that case.
 
-## Iterating on a failure
+## Testing a branch
 
 Test a branch without merging to `main`:
 
@@ -101,13 +109,10 @@ DOTS_REF=my-branch bash -c 'curl -fsSL \
   https://raw.githubusercontent.com/rsmacapinlac/dots/my-branch/setup/start.sh | bash'
 ```
 
-Re-run a single failing step rather than the whole script — `setup/arch.sh`
-skips `main()` when sourced, which is what its `BASH_SOURCE` guard is for:
-
-```bash
-source ~/workspace/dots/setup/arch.sh   # defines functions, runs nothing
-install_hyprland                        # just the step that failed
-```
+Both provisioning scripts are idempotent. After correcting a failure, rerun the
+whole relevant entry point: `setup/start.sh` for core provisioning or
+`setup/applications.sh <group>` for an optional group. There is intentionally no
+public single-function recovery interface.
 
 Note that `raw.githubusercontent.com` caches for around five minutes, so a freshly pushed commit is not immediately visible to the guest. The GitHub API serves the current content without that delay:
 
@@ -134,9 +139,9 @@ virsh qemu-agent-command dots-test \
 
 That only works on the ISO. The installed system has no guest agent of its own,
 so without one the console is the only way in after the first reboot — which
-makes diagnosing a failure 25 steps into the workstation phase painful, since a
-framebuffer screenshot shows about 25 lines at a time. Installing it into the
-baseline is covered in [Snapshot before bootstrapping](#snapshot-before-bootstrapping).
+makes diagnosing a late core failure painful, since a framebuffer screenshot
+shows about 25 lines at a time. Installing it into the baseline is covered in
+[Snapshot before the core phase](#snapshot-before-the-core-phase).
 
 With the agent running, the console can be read as text rather than pixels,
 which beats cropping screenshots:
@@ -150,13 +155,29 @@ Note that the agent runs as root and bypasses the console entirely, so use it to
 *verify* results, never to drive `start.sh` — driving it from anywhere but the
 console is what hides terminal-handling bugs.
 
+## Verify the desktop and optional installer
+
+After the core phase succeeds, reboot and confirm greetd starts Hyprland for the
+user. Run the checks in [`arch-vm-validation.md`](arch-vm-validation.md), then
+exercise the optional interface without installing everything at once:
+
+```bash
+setup/applications.sh --help
+setup/applications.sh media mail
+```
+
+Run `setup/applications.sh` with no arguments to verify the fzf multi-select
+menu and cancellation path. Each invocation must perform one full system
+upgrade, install the selected packages, and enable only services owned by those
+groups.
+
 ## What a VM will not tell you
 
 Hyprland and greetd do come up on software rendering, but a VM has no real GPU,
 so failures there usually mean the VM rather than the configuration. `battery`
-is absent, which is worth knowing: it is why waybar's volume pill was found
-rendering with a flat edge. `install_steam` is a large download worth skipping on
-a first pass. Budget 45-90 minutes for a full run.
+is absent, which is worth knowing when checking Waybar styling. Hardware checks
+must remain vendor-neutral. Steam and virtualization are optional, large
+downloads and should be validated separately from the core rehearsal.
 
 ## Tearing it down
 

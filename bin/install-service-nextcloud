@@ -21,16 +21,17 @@ case "$(uname -s)" in
         echo "Installing nextcloud-client..."
         yay -S --needed --noconfirm --answerdiff None --answerclean None nextcloud-client
 
-        # Start under uwsm so the client lands in background-graphical.slice as
-        # its own systemd unit rather than a stray child of this shell, and so
-        # dies with the session instead of being reparented to init. uwsm comes
-        # in with Hyprland here, so this adds no dependency.
-        if [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v uwsm-app &>/dev/null; then
-            echo "Starting Nextcloud in background-graphical.slice..."
-            uwsm-app -s b -- nextcloud --background &>/dev/null &
+        # Start in a transient systemd scope so the client gets its own cgroup
+        # rather than being a stray child of this shell, and dies with the
+        # session instead of being reparented to init. The session is launched
+        # by start-hyprland, not uwsm (see docs/hyprland-startup.md), so uwsm-app
+        # is not the right tool here even where uwsm happens to be installed.
+        if [[ -n ${WAYLAND_DISPLAY:-} ]]; then
+            echo "Starting Nextcloud..."
+            systemd-run --user --scope --quiet nextcloud --background &>/dev/null &
         else
             echo "No Wayland session detected; start it from your session with:"
-            echo "    uwsm-app -s b -- nextcloud --background"
+            echo "    nextcloud --background"
         fi
         ;;
     Darwin)
@@ -51,10 +52,10 @@ Nextcloud installed.
 
 Next steps, both done inside the client:
   1. Connect to your server and authenticate in the browser it opens.
-  2. Enable "Launch on system startup" in its settings if you want it
-     persistent - the client writes its own autostart entry
-     (~/.config/autostart/Nextcloud.desktop on Linux); this script
-     deliberately does not fabricate that file.
+  2. On Linux nothing further is needed for persistence: Hyprland's
+     config/hypr/conf/autostart.lua launches the client on session start once
+     it is installed. Plain Hyprland does not process ~/.config/autostart, so
+     the client's own "Launch on system startup" setting has no effect here.
 
 On Linux the sync status icon appears in waybar's tray module.
 EOF

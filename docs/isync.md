@@ -61,8 +61,10 @@ After synchronization, your emails will be stored in:
 
 **Arch Linux:**
 ```bash
-sudo pacman -S isync
+~/workspace/dots/setup/applications.sh mail
 ```
+
+This installs isync together with the repository's complete terminal-mail stack.
 
 **Debian/Ubuntu:**
 ```bash
@@ -281,4 +283,4 @@ For issues with this setup:
 1. Check the log files in `~/.cache/isync/`
 2. Verify your `pass` entries are correct
 3. Test individual account synchronization
-4. Check isync documentation: https://isync.sourceforge.io/ 
+4. Check isync documentation: https://isync.sourceforge.io/

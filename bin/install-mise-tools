@@ -25,9 +25,27 @@ EOF
     chmod +x "$target"
 }
 
-install_wrapper claude
-install_wrapper codex
-install_wrapper gh
-install_wrapper pi
+install_named_wrapper() {
+    case "$1" in
+        claude|codex|gh|pi)
+            install_wrapper "$1"
+            ;;
+        bw)
+            install_wrapper 'npm:@bitwarden/cli' bw bw
+            ;;
+        *)
+            echo "Unknown mise wrapper: $1" >&2
+            return 1
+            ;;
+    esac
+}
+
+if (( $# == 0 )); then
+    set -- claude codex gh pi
+fi
+
+for wrapper in "$@"; do
+    install_named_wrapper "$wrapper"
+done
 
 echo "Installed mise wrappers in $HOME/.local/bin"

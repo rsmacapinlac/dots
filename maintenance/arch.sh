@@ -104,12 +104,12 @@ configure_npm_user_prefix() {
     export PATH="$HOME/.npm-global/bin:$PATH"
 }
 
-# Update npm global packages (requires sudo for system-wide packages)
+# Update user-owned npm globals when the optional development group is present.
 update_npm_packages() {
     log_info "Updating npm global packages..."
     if command -v npm &> /dev/null; then
-        # Use sudo for global npm updates (packages installed in /usr/lib/node_modules)
-        if sudo npm update -g; then
+        configure_npm_user_prefix
+        if npm update -g; then
             log_success "npm global packages updated"
         else
             log_warning "npm global packages update failed"
@@ -117,29 +117,6 @@ update_npm_packages() {
     else
         log_warning "npm not found, skipping"
     fi
-}
-
-# Ensure AI packages are present. Version upgrades are handled by the
-# `yay -Syu` in update_system_packages; this step exists so machines
-# provisioned before these were added pick them up.
-update_ai_packages() {
-    log_info "Ensuring AI packages..."
-
-    if ! command -v yay &>/dev/null; then
-        log_warning "yay not found, skipping AI package check"
-        return 0
-    fi
-
-    local pkg
-    for pkg in claude-desktop chatgpt-desktop; do
-        if pacman -Q "$pkg" &>/dev/null; then
-            log_info "$pkg already installed"
-        elif yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "$pkg"; then
-            log_success "$pkg installed"
-        else
-            log_warning "Failed to install $pkg"
-        fi
-    done
 }
 
 update_mise_tools() {
@@ -180,7 +157,6 @@ main() {
     update_system_packages
     update_dotfiles
     update_npm_packages
-    update_ai_packages
     update_mise_tools
     update_nvim_plugins
 
