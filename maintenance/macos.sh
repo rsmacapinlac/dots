@@ -272,7 +272,7 @@ update_nvim_plugins() {
 
 update_tmux_plugins() {
     log_info "Updating tmux plugins..."
-    local tpm_update="$HOME/.tmux/plugins/tpm/bin/update_plugins"
+    local tpm_update="$HOME/.config/tmux/plugins/tpm/bin/update_plugins"
     if [[ -x "$tpm_update" ]]; then
         "$tpm_update" all || log_warning "tmux plugin update failed"
         log_success "tmux plugins updated"

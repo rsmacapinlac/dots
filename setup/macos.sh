@@ -301,9 +301,23 @@ install_development_packages() {
         pkg-config \
         make
 
-    if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-        git clone --depth 1 https://github.com/tmux-plugins/tpm.git "$HOME/.tmux/plugins/tpm"
+    if [[ ! -d "$HOME/.config/tmux/plugins/tpm" ]]; then
+        git clone --depth 1 https://github.com/tmux-plugins/tpm.git "$HOME/.config/tmux/plugins/tpm"
         log_info "TPM installed"
+    fi
+
+    # Cloning TPM only installs the plugin manager; the plugins declared in
+    # config/tmux/tmux.conf -- Catppuccin included -- still have to be fetched
+    # or tmux starts with an unstyled status bar. install_plugins reads the
+    # plugin list from tmux options, so a server must have sourced the config.
+    if [[ -x "$HOME/.config/tmux/plugins/tpm/bin/install_plugins" ]]; then
+        tmux start-server 2>/dev/null || true
+        tmux source-file "$HOME/.config/tmux/tmux.conf" 2>/dev/null || true
+        if "$HOME/.config/tmux/plugins/tpm/bin/install_plugins"; then
+            log_success "tmux plugins installed"
+        else
+            log_warning "tmux plugin install failed; run prefix + I inside tmux"
+        fi
     fi
 
     if [[ -x "$(brew --prefix)/opt/fzf/install" && ! -f "$HOME/.fzf.zsh" ]]; then
