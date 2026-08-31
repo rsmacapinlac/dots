@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Print a Caps Lock warning for the hyprlock screen.
+#
+# Called from the `capslock` label in config/hypr/hyprlock.conf on a short
+# poll. Prints nothing when Caps Lock is off so the label stays invisible.
+#
+# Usage: hyprlock-capslock [color]
+#   color  six hex digits, no leading '#'. Defaults to Catppuccin Mocha yellow.
+
+color="$1"
+case "$color" in
+  [0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]) ;;
+  *) color="f9e2af" ;;
+esac
+
+led_says_on() {
+  for led in /sys/class/leds/*::capslock/brightness; do
+    [ -r "$led" ] || continue
+    [ "$(cat "$led")" = "0" ] || return 0
+  done
+  return 1
+}
+
+# Keyboards without a Caps Lock LED still report state to the compositor.
+compositor_says_on() {
+  hyprctl devices -j 2>/dev/null | grep -q '"capsLock":[[:space:]]*true'
+}
+
+if led_says_on || compositor_says_on; then
+  printf '<span foreground="#%s"><b>󰪛 Caps Lock is on</b></span>\n' "$color"
+fi
