@@ -181,7 +181,7 @@ Before adding a file, decide which tree it belongs in:
 - Current repository may have local modifications; treat them as user-owned unless you made them in this session.
 - Prefer reading existing documentation before changing related behavior:
   - Hyprland startup: `docs/hyprland-startup.md`
-  - Email/isync: `docs/isync.md`
   - Testing the build scripts: `docs/testing-build-scripts.md`
+  - Email/isync: `docs/isync.md` in the private repo, with the mail configs
 - If a command may be long-running, interactive, destructive, or require sudo, ask first or use a separate tmux window/pane when instructed.
 - Claude Code historically runs in tmux window 1; use other tmux windows for long-running commands when needed.

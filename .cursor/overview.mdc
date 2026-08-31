@@ -19,7 +19,6 @@ See `CLAUDE.md` for complete command reference including:
 ### Key Documentation
 - `CLAUDE.md` - Complete repository guide and architecture
 - `README.md` - Setup instructions and feature overview
-- `docs/isync.md` - Email synchronization setup
 - `docs/ranger-smb-mounting.md` - SMB share integration
 
 ### Configuration Structure

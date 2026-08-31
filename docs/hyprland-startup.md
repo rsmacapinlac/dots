@@ -40,7 +40,7 @@ user = "greeter"
 
 [initial_session]
 command = "uwsm start -- start-hyprland"
-user = "ritchie"
+user = "<your-username>"
 ```
 
 ## Why uwsm

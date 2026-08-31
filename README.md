@@ -136,9 +136,14 @@ the bootstrap scripts and run once, by hand, after the desktop is up.
 - `README.md`: what the profiles encode and which values are hardware-bound
 
 ### Documentation (`docs/`)
-- `isync.md`: Complete email synchronization setup guide
-- `hyprland-startup.md`: Hyprland startup and display handling
+- `hyprland-startup.md`: Hyprland startup, greetd, and display handling
+- `arch-vm-validation.md`: post-install package and runtime smoke checks
 - `ai-desktop-control.md`: the AI desktop apps, and which of their capabilities work here
+- `mise.md`: the mise-backed tool launchers and where they sit on `PATH`
+- `testing-build-scripts.md`: exercising the bootstrap in a disposable VM
+
+Mail setup is documented in the private companion repo, alongside the configs
+and scripts it describes.
 
 ### System Files (Root Level)
 - Shell configurations: `zshrc`, `aliases`
@@ -177,10 +182,8 @@ desktop still comes up and neomutt still starts — it just has no accounts.
 - **Neovim IDE**: LSP integration, completion, file tree, and Git integration
 - **Terminal Setup**: Tmux with session management and custom key bindings
 - **Shell Enhancement**: Zsh with comprehensive aliases and functions
-- **Version Control**: Git configuration optimized for development workflow
 
 ### Detailed Guides
-- **[Email Setup (isync)](docs/isync.md)**: Complete multi-account email configuration
 - **[Hyprland Startup](docs/hyprland-startup.md)**: Display init and monitor handling
 - **[Arch VM Validation](docs/arch-vm-validation.md)**: post-install package and runtime smoke checks
 - **[AI Desktop Control](docs/ai-desktop-control.md)**: the AI desktop apps, and which of their capabilities work here
@@ -287,11 +290,14 @@ fpr=$(gpg --list-secret-keys --with-colons \
 echo "$fpr:6:" | gpg --import-ownertrust
 
 ssh-add ~/.ssh/id_rsa
-git clone git@github.com:rsmacapinlac/cautious-dollop.git ~/.password-store
+git clone <your-password-store-repo> ~/.password-store
 ```
 
 The explicit permissions matter when restoring from a vfat drive. Verify GPG
 encryption and decryption before trusting the restored password store.
+
+A `pass` store is personal, so no repository is named here. Substitute your
+own, or `pass init <gpg-id>` to start an empty one.
 
 The shell does not load SSH keys into the agent — it only points at it. Add this
 to `~/.ssh/config` so a key is added on first use and stays cached for the
