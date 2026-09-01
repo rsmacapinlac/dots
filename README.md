@@ -165,16 +165,27 @@ and the neomuttrc that binds them, git identity, agent settings naming private
 repositories — lives in a separate private repo, listed **first**:
 
 ```sh
-DOTFILES_DIRS="$HOME/workspace/dots-crispy-meme $HOME/workspace/dots"
+DOTFILES_DIRS="$HOME/workspace/<private-repo> $HOME/workspace/dots"
 ```
 
-`rcm` deploys the first tree that provides a given path, so private files
-override the public defaults. The order is load-bearing: reversed, the public
-default `neomuttrc` would shadow the real one and mail would quietly stop
-working.
+That line lives in the *private* repository's own `rcrc`, not in this one —
+naming a private repository in a public one is the kind of leak this split
+exists to prevent. The `rcrc` here names only this repo, so a standalone clone
+works on its own.
 
-Clone them side by side before running `rcup`. Without the private repo the
-desktop still comes up and neomutt still starts — it just has no accounts.
+`rcm` deploys the first tree that provides a given path, so private files
+override these defaults. The order is load-bearing: reversed, the default
+`neomuttrc` would shadow the real one and mail would quietly stop working.
+
+Bootstrap the pair once, before `~/.rcrc` knows the private repo exists:
+
+```sh
+env RCRC="$HOME/workspace/<private-repo>/rcrc" rcup
+```
+
+After that `~/.rcrc` resolves from the private tree and plain `rcup` works.
+Without the private repo the desktop still comes up and neomutt still starts —
+it just has no accounts.
 
 ## Key Features & Documentation
 

@@ -57,8 +57,8 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 ## Notable files and directories
 
 - `rcrc` — rcm configuration. `README.md`, `LICENSE`, and `docs` are excluded from dotfile installation.
-  `DOTFILES_DIRS` lists the private identity repo first, then this one; `rcm` takes the
-  first tree providing a path, so private files override public defaults.
+  `DOTFILES_DIRS` names only this repo, so a standalone clone works. The private repo
+  ships its own `rcrc` listing both trees, itself first, and that one wins once deployed.
 - `setup/start.sh` — detects the live ISO or installed system and dispatches the appropriate bootstrap phase.
 - `setup/archinstall/install.sh` — live-ISO Archinstall profile selector.
 - `setup/arch.sh` — post-Archinstall core Hyprland workstation bootstrap.
@@ -137,10 +137,12 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 ## Security and privacy
 
 This repository is public and holds defaults. Configuration that identifies
-one person lives in a separate private repo, which `rcrc` lists **first** in
-`DOTFILES_DIRS`: `rcm` deploys the first tree providing a path, so private
-files override public defaults. Reversing that order silently shadows the
-real config with the default, which is a failure mode worth remembering.
+one person lives in a separate private repo, which is **not named here** — a
+public repository naming a private one is itself the kind of disclosure this
+split exists to prevent. That repo ships its own `rcrc` listing both trees,
+itself first: `rcm` deploys the first tree providing a path, so private files
+override public defaults. Reversing that order silently shadows the real
+config with the default, which is a failure mode worth remembering.
 
 Identity currently held privately: `mbsyncrc`, `msmtprc`, the personal
 `config/neomutt/neomuttrc` and `config/neomutt/accounts/`, `gitconfig`,
