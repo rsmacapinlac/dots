@@ -245,6 +245,8 @@ install_virtualization() {
     yay_install \
         qemu-full \
         libvirt \
+        virt-install \
+        virt-viewer \
         virt-manager \
         edk2-ovmf \
         dnsmasq \
@@ -259,8 +261,9 @@ install_virtualization() {
 
     sudo usermod -a -G libvirt,kvm "$USER"
     configure_kvm
-    sudo systemctl enable libvirtd.service virtlogd.service virtlockd.service
+    sudo systemctl enable --now libvirtd.service virtlogd.service virtlockd.service
     sudo virsh net-autostart default 2>/dev/null || true
+    sudo virsh net-start default 2>/dev/null || true
 
     local memory_kib memory_gib
     memory_kib=$(awk '/MemTotal/{print $2}' /proc/meminfo)
@@ -284,7 +287,9 @@ install_citrix() {
     local build_root aur_version
 
     log_info "Installing Citrix Workspace..."
-    build_root=$(mktemp -d -t dots-icaclient.XXXXXX)
+    # The extracted Citrix payload exceeds the default /tmp tmpfs on a 4 GiB
+    # workstation or test VM, so keep this large, short-lived build on disk.
+    build_root=$(mktemp -d -p /var/tmp dots-icaclient.XXXXXX)
     (
         trap 'rm -rf "$build_root"' EXIT
         cd "$build_root"

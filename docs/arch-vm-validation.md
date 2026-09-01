@@ -132,6 +132,8 @@ setup/applications.sh --help
 setup/applications.sh not-a-group       # must fail before sudo or upgrades
 setup/applications.sh                   # open fzf, then cancel with Esc
 setup/applications.sh media mail
+setup/applications.sh all               # complete boundary rehearsal
+setup/applications.sh all               # idempotency rehearsal
 ```
 
 After installing selected groups, verify only their packages and services. For
@@ -143,14 +145,61 @@ pacman -Q syncthing
 systemctl --user is-enabled syncthing.service
 ```
 
+For a complete `all` run, verify the groups with persistent state and the large
+Citrix build explicitly:
+
+```bash
+pacman -Q icaclient syncthing qemu-full libvirt virt-install virt-viewer \
+  virt-manager edk2-ovmf
+systemctl --user is-enabled syncthing.service
+systemctl --user is-active syncthing.service
+systemctl is-enabled libvirtd.service virtlogd.service virtlockd.service
+systemctl is-active libvirtd.service virtlogd.service virtlockd.service
+virsh --connect qemu:///system net-info default
+find /var/tmp -maxdepth 1 -name 'dots-icaclient.*' -print  # expect no output
+```
+
 The virtualization group must select `kvm_intel` or `kvm_amd` from the detected
 CPU vendor and must not apply model-specific CPU, memory, or governor tuning.
+The default libvirt network must be active, persistent, and autostarting. In a
+nested test guest, log out and back in before requiring unprivileged libvirt
+access so the new `libvirt` and `kvm` group memberships take effect.
 
 ## Result recording
 
 Record the tested commit, profile, date, selected optional groups, and any VM
 limitations. Do not retain an old “last confirmed” result after changing the
 installer; validation claims must correspond to the current scripts.
+
+### 2026-08-31 — commit `ec9be68` (branch `main`) plus tested working-tree fixes, profile `vm-test.json`
+
+Full rebuild from a new 30 GiB UEFI/KVM guest, driven through the visible VM
+console. Archinstall completed in 2m17s; `qemu-guest-agent` was installed and
+verified before creating the `clean-install` snapshot, then the core phase ran
+from that baseline.
+
+- Core provisioning completed without errors and greetd entered Hyprland after
+  reboot. `graphical-session.target` is active, no user units are failed, and
+  `hyprctl configerrors` is clean.
+- `hypridle`, `hyprpaper`, `waybar`, `mako`, and `hyprpolkitagent` are all
+  running. All restart counters are zero except `hyprpaper` (`NRestarts=1`),
+  consistent with the documented VM EGL limitation.
+- The complete core package check passed, as did the four mise launchers
+  (`claude`, `codex`, `gh`, and `pi`). `Ctrl+Return` opened Kitty and
+  `Ctrl+Space` opened Rofi.
+- `tests/vm-send-keys-test.sh` passed outside the guest. With Kitty focused in
+  the visible viewer, the helper also typed and executed `printf vm-key-test`
+  correctly through libvirt's console key events.
+- Optional installer interface checks passed: `--help` exited 0, an unknown
+  group exited 1 before sudo or an upgrade, and the fzf menu rendered and
+  cancelled with Escape without selecting a group.
+- The first `applications.sh all` run reached the `work` group but failed while
+  packaging Citrix: its extracted payload exceeded the VM's 1.9 GiB `/tmp`
+  tmpfs even though 13 GiB remained on disk. Moving the Citrix build root to
+  disk-backed `/var/tmp` fixed the failure. Retrying `work syncthing` completed,
+  then a full `all` rerun completed idempotently: installed packages were
+  skipped, Citrix rebuilt without a quota error, Syncthing remained enabled and
+  active, the temporary build directory was removed, and no user units failed.
 
 ### 2026-08-30 — commit `52399e1` (branch `standardize-on-uwsm`), profile `vm-test.json`
 

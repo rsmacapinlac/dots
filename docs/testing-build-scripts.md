@@ -23,6 +23,53 @@ You *must*:
 - Test as if you're the user. Send keys to the virtual machine as a user would with a keyboard.
 - Show the virtual machine using the viewer, so the work can be monitored by a human.
 
+## Local checks before the VM
+
+Run the cheap checks first. They catch syntax and console-key mapping failures
+without spending time on a rebuild:
+
+```bash
+bash -n setup/*.sh setup/archinstall/install.sh setup/lib/*.sh \
+  setup/services/*.sh setup/install-mise-tools maintenance/*.sh \
+  tests/vm-send-keys tests/*.sh
+luac -p config/hypr/hyprland.lua config/hypr/conf/*.lua
+jq empty setup/archinstall/urakara.json setup/archinstall/vm-test.json
+tests/vm-send-keys-test.sh
+```
+
+Cursor's `keybindings.json` is JSONC, not strict JSON, and must not be passed to
+`jq` without removing its comments first.
+
+Confirm that the VM profile still matches the documented 30 GiB disk geometry:
+
+```bash
+test "$(jq -r '.disk_config.device_modifications[0].partitions[1].size.value' \
+  setup/archinstall/vm-test.json)" = 31133270016
+```
+
+The host virtualization stack comes from the optional application group. Run
+this once on the host, then log out and back in for `kvm` and `libvirt` group
+membership to take effect:
+
+```bash
+setup/applications.sh virtualization
+```
+
+Before creating a guest, verify the exact capabilities used below:
+
+```bash
+virt-host-validate qemu
+systemctl is-active libvirtd virtlogd virtlockd
+virsh --connect qemu:///system net-info default
+virsh --connect qemu:///system domcapabilities --virttype kvm
+```
+
+Hardware virtualization, `/dev/kvm`, `/dev/vhost-net`, `/dev/net/tun`, the
+libvirt services, the active/autostarting default network, KVM domain support,
+and an OVMF loader must all be present. IOMMU and secure-guest warnings do not
+block this ordinary VM; they matter for device passthrough or confidential
+guests.
+
 ## Creating the VM
 
 ```bash
@@ -159,7 +206,29 @@ virsh screenshot dots-test /tmp/console.png          # read the screen
 virsh send-key dots-test --codeset linux KEY_ENTER   # type at the console
 ```
 
-`send-key` takes one keycode per call, so typing a long command is tedious but scriptable. The Arch ISO also runs `qemu-guest-agent`, so commands can be run in the *live* environment directly — handy for staging files before typing:
+Use the repository helper for text. It sends one paced event per character so
+repeated letters are not collapsed, handles shifted US-keyboard punctuation,
+and can press Enter after the text. Focus the intended terminal or input field
+in the viewer first; libvirt sends keys to whichever guest window has focus:
+
+```bash
+tests/vm-send-keys --enter dots-test 'bash /tmp/start.sh'
+tests/vm-send-keys --prompt --enter dots-test       # passwords, hidden input
+tests/vm-send-keys --dry-run --enter dots-test 'echo test'
+```
+
+Use `virsh send-key` directly for standalone control keys such as `KEY_ESC`.
+The helper's mappings can be checked without a VM using
+`tests/vm-send-keys-test.sh`.
+
+For a live smoke test, focus a guest terminal in the viewer and send a harmless
+command whose exact output is easy to recognize:
+
+```bash
+tests/vm-send-keys --enter dots-test 'printf vm-key-test'
+```
+
+The Arch ISO also runs `qemu-guest-agent`, so commands can be run in the *live* environment directly — handy for staging files before typing:
 
 ```bash
 virsh qemu-agent-command dots-test \
@@ -188,17 +257,39 @@ console is what hides terminal-handling bugs.
 
 After the core phase succeeds, reboot and confirm greetd starts Hyprland for the
 user. Run the checks in [`arch-vm-validation.md`](arch-vm-validation.md), then
-exercise the optional interface without installing everything at once:
+exercise the optional interface before installing packages:
 
 ```bash
 setup/applications.sh --help
-setup/applications.sh media mail
+setup/applications.sh not-a-group       # must fail before sudo or an upgrade
+setup/applications.sh                   # open fzf, cancel with Escape
 ```
 
-Run `setup/applications.sh` with no arguments to verify the fzf multi-select
-menu and cancellation path. Each invocation must perform one full system
-upgrade, install the selected packages, and enable only services owned by those
-groups.
+For a complete optional-application rehearsal, install every group and then run
+the same command again to exercise idempotency:
+
+```bash
+setup/applications.sh all
+setup/applications.sh all
+```
+
+Each invocation must perform one full system upgrade. The second run should
+skip current packages, complete without errors, clean temporary build
+dependencies, and remove the temporary passwordless sudo rule.
+
+The Citrix payload is too large to build in the VM's memory-backed `/tmp`.
+`install_citrix` deliberately uses disk-backed `/var/tmp`; a regression here
+fails during `package()` with `Disk quota exceeded` even when the btrfs disk has
+plenty of free space. After `all` completes, verify the fix and the final
+service state:
+
+```bash
+pacman -Q icaclient syncthing
+systemctl --user is-enabled syncthing.service
+systemctl --user is-active syncthing.service
+find /var/tmp -maxdepth 1 -name 'dots-icaclient.*' -print  # expect no output
+systemctl --user list-units --state=failed                # expect none
+```
 
 ## What a VM will not tell you
 

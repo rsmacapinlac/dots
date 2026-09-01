@@ -87,10 +87,17 @@ The core phase contains many steps that only execute on a fresh machine. Bugs
 there are invisible on a working system, so a disposable VM is the only way to
 exercise that path. `setup/archinstall/vm-test.json` is the rehearsal target.
 
+Run the local console-helper test before starting the longer VM rehearsal:
+
+```bash
+tests/vm-send-keys-test.sh
+```
+
 See **[Testing the Build Scripts](docs/testing-build-scripts.md)** for the full procedure:
-creating the VM, running both bootstrap phases at the console, snapshotting
-before the core phase, verifying the Hyprland boot, installing optional groups,
-and tearing it down.
+host virtualization preflight, local syntax checks, creating the VM, driving
+both bootstrap phases through the visible console, snapshotting before the core
+phase, verifying Hyprland, testing all optional groups and idempotency, and
+tearing the guest down.
 
 ## Repository Structure
 

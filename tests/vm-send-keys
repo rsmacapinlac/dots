@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+# Type ASCII text into a libvirt guest console using paced key events.
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: tests/vm-send-keys [OPTIONS] DOMAIN [TEXT ...]
+
+Send TEXT to a libvirt guest one character at a time. Multiple TEXT arguments
+are joined with spaces. This avoids dropped or collapsed repeated keycodes.
+The guest's intended input field or terminal must already have keyboard focus.
+
+Options:
+  --connect URI  libvirt connection       default: qemu:///system
+  --delay MS     delay after each event   default: 100
+  --enter        press Enter after TEXT
+  --stdin        read one line from standard input instead of arguments
+  --prompt       read TEXT silently from the controlling terminal
+  --dry-run      print key events without invoking virsh or sleeping
+  -h, --help     show this help
+
+Use --prompt for passwords so they do not appear in process arguments or shell
+history. Only printable US-ASCII text is supported; use virsh send-key directly
+for standalone keys such as Escape or function keys.
+EOF
+}
+
+uri=qemu:///system
+delay_ms=100
+press_enter=0
+input_mode=arguments
+dry_run=0
+
+while (( $# > 0 )); do
+    case "$1" in
+        --connect)
+            (( $# >= 2 )) || { echo "vm-send-keys: --connect requires a URI" >&2; exit 2; }
+            uri=$2
+            shift 2
+            ;;
+        --delay)
+            (( $# >= 2 )) || { echo "vm-send-keys: --delay requires milliseconds" >&2; exit 2; }
+            delay_ms=$2
+            shift 2
+            ;;
+        --enter)
+            press_enter=1
+            shift
+            ;;
+        --stdin)
+            input_mode=stdin
+            shift
+            ;;
+        --prompt)
+            input_mode=prompt
+            shift
+            ;;
+        --dry-run)
+            dry_run=1
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "vm-send-keys: unknown option: $1" >&2
+            exit 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+[[ $delay_ms =~ ^[0-9]+$ ]] || {
+    echo "vm-send-keys: delay must be a non-negative integer" >&2
+    exit 2
+}
+(( $# >= 1 )) || { usage >&2; exit 2; }
+
+domain=$1
+shift
+
+case "$input_mode" in
+    arguments)
+        (( $# > 0 )) || { echo "vm-send-keys: TEXT is required" >&2; exit 2; }
+        text=$*
+        ;;
+    stdin)
+        (( $# == 0 )) || { echo "vm-send-keys: --stdin does not accept TEXT" >&2; exit 2; }
+        IFS= read -r text || [[ -n ${text:-} ]]
+        ;;
+    prompt)
+        (( $# == 0 )) || { echo "vm-send-keys: --prompt does not accept TEXT" >&2; exit 2; }
+        read -r -s -p "Text to send to $domain: " text < /dev/tty
+        printf '\n' > /dev/tty
+        ;;
+esac
+
+printf -v delay_seconds '%d.%03d' "$((delay_ms / 1000))" "$((delay_ms % 1000))"
+
+send_event() {
+    local keys=("$@")
+    if (( dry_run )); then
+        printf '%s\n' "${keys[*]}"
+        return
+    fi
+
+    virsh --connect "$uri" send-key "$domain" --codeset linux "${keys[@]}"
+    (( delay_ms == 0 )) || sleep "$delay_seconds"
+}
+
+send_character() {
+    local character=$1 key
+    case "$character" in
+        [a-z]) send_event "KEY_${character^^}" ;;
+        [A-Z]) send_event KEY_LEFTSHIFT "KEY_$character" ;;
+        [0-9]) send_event "KEY_$character" ;;
+        ' ') send_event KEY_SPACE ;;
+        '.') send_event KEY_DOT ;;
+        ',') send_event KEY_COMMA ;;
+        '/') send_event KEY_SLASH ;;
+        '-') send_event KEY_MINUS ;;
+        '=') send_event KEY_EQUAL ;;
+        ';') send_event KEY_SEMICOLON ;;
+        "'") send_event KEY_APOSTROPHE ;;
+        '[') send_event KEY_LEFTBRACE ;;
+        ']') send_event KEY_RIGHTBRACE ;;
+        '\') send_event KEY_BACKSLASH ;;
+        '`') send_event KEY_GRAVE ;;
+        '!') send_event KEY_LEFTSHIFT KEY_1 ;;
+        '@') send_event KEY_LEFTSHIFT KEY_2 ;;
+        '#') send_event KEY_LEFTSHIFT KEY_3 ;;
+        '$') send_event KEY_LEFTSHIFT KEY_4 ;;
+        '%') send_event KEY_LEFTSHIFT KEY_5 ;;
+        '^') send_event KEY_LEFTSHIFT KEY_6 ;;
+        '&') send_event KEY_LEFTSHIFT KEY_7 ;;
+        '*') send_event KEY_LEFTSHIFT KEY_8 ;;
+        '(') send_event KEY_LEFTSHIFT KEY_9 ;;
+        ')') send_event KEY_LEFTSHIFT KEY_0 ;;
+        '_') send_event KEY_LEFTSHIFT KEY_MINUS ;;
+        '+') send_event KEY_LEFTSHIFT KEY_EQUAL ;;
+        ':') send_event KEY_LEFTSHIFT KEY_SEMICOLON ;;
+        '"') send_event KEY_LEFTSHIFT KEY_APOSTROPHE ;;
+        '{') send_event KEY_LEFTSHIFT KEY_LEFTBRACE ;;
+        '}') send_event KEY_LEFTSHIFT KEY_RIGHTBRACE ;;
+        '|') send_event KEY_LEFTSHIFT KEY_BACKSLASH ;;
+        '~') send_event KEY_LEFTSHIFT KEY_GRAVE ;;
+        '<') send_event KEY_LEFTSHIFT KEY_COMMA ;;
+        '>') send_event KEY_LEFTSHIFT KEY_DOT ;;
+        '?') send_event KEY_LEFTSHIFT KEY_SLASH ;;
+        *)
+            printf 'vm-send-keys: unsupported character: %q\n' "$character" >&2
+            return 2
+            ;;
+    esac
+}
+
+for (( i = 0; i < ${#text}; i++ )); do
+    send_character "${text:i:1}"
+done
+(( press_enter == 0 )) || send_event KEY_ENTER
