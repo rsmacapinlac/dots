@@ -58,12 +58,13 @@
     },
     "pulseaudio": {
         // "scroll-step": 1, // %, can be a float
-        "format": "{icon} {volume}%",
+        "format": "{volume}% {icon}",
         "format-muted": "",
         "format-icons": {
             "default": ["", "", " "]
         },
         "on-click": "pamixer --toggle-mute",
+        "on-click-right": "$HOME/.bin/pulsemixer-toggle",
         "on-scroll-up": "pamixer --increase 5",
         "on-scroll-down": "pamixer --decrease 5"
     },

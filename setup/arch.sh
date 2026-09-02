@@ -91,6 +91,7 @@ install_core_packages() {
         wl-clipboard \
         htop \
         btop \
+        pulsemixer \
         tldr \
         fastfetch \
         jq \
@@ -124,6 +125,7 @@ install_hardware_support() {
         bolt \
         pipewire \
         pipewire-pulse \
+        pipewire-alsa \
         wireplumber \
         brightnessctl \
         pamixer \

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Toggle the pulsemixer flyout from waybar's audio module (right click).
+#
+# Closes the window when it is already on the workspace you are looking at,
+# and otherwise closes it and reopens it here. A window left behind on another
+# workspace would otherwise be killed invisibly, which looks identical to the
+# right click doing nothing. pulsemixer holds no state of its own -- it reads
+# PipeWire live -- so reopening is cheaper than moving the window, and it
+# avoids hyprctl dispatchers, whose argument syntax is Lua in this build.
+#
+# Placement is the "float-pulsemixer" rule in config/hypr/conf/rules.lua,
+# which centres the window on whichever monitor it opens on.
+
+set -euo pipefail
+
+class="pulsemixer"
+
+active_ws=$(hyprctl activeworkspace -j | jq -r '.id')
+window=$(hyprctl clients -j | jq -c --arg c "$class" \
+    '[.[] | select(.class == $c)] | first // empty')
+
+if [[ -n "$window" ]]; then
+    kill "$(jq -r '.pid' <<<"$window")" 2>/dev/null || true
+
+    # Already in front of you: the right click was a dismiss.
+    [[ "$(jq -r '.workspace.id' <<<"$window")" == "$active_ws" ]] && exit 0
+fi
+
+exec kitty --class "$class" -o remember_window_size=no -e pulsemixer

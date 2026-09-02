@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Pulsemixer
+Comment=Terminal mixer for PipeWire/PulseAudio volumes and devices
+Exec=kitty --class pulsemixer -o remember_window_size=no -e pulsemixer
+Icon=multimedia-volume-control
+Terminal=false
+Type=Application
+StartupWMClass=pulsemixer
+Categories=AudioVideo;
