@@ -52,7 +52,7 @@ processes. Concretely, uwsm activates `graphical-session-pre.target`,
 That last point is the whole reason this repo moved to it. Arch packages ship
 user units declaring `WantedBy=graphical-session.target`:
 
-`hypridle`, `hyprpaper`, `waybar`, `mako`, `hyprpolkitagent`
+`hypridle`, `hyprpaper`, `mako`, `hyprpolkitagent`
 
 **Without a session manager that target never activates**, so those units are
 enabled but never started. This is not theoretical: `hypridle` was enabled and
@@ -63,7 +63,7 @@ because `conf/autostart.lua` hand-execed a subset of the same programs —
 
 Running under uwsm means:
 
-- Those five services start and stay supervised, with systemd restart policies.
+- Those four services start and stay supervised, with systemd restart policies.
 - The list is maintained by the packages, not by hand in `autostart.lua`.
 - `~/.config/autostart/*.desktop` entries are honoured, because
   `xdg-desktop-autostart.target` is activated.
@@ -76,7 +76,8 @@ ships a unit.
 
 | Program | Started by |
 |---|---|
-| `hypridle`, `hyprpaper`, `waybar`, `mako`, `hyprpolkitagent` | systemd user units, enabled by `setup/arch.sh` |
+| `hypridle`, `hyprpaper`, `mako`, `hyprpolkitagent` | systemd user units, enabled by `setup/arch.sh` |
+| `waybar` | nothing — started by hand, see below |
 | `nm-applet`, `blueman-applet`, `set_wallpaper` | `conf/autostart.lua`, wrapped in `uwsm-app` |
 
 `conf/autostart.lua` wraps each remaining command in `uwsm-app` so it lands in
@@ -85,6 +86,23 @@ its own systemd scope. **Do not exec a unit-backed service from
 
 `config/wallpapers/bin/set_wallpaper` is deliberately systemd-aware for the
 same reason: it starts `hyprpaper.service` rather than forking its own copy.
+
+### waybar: installed, deliberately not enabled
+
+`waybar` ships a `graphical-session.target` unit like the four above, and
+`setup/arch.sh` installs the package — but deliberately does **not** enable the
+unit. The bar is therefore present and configured, and runs only when started
+by hand:
+
+```bash
+systemctl --user start waybar      # this session only
+```
+
+`config/waybar/` is deployed by rcm either way, so the bar is ready the moment
+it is started. To go back to starting it automatically, add `waybar` to the
+enable loop in `setup/arch.sh` and run `systemctl --user enable --now
+waybar.service`. Do not add it to `conf/autostart.lua` instead — the unit is
+the supported path, and an exec there would be unsupervised.
 
 ### Caveat: PATH
 
@@ -99,7 +117,7 @@ broken idle timeout. Check the target and the processes:
 
 ```bash
 systemctl --user is-active graphical-session.target    # expect: active
-for p in hypridle hyprpaper waybar mako hyprpolkitagent; do
+for p in hypridle hyprpaper mako hyprpolkitagent; do
   printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
 done
 systemctl --user list-units --state=failed             # expect: none

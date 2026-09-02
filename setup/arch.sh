@@ -415,7 +415,7 @@ enable_core_services() {
     # exactly how hypridle silently never ran. conf/autostart.lua must not also
     # exec these, or each gets a second, unsupervised copy.
     local unit
-    for unit in hypridle hyprpaper waybar mako hyprpolkitagent; do
+    for unit in hypridle hyprpaper mako hyprpolkitagent; do
         systemctl --user enable "$unit.service" 2>/dev/null \
             || log_warning "Could not enable $unit.service"
     done

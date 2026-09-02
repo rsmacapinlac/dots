@@ -19,7 +19,6 @@ automatically.
 
 ```bash
 pgrep -a Hyprland
-pgrep -a waybar
 HYPR_SIG=$(find /run/user/1000/hypr -mindepth 1 -maxdepth 1 -printf '%f\n' | head -1)
 XDG_RUNTIME_DIR=/run/user/1000 \
   HYPRLAND_INSTANCE_SIGNATURE="$HYPR_SIG" \
@@ -28,7 +27,8 @@ XDG_RUNTIME_DIR=/run/user/1000 \
 
 Expected:
 
-- Hyprland and Waybar are running.
+- Hyprland is running. Waybar is installed but **not** running: core no
+  longer enables its unit, so the bar is started by hand.
 - `hyprctl configerrors` prints no errors.
 - `Ctrl+Return` opens Kitty and `Ctrl+Space` opens Rofi.
 - Network, audio, brightness, lock, and display commands exist.
@@ -52,7 +52,7 @@ by systemd and still reports `ActiveState=active`, so a crash loop looks
 identical to a working service. Check the restart counter:
 
 ```bash
-for u in hypridle hyprpaper waybar mako hyprpolkitagent; do
+for u in hypridle hyprpaper mako hyprpolkitagent; do
   printf '%-18s %s' "$u" "$(systemctl --user show "$u" -p NRestarts --value)"; echo
 done
 ```
@@ -62,12 +62,12 @@ non-systemd arrangement it would simply have been absent, which was at least
 obvious.
 
 ```bash
-for p in hypridle hyprpaper hyprpolkitagent mako waybar; do
+for p in hypridle hyprpaper hyprpolkitagent mako; do
   printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
 done
 ```
 
-Expected: all five RUNNING. `hypridle` in particular has no fallback — if it is
+Expected: all four RUNNING. `hypridle` in particular has no fallback — if it is
 not running there is no idle timeout and no automatic lock.
 
 ## Core package checks

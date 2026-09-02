@@ -8,7 +8,12 @@
 -- exec here would start a second, unsupervised copy.
 --
 -- Started as units, deliberately absent below:
---   hypridle, hyprpaper, waybar, mako, hyprpolkitagent
+--   hypridle, hyprpaper, mako, hyprpolkitagent
+--
+-- waybar is deliberately started by neither mechanism. setup/arch.sh installs
+-- the package but does not enable its unit, so the bar is available and only
+-- runs when started by hand (`systemctl --user start waybar`). Adding an exec
+-- here would undo that.
 --
 -- What remains is what has no unit. Each goes through uwsm-app so it lands in
 -- its own systemd scope and dies with the session instead of being reparented
