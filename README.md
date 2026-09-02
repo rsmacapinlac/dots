@@ -2,45 +2,15 @@
 
 I wouldn't go as far as calling this an operation system like Omarchy (that is way better thoughtout) that said, I like my arch setup and I don't think I'm going to be getting rid of it any time soon.
 
-I've tried to optimize this for some hardware that I've owned.
+It's optimized for the hardware that I've owned.
 
 I've been looking at Omarchy and heavily relied on (Read: blatantly copied) some of their decisions to enhance my own setup.
-
-## Features
-
-### Desktop Environment
-- **Hyprland**: Modern Wayland compositor with dynamic tiling
-- **Waybar**: Customizable status bar with system monitoring
-- **Rofi**: Application launcher and window switcher
-- **Mako**: Lightweight notification daemon
-- **Hyprpaper**: Wallpaper manager for Wayland
-
-### Development Environment
-- **Neovim**: Fully configured with LSP, completion, and plugins
-- **Tmux**: Terminal multiplexer with custom configuration
-- **Kitty**: GPU-accelerated terminal emulators
-- **Git**: Comprehensive configuration with aliases
-- **Zsh**: Enhanced shell with oh-my-zsh and custom aliases
-
-### Applications
-- **Neomutt**: Terminal email client with multi-account support
-- **Ranger**: Console file manager
-- **cliamp**: Terminal music player
-- **Qutebrowser**: Vim-like web browser
-- **Various productivity tools**: Obsidian integration
-
-### Theme & Aesthetics
-- **Catppuccin**: Consistent color scheme across all applications
-- **Nerd Fonts**: Icon fonts for enhanced UI elements
-- **Custom wallpapers**: Curated collection of backgrounds
 
 ## Quick Setup
 
 ### Arch Linux
 
-A rebuild has three stages and the same bootstrap command is used for the first
-two. `setup/start.sh` detects whether it is running on the live ISO or the
-installed system:
+Installing dots has three stages using the same bootstrap command `setup/start.sh`. 
 
 ```bash
 # start with this
@@ -54,50 +24,19 @@ curl -fsSL https://raw.githubusercontent.com/rsmacapinlac/dots/main/setup/start.
 # reboot into Hyprland, then choose any optional application groups
 sudo reboot
 ~/workspace/dots/setup/applications.sh
+
+or ...
+# setup/applications.sh media mail
+# setup/applications.sh all
 ```
-
-The first invocation delegates to `setup/archinstall/install.sh`. The second
-installs the core Hyprland workstation through `setup/arch.sh`. Optional
-software is deliberately deferred until the machine boots into its usable
-desktop; select groups interactively or name them explicitly:
-
-```bash
-setup/applications.sh media mail
-setup/applications.sh all
-```
-
-### macOS
-
-macOS lives in its own repository now:
-[`dots-macos`](https://github.com/rsmacapinlac/dots-macos). It holds the
-Homebrew bootstrap, the maintenance script, and macOS builds of the three
-config files that needed a Darwin branch. It clones this repository for
-everything else.
-
-```bash
-git clone https://github.com/rsmacapinlac/dots-macos.git ~/workspace/dots-macos
-~/workspace/dots-macos/setup/macos.sh
-```
-
-This repository targets Linux: Arch for the desktop, Debian for headless LXC.
 
 ## Testing the Build Scripts 
 
-The core phase contains many steps that only execute on a fresh machine. Bugs
-there are invisible on a working system, so a disposable VM is the only way to
-exercise that path. `setup/archinstall/vm-test.json` is the rehearsal target.
+The installation process can be tested using a virtual machine (VM).
 
-Run the local console-helper test before starting the longer VM rehearsal:
+A disposable VM configuration has been provided as part of this repository: `setup/archinstall/vm-test.json`.
 
-```bash
-tests/vm-send-keys-test.sh
-```
-
-See **[Testing the Build Scripts](docs/testing-build-scripts.md)** for the full procedure:
-host virtualization preflight, local syntax checks, creating the VM, driving
-both bootstrap phases through the visible console, snapshotting before the core
-phase, verifying Hyprland, testing all optional groups and idempotency, and
-tearing the guest down.
+Read: **[Testing the Build Scripts](docs/testing-build-scripts.md)** for the full procedure.
 
 ## Repository Structure
 

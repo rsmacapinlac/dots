@@ -202,7 +202,7 @@ fi
 
 # Modern Go configuration
 export GO111MODULE=on
-export GOPROXY=direct,https://proxy.golang.org
+export GOPROXY=https://proxy.golang.org,direct
 export GOSUMDB=sum.golang.org
 export GOPATH="$HOME/go"
 if [[ -d "/usr/local/go" ]]; then
