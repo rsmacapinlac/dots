@@ -30,8 +30,12 @@ QtObject {
         return Math.round(root.spaceUnit * multiplier);
     }
 
-    // Gap between adjacent widgets in a bar section.
-    readonly property int widgetSpacing: space(2)
+    // Gap between adjacent widgets in a bar section. Deliberately wide: with no
+    // separator chrome in the bar, whitespace is the only thing grouping a
+    // widget's own parts against its neighbours. It therefore has to be clearly
+    // larger than any spacing used *inside* a widget -- the clock's date-to-time
+    // gap is space(2) -- or adjacent widgets read as one run of glyphs.
+    readonly property int widgetSpacing: space(5)
     // Inset from the bar's leading and trailing screen edges.
     readonly property int barPadding: space(3)
     // Horizontal padding inside a single widget's hit area.
