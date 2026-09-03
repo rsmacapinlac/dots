@@ -82,6 +82,7 @@ Item {
             WidgetRow {
                 id: leftRow
                 widgets: root.leftWidgets
+                screen: surface.screen
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -89,6 +90,7 @@ Item {
             WidgetRow {
                 id: centerRow
                 widgets: root.centerWidgets
+                screen: surface.screen
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -96,6 +98,7 @@ Item {
             WidgetRow {
                 id: rightRow
                 widgets: root.rightWidgets
+                screen: surface.screen
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -106,6 +109,8 @@ Item {
         id: row
 
         property list<Component> widgets
+        // Forwarded to every widget in the row. See BarWidget.screen.
+        property var screen: null
 
         spacing: Style.widgetSpacing
         height: root.barSize
@@ -125,11 +130,15 @@ Item {
                 // drive item.visible false, latching the widget off for good.
                 visible: item && "active" in item ? item.active : true
 
-                // The widget is constructed before this assignment lands, so
+                // The widget is constructed before these assignments land, so
                 // BarWidget's geometry properties fall back to Style until the
                 // host is attached. See BarWidget.qml.
-                onLoaded: if (item && "bar" in item)
-                    item.bar = root
+                onLoaded: {
+                    if (item && "bar" in item)
+                        item.bar = root;
+                    if (item && "screen" in item)
+                        item.screen = row.screen;
+                }
             }
         }
     }

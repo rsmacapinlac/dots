@@ -8,6 +8,9 @@
 //   settings   - per-widget overrides, read through setting().
 //   active     - whether the widget has anything to show. Set by the widget,
 //                read by the host: false drops it from the row entirely.
+//   screen     - the screen this instance is drawn on. The bar is
+//                instantiated once per monitor, so anything per-monitor has
+//                to come from here rather than from a global.
 //
 // Widgets set their own implicitWidth; height defaults to the bar's.
 
@@ -20,6 +23,12 @@ Item {
     property QtObject bar: null
     property string moduleName: ""
     property var settings: ({})
+
+    // Which monitor this copy of the widget lives on. Injected by the host,
+    // because a widget cannot otherwise tell: Variants builds one bar surface
+    // per screen and every copy evaluates the same global state identically.
+    // Any widget answering a question about "this screen" needs this.
+    property var screen: null
 
     // Widgets with no hardware behind them -- a battery on a desktop, a
     // backlight on a machine with no panel -- clear this instead of drawing an

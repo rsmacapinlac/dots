@@ -56,6 +56,21 @@ BarWidget {
     readonly property int slotStrong: pillWidth
     readonly property int slotWeak: idleWidth
 
+    // Which workspace *this screen* is displaying.
+    //
+    // Hyprland.focusedWorkspace is global -- one value for the whole session --
+    // so reading it here highlighted the same pill on every monitor's bar
+    // regardless of what that monitor was actually showing. With eDP-1 on 1 and
+    // DP-6 on 3, both bars lit 1. The widget's first question is "which
+    // workspace is *this screen* on", so the answer has to come from this
+    // instance's own monitor.
+    readonly property var monitor: root.screen !== null ? Hyprland.monitorFor(root.screen) : null
+    readonly property int activeId: {
+        if (root.monitor === null || root.monitor.activeWorkspace === null)
+            return -1;
+        return root.monitor.activeWorkspace.id;
+    }
+
     // Positive ids only: Hyprland numbers special workspaces (scratchpads)
     // negatively, and those are summoned by name rather than picked out of a
     // row, so they answer neither question.
@@ -106,7 +121,7 @@ BarWidget {
                 required property int modelData
 
                 readonly property var workspace: root.workspaceById(modelData)
-                readonly property bool focused: Hyprland.focusedWorkspace !== null && Hyprland.focusedWorkspace.id === modelData
+                readonly property bool focused: root.activeId === modelData
                 // Hyprland clears urgency when you arrive, so the two strong
                 // states rarely coincide. If they do, focused wins: you are
                 // already looking at it, which is what urgency was asking for.
