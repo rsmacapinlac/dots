@@ -76,7 +76,8 @@ ships a unit.
 
 | Program | Started by |
 |---|---|
-| `hypridle`, `hyprpaper`, `mako`, `hyprpolkitagent` | systemd user units, enabled by `setup/arch.sh` |
+| `hypridle`, `hyprpaper`, `mako`, `hyprpolkitagent` | packaged systemd user units, enabled by `setup/arch.sh` |
+| `quickshell` | our own user unit, enabled by `setup/arch.sh` |
 | `waybar` | nothing — started by hand, see below |
 | `nm-applet`, `blueman-applet`, `set_wallpaper` | `conf/autostart.lua`, wrapped in `uwsm-app` |
 
@@ -87,22 +88,46 @@ its own systemd scope. **Do not exec a unit-backed service from
 `config/wallpapers/bin/set_wallpaper` is deliberately systemd-aware for the
 same reason: it starts `hyprpaper.service` rather than forking its own copy.
 
+### quickshell: the bar
+
+The status bar is Quickshell, configured in QML under `config/quickshell/` and
+started by `config/systemd/user/quickshell.service`. That unit is ours rather
+than packaged — Quickshell ships no unit — but it attaches to
+`graphical-session.target` exactly like the four above, so it is supervised,
+restarts on failure, and logs to the journal:
+
+```bash
+systemctl --user status quickshell
+journalctl --user -u quickshell -b
+```
+
+Two properties of that unit are deliberate and worth not undoing:
+
+- `QS_DISABLE_FILE_WATCHER=1`. Quickshell would otherwise hot-reload on any
+  file change, and `rcup` or a package upgrade rewriting the tree mid-write
+  reloads it against a half-written config. Apply changes with an explicit
+  `systemctl --user restart quickshell.service`.
+- A restart is *required*, not merely tidier, after adding a new QML singleton.
+  Quickshell builds its type registry once at launch; a hot reload does not
+  rescan for new registrations, so a newly added singleton fails with
+  `ReferenceError: <Name> is not defined` even though the file is valid and in
+  place.
+
 ### waybar: installed, deliberately not enabled
 
 `waybar` ships a `graphical-session.target` unit like the four above, and
 `setup/arch.sh` installs the package — but deliberately does **not** enable the
-unit. The bar is therefore present and configured, and runs only when started
-by hand:
+unit. It remains as a fallback bar while the Quickshell one grows to parity,
+and runs only when started by hand:
 
 ```bash
+systemctl --user stop quickshell   # do not run two bars at once
 systemctl --user start waybar      # this session only
 ```
 
-`config/waybar/` is deployed by rcm either way, so the bar is ready the moment
-it is started. To go back to starting it automatically, add `waybar` to the
-enable loop in `setup/arch.sh` and run `systemctl --user enable --now
-waybar.service`. Do not add it to `conf/autostart.lua` instead — the unit is
-the supported path, and an exec there would be unsupervised.
+`config/waybar/` is deployed by rcm either way, so it is ready the moment it is
+started. Do not add it to `conf/autostart.lua` — the unit is the supported
+path, and an exec there would be unsupervised.
 
 ### Caveat: PATH
 
@@ -117,7 +142,7 @@ broken idle timeout. Check the target and the processes:
 
 ```bash
 systemctl --user is-active graphical-session.target    # expect: active
-for p in hypridle hyprpaper mako hyprpolkitagent; do
+for p in hypridle hyprpaper mako hyprpolkitagent quickshell; do
   printf '%-18s ' "$p"; pgrep -x "$p" >/dev/null && echo RUNNING || echo "NOT RUNNING"
 done
 systemctl --user list-units --state=failed             # expect: none

@@ -51,6 +51,7 @@ Terminal-adjacent or keyboard-first GUI tools:
 - `qutebrowser` — GUI browser, but keyboard-driven/Vim-like; config in `config/qutebrowser/`.
 - `rofi` — graphical launcher/menu used from keyboard-driven workflows; config in `config/rofi/`.
 - `kitty` — terminal emulator that hosts the TUI workflow.
+- `quickshell` — the status bar, written in QML under `config/quickshell/`. Replaces waybar, which stays installed but un-enabled as a fallback.
 
 When adding new applications, prefer candidates that fit the first list. GUI additions should have a clear reason and should preserve keyboard-driven operation where possible.
 
@@ -66,6 +67,7 @@ When adding new applications, prefer candidates that fit the first list. GUI add
 - `setup/services/` — one-shot installers for account-bound apps (Nextcloud, Todoist). Deliberately not wired into the bootstrap scripts; run by hand after the desktop is up.
 - `setup/install-mise-tools` — installs the mise-backed launchers in `~/.local/bin`; called by the setup and maintenance scripts.
 - `maintenance/arch.sh`, `maintenance/lxc.sh` — regular update scripts.
+- `maintenance/generate-theme` — regenerates the three palette files from `config/theme/mocha.json`.
 - `config/wallpapers/` — wallpaper scripts and image collections.
 
 ## Common commands
@@ -117,6 +119,7 @@ There is no single project-wide test suite. Validate changes based on file type 
 - JSON/JSONC: validate JSON with `python -m json.tool` only for strict JSON files; do not use it for JSONC files with comments.
 - YAML: parse with available YAML tooling if installed.
 - Hyprland changes: `luac -p` only catches Lua syntax, not bad `hl.*` arguments. Bad binds and rules fail silently at load, so after reloading always check `hyprctl configerrors` and confirm the result with `hyprctl binds` / `hyprctl monitors`. Run `hyprctl reload` only when the user wants the live session reloaded.
+- Quickshell/QML: load-test with `qs -n -p config/quickshell` and expect `Configuration Loaded` with no warnings. `QT_QPA_PLATFORM=offscreen` catches every parse and type error without drawing on the session, but fails at `No PanelWindow backend loaded` because layer-shell needs real Wayland -- reaching that error means the QML itself is sound. Confirm surfaces actually map with `hyprctl layers | grep quickshell`.
 - RCM changes: use `rcup -n`/dry-run style checks if available; otherwise ask before applying with `rcup`.
 
 Avoid running bootstrap or maintenance scripts unless explicitly requested; they install packages, alter services, and may require sudo.
@@ -130,7 +133,10 @@ Avoid running bootstrap or maintenance scripts unless explicitly requested; they
 - Use existing helper/logging patterns (`log_info`, `log_success`, etc.) in setup and maintenance scripts.
 - Hyprland is configured in Lua. `config/hypr/hyprland.lua` is a thin loader; keep real configuration in modules under `config/hypr/conf/` and `require` them in dependency order.
 - `$HOME` does not expand in the Lua config. Build paths with `os.getenv("HOME") .. "/..."`.
-- `hyprlock`, `hypridle`, and `hyprpaper` stay in hyprlang; only Hyprland itself moved to Lua. The Catppuccin palette therefore exists twice: `config/hypr/conf/mocha.lua` for Hyprland and `config/hypr/mocha.conf` for hyprlock. Update both together.
+- `hyprlock`, `hypridle`, and `hyprpaper` stay in hyprlang; only Hyprland itself moved to Lua. The Catppuccin palette therefore exists in three syntaxes: `config/hypr/conf/colors.lua` for Hyprland, `config/hypr/colors.conf` for hyprlock, and `config/quickshell/Commons/Colors.qml` for the bar. **All three are generated -- do not hand-edit them.** Edit `config/theme/mocha.json` and run `maintenance/generate-theme`, then commit the regenerated files: rcm deploys from the checkout, and Hyprland reads `colors.lua` at session start. Every output is named for what it holds, never for the flavour, so changing flavour is a source edit plus a regenerate -- not a rename plus a hunt for references.
+- Quickshell is one long-running process (`config/quickshell/shell.qml`). Singletons live in `Commons/`, reusable chrome in `Ui/`, widgets in `modules/`. Every shared directory carries a `qmldir` declaring `module qs.<Dir>`, and is imported as `qs.<Dir>`. **Never reach a singleton by relative path** -- a `pragma Singleton` imported that way is instantiated once per importing file, so each consumer silently gets its own empty copy. Only a type in a declared module is process-wide.
+- Quickshell service singletons (`UPower`, `Pipewire`) connect lazily: fields read empty until a QML *binding* reads them, because the read is what opens the D-Bus connection. Use declarative bindings, not one-shot reads in `Component.onCompleted`.
+- `Commons/Colors.qml` is the generated raw palette; `Commons/Theme.qml` maps it to semantic roles. Widgets bind to `Theme`, never to `Colors` directly, so regenerating or swapping the palette never touches widget code. Do not name a singleton `Palette` -- QtQuick defines that type already and wins the lookup silently, leaving every colour `undefined` instead of erroring.
 - For Neovim, keep plugin declarations in `config/nvim/lua/core/plugins.lua` and plugin-specific setup under `config/nvim/lua/core/plugins_config/`.
 - For Awesome WM, keep modules split between `bindings/`, `deco/`, and `main/`.
 
@@ -182,6 +188,7 @@ Before adding a file, decide which tree it belongs in:
 - Before editing, check `git status --short` and avoid overwriting user changes.
 - Current repository may have local modifications; treat them as user-owned unless you made them in this session.
 - Prefer reading existing documentation before changing related behavior:
+  - Quickshell widget design: `docs/quickshell-widgets.md` — read before adding or changing a bar widget
   - Hyprland startup: `docs/hyprland-startup.md`
   - Testing the build scripts: `docs/testing-build-scripts.md`
   - Email/isync: `docs/isync.md` in the private repo, with the mail configs

@@ -1,0 +1,29 @@
+[Unit]
+Description=Quickshell desktop shell
+Documentation=https://quickshell.org/
+# Matches how the packaged hypridle/hyprpaper/mako units attach to the session:
+# started by graphical-session.target, and stopped with it. uwsm is what
+# activates that target -- see docs/hyprland-startup.md.
+PartOf=graphical-session.target
+After=graphical-session.target
+# Five restarts in a minute means the config is broken rather than unlucky, so
+# stop instead of spinning and let `systemctl --user status` show it.
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+# Quickshell's own file watcher is off: a `rcup` or a package upgrade rewriting
+# the config mid-write would reload the shell against a half-written tree, and
+# a failed reload leaves a second engine generation behind. Reload deliberately
+# with `systemctl --user restart quickshell.service` instead. A newly added
+# singleton needs that restart regardless -- the type registry is built once at
+# launch, so a hot reload would not see it.
+Environment=QS_DISABLE_FILE_WATCHER=1
+ExecStart=/usr/bin/quickshell --no-duplicate -p %h/.config/quickshell
+Restart=on-failure
+RestartSec=1s
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target

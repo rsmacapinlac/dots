@@ -420,6 +420,12 @@ enable_core_services() {
         systemctl --user enable "$unit.service" 2>/dev/null \
             || log_warning "Could not enable $unit.service"
     done
+
+    # The Quickshell bar. Unlike the units above this one is ours, deployed
+    # from config/systemd/user by setup_dotfiles, which has already run.
+    # waybar is deliberately left un-enabled beside it as a fallback bar.
+    systemctl --user enable quickshell.service 2>/dev/null \
+        || log_warning "Could not enable quickshell.service"
 }
 
 main() {
