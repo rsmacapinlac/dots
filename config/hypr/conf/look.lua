@@ -5,10 +5,10 @@ local c = require("conf.colors")
 
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 5,
+        gaps_in  = 3,
+        gaps_out = 3,
 
-        border_size = 2,
+        border_size = 1,
 
         col = {
             active_border   = { colors = { c.mauve, c.blue }, angle = 45 },
