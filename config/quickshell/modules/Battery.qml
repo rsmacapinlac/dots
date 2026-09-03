@@ -2,12 +2,23 @@
 //
 // Two questions, per docs/quickshell-widgets.md:
 //   1. Do I need to plug in?
-//   2. Am I running off the battery, or off mains?
+//   2. Am I gaining charge, holding, or running down?
 //
 // One channel per question, so neither answer has to be read out of the
-// other. Fill length and colour answer the first; the bolt answers the
+// other. Fill length and colour answer the first; the glyph answers the
 // second, and sits outside the battery body so it never competes with the
 // colour that carries severity.
+//
+// The second question used to be "am I on mains", answered by the presence of
+// a bolt. That conflated two situations worth telling apart: a charger that
+// is filling the battery, and one that is connected but delivering nothing.
+// The second is common -- an underpowered supply, a cable that negotiated a
+// low USB-C contract, a threshold, a firmware inhibit -- and it looks exactly
+// like charging if the only signal is "something is plugged in", while the
+// battery quietly drains. So the glyph now distinguishes them: a green bolt
+// means gaining, a muted plug means connected but static. The widget does not
+// try to say *which* cause; from here they are indistinguishable, and the
+// glyph reports what is observable.
 //
 // There is no numeral. The percentage was the obvious thing to draw and it is
 // the thing this widget deliberately does not: fill length and the colour
@@ -53,7 +64,14 @@ BarWidget {
     // whether mains is attached, and onBattery answers exactly that -- where
     // the device state splits the same fact across Charging, FullyCharged and
     // PendingCharge, three values to distinguish for one binary answer.
+    // Not named `state`: Item already has one, and it is a string.
+    readonly property int chargeState: device !== null ? device.state : UPowerDeviceState.Unknown
+
     readonly property bool onMains: device !== null && !UPower.onBattery
+
+    // Actually taking charge, as opposed to merely connected. FullyCharged and
+    // PendingCharge are both "connected, gaining nothing" and read as the plug.
+    readonly property bool charging: root.chargeState === UPowerDeviceState.Charging
 
     // Carried over from the waybar config this replaces, so the levels that
     // used to mean something still do.
@@ -74,22 +92,23 @@ BarWidget {
         return root.onMains ? device.timeToFull : device.timeToEmpty;
     }
 
-    // Not named `state`: Item already has one, and it is a string.
-    readonly property int chargeState: device !== null ? device.state : UPowerDeviceState.Unknown
-
     readonly property string estimate: {
         if (device === null)
             return "";
         if (root.chargeState === UPowerDeviceState.FullyCharged || (root.onMains && root.charge >= 0.995))
             return "Fully charged";
-        // Plugged in and deliberately holding below full, which is what a
-        // charge threshold looks like: rate and both time estimates sit at 0
-        // permanently. Falling through to "Estimating" here would promise a
+        // Connected but gaining nothing: rate and both time estimates sit at
+        // 0 and stay there. Falling through to "Estimating" would promise a
         // figure that is never coming, which reads as working and is a lie.
         //
-        // The wording is about charging, not about mains, because the bolt
-        // has already said mains -- restating it spends a line on something
-        // the glance layer answered.
+        // No attempt is made to say why. A charge threshold, a firmware
+        // inhibit and a supply too weak to charge are indistinguishable from
+        // here -- all three are pending-charge at a zero rate -- so the line
+        // states the observable fact and leaves the diagnosis to the person.
+        //
+        // The wording is about charging rather than about mains, because the
+        // glyph has already said something is plugged in; restating it would
+        // spend a line on what the glance layer answered.
         if (root.chargeState === UPowerDeviceState.PendingCharge)
             return "Not charging";
         if (root.secondsLeft <= 0)
@@ -129,6 +148,22 @@ BarWidget {
     active: present
     implicitWidth: row.implicitWidth
 
+    // Measured rather than assumed: the two glyphs are not the same advance
+    // width in this font (9px against 8px), so the slot takes the larger.
+    TextMetrics {
+        id: boltMetrics
+        font.family: Style.fontFamily
+        font.pixelSize: Style.fontSizeSmall
+        text: ""
+    }
+
+    TextMetrics {
+        id: plugMetrics
+        font.family: Style.fontFamily
+        font.pixelSize: Style.fontSizeSmall
+        text: ""
+    }
+
     // Detail on demand: the exact charge, and how long it buys you. Both are
     // redundant -- the fill length and the bolt already answered the widget's
     // two questions -- which is the only reason they are allowed here.
@@ -153,26 +188,30 @@ BarWidget {
         anchors.fill: parent
         spacing: Style.space(1.5)
 
-        // The slot is reserved whether or not mains is attached. The bar's
-        // right section is right-anchored, so a bolt that appears and
-        // disappears would shove the whole row sideways on every dock and
-        // undock -- a third of this widget's width, several times a day, for a
-        // state change you already see. Holding the space costs a small gap on
-        // battery and keeps the bar still.
+        // The slot is reserved whether or not anything is plugged in, and is
+        // sized to the wider of the two glyphs so swapping one for the other
+        // cannot move anything either. The bar's right section is
+        // right-anchored, so a glyph that appears, disappears, or changes
+        // width would shove the whole row sideways on every dock and undock --
+        // several times a day, for a state change you can already see.
         Item {
-            Layout.preferredWidth: bolt.implicitWidth
-            Layout.preferredHeight: bolt.implicitHeight
+            Layout.preferredWidth: Math.max(boltMetrics.width, plugMetrics.width)
+            Layout.preferredHeight: indicator.implicitHeight
             Layout.alignment: Qt.AlignVCenter
 
             Text {
-                id: bolt
+                id: indicator
                 anchors.centerIn: parent
-                text: ""
-                color: Theme.good
+                // Bolt when gaining charge, plug when merely connected.
+                text: root.charging ? "" : ""
+                // Green is reserved for the good case, so a plug cannot be
+                // mistaken for one at a glance; connected-but-static is a
+                // neutral fact, not a reassurance.
+                color: root.charging ? Theme.good : Theme.barTextMuted
                 font.family: Style.fontFamily
                 font.pixelSize: Style.fontSizeSmall
-                // Gated on `present` as well as `onMains`, so the bolt can
-                // never claim mains during the window before UPower has
+                // Gated on `present` as well as `onMains`, so the glyph can
+                // never claim a supply during the window before UPower has
                 // answered -- onBattery reads false until it does.
                 opacity: root.present && root.onMains ? 1 : 0
 
@@ -180,6 +219,11 @@ BarWidget {
                     NumberAnimation {
                         duration: Style.animationNormal
                         easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Style.animationFast
                     }
                 }
             }

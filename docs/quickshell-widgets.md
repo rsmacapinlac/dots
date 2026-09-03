@@ -152,10 +152,14 @@ tooltip feels fine right up until the pointer is somewhere else.
   still estimating reads as working, which is worse than the gap when no
   estimate is ever coming. "Not ready yet" and "there will never be one" are
   different states, and a placeholder that conflates them is a lie that looks
-  healthy. The battery widget hit this the first time it was plugged in: a
-  charge threshold holds the battery below full, so the rate and both time
-  estimates sit at zero indefinitely, and a tooltip written to treat zero as
-  "still working it out" promised a figure that was never going to arrive.
+  healthy. The battery widget hit this the first time it was plugged in: the
+  supply was too weak to charge at all, so the rate and both time estimates sat
+  at zero indefinitely, and a tooltip written to treat zero as "still working
+  it out" promised a figure that was never going to arrive. Note that the
+  widget cannot tell *why* — a charge threshold, a firmware inhibit and an
+  underpowered charger are identical from where it sits — which is the second
+  half of the rule: say the observable fact, and resist explaining a cause you
+  are guessing at.
 - **Nothing it does is destructive.** Hover fires by accident, every time.
 
 ### The worked example
