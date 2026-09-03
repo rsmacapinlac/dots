@@ -17,27 +17,27 @@ local powermenu = home .. "/.config/waybar/scripts/powermenu.sh"
 local wallpaper = home .. "/.config/wallpapers/bin/set_wallpaper"
 
 -- Applications and session
-hl.bind(ctrlMod .. " + Return",        hl.dsp.exec_cmd(terminal))
-hl.bind(ctrlMod .. " + space",         hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + Return",        hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + space",         hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + SHIFT + Q",     hl.dsp.window.close())
+hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+
 hl.bind(ctrlMod .. " + SHIFT + W",     hl.dsp.exec_cmd(wallpaper))
 hl.bind(ctrlMod .. " + ALT + Delete",  hl.dsp.exec_cmd(powermenu))
-hl.bind(ctrlMod .. " + SHIFT + Q",     hl.dsp.window.close())
-
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 
 -- Switch workspaces with ctrlMod + [0-9]
 -- Move the active window to a workspace with ctrlMod + SHIFT + [0-9]
 for i = 1, 10 do
     local key = i % 10 -- 10 maps to key 0
-    hl.bind(ctrlMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
-    hl.bind(ctrlMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+    hl.bind(mainMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
+    hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
 
 -- Move focus with ctrlMod + arrow keys
-hl.bind(ctrlMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(ctrlMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(ctrlMod .. " + down",  hl.dsp.focus({ direction = "down" }))
-hl.bind(ctrlMod .. " + right", hl.dsp.focus({ direction = "right" }))
+hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 
 -- Move windows with mainMod + LMB drag
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
