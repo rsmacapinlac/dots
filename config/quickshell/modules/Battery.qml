@@ -86,8 +86,12 @@ BarWidget {
         // charge threshold looks like: rate and both time estimates sit at 0
         // permanently. Falling through to "Estimating" here would promise a
         // figure that is never coming, which reads as working and is a lie.
+        //
+        // The wording is about charging, not about mains, because the bolt
+        // has already said mains -- restating it spends a line on something
+        // the glance layer answered.
         if (root.chargeState === UPowerDeviceState.PendingCharge)
-            return "On mains, not charging";
+            return "Not charging";
         if (root.secondsLeft <= 0)
             return "Estimating\u2026";
         return root.formatDuration(root.secondsLeft) + (root.onMains ? " until full" : " remaining");
