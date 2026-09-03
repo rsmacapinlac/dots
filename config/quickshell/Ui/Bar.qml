@@ -72,8 +72,9 @@ Item {
         WlrLayershell.layer: WlrLayer.Top
 
         // Sections are siblings in a single row. Center is anchored to the
-        // surface rather than placed between the other two, so a long window
-        // title on the left cannot shove the clock off-centre.
+        // surface rather than placed between the other two, so whatever sits
+        // in it stays centred on the screen: a long window title growing on
+        // the left would otherwise shove it sideways.
         Item {
             anchors.fill: parent
             anchors.leftMargin: Style.barPadding

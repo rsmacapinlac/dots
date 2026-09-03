@@ -37,6 +37,9 @@ ShellRoot {
         rightWidgets: [
             Component {
                 Modules.Battery {}
+            },
+            Component {
+                Modules.Clock {}
             }
         ]
     }
