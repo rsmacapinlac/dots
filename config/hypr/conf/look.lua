@@ -1,7 +1,7 @@
 -- Look and feel
 -- See https://wiki.hypr.land/Configuring/Basics/Variables/
 
-local c = require("conf.mocha")
+local c = require("conf.colors")
 
 hl.config({
     general = {

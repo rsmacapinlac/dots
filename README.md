@@ -273,8 +273,10 @@ those symlinks. Keep it machine-local.
 
 The configuration is designed to be modular and easily customizable:
 
-- **Colors**: All themes use Catppuccin - modify `config/hypr/conf/mocha.lua` (Hyprland),
-  `config/hypr/mocha.conf` (hyprlock), and related theme files
+- **Colors**: All themes use Catppuccin. The palette is generated, so edit
+  `config/theme/mocha.json` and run `maintenance/generate-theme` rather than
+  editing `config/hypr/conf/colors.lua` (Hyprland), `config/hypr/colors.conf`
+  (hyprlock), or `config/quickshell/Commons/Colors.qml` (bar) by hand
 - **Keybindings**: Hyprland bindings live in `config/hypr/conf/binds.lua`
 - **Applications**: Each app configuration is self-contained in `config/`
 - **Scripts**: Custom utilities in `bin/` can be modified or extended
