@@ -147,9 +147,15 @@ tooltip feels fine right up until the pointer is somewhere else.
 - **It leaves when you do**, and it stays inside the screen. Bar widgets sit at
   the edges, so a tooltip centred on one will hang off the display unless it is
   told to slide back inside.
-- **It says why a value is missing** rather than going blank. A tooltip with a
-  gap in it reads as broken; one that says it is still estimating reads as
-  working.
+- **It says why a value is missing** rather than going blank — and says the
+  *right* why. A tooltip with a gap in it reads as broken; one that says it is
+  still estimating reads as working, which is worse than the gap when no
+  estimate is ever coming. "Not ready yet" and "there will never be one" are
+  different states, and a placeholder that conflates them is a lie that looks
+  healthy. The battery widget hit this the first time it was plugged in: a
+  charge threshold holds the battery below full, so the rate and both time
+  estimates sit at zero indefinitely, and a tooltip written to treat zero as
+  "still working it out" promised a figure that was never going to arrive.
 - **Nothing it does is destructive.** Hover fires by accident, every time.
 
 ### The worked example

@@ -74,11 +74,20 @@ BarWidget {
         return root.onMains ? device.timeToFull : device.timeToEmpty;
     }
 
+    // Not named `state`: Item already has one, and it is a string.
+    readonly property int chargeState: device !== null ? device.state : UPowerDeviceState.Unknown
+
     readonly property string estimate: {
         if (device === null)
             return "";
-        if (root.onMains && root.charge >= 0.995)
+        if (root.chargeState === UPowerDeviceState.FullyCharged || (root.onMains && root.charge >= 0.995))
             return "Fully charged";
+        // Plugged in and deliberately holding below full, which is what a
+        // charge threshold looks like: rate and both time estimates sit at 0
+        // permanently. Falling through to "Estimating" here would promise a
+        // figure that is never coming, which reads as working and is a lie.
+        if (root.chargeState === UPowerDeviceState.PendingCharge)
+            return "On mains, not charging";
         if (root.secondsLeft <= 0)
             return "Estimating\u2026";
         return root.formatDuration(root.secondsLeft) + (root.onMains ? " until full" : " remaining");
