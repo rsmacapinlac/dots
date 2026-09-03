@@ -27,4 +27,12 @@ QtObject {
 
     // Hyprland marks a workspace urgent when a window on it wants attention.
     readonly property color urgent: Colors.red
+
+    // --------------------------------------------------------------- levels
+    // Severity, for widgets reading a measurement rather than a state. One
+    // shared ladder, so "this is getting low" looks the same wherever it
+    // appears and the eye only has to learn it once.
+    readonly property color good: Colors.green
+    readonly property color warning: Colors.peach
+    readonly property color critical: Colors.red
 }

@@ -33,5 +33,11 @@ ShellRoot {
                 Modules.Workspaces {}
             }
         ]
+
+        rightWidgets: [
+            Component {
+                Modules.Battery {}
+            }
+        ]
     }
 }

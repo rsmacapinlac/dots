@@ -119,6 +119,12 @@ Item {
                 sourceComponent: modelData
                 Layout.alignment: Qt.AlignVCenter
 
+                // A widget that reports itself inactive leaves the row. This
+                // reads BarWidget.active rather than the item's own visible,
+                // because setting a Loader invisible propagates down and would
+                // drive item.visible false, latching the widget off for good.
+                visible: item && "active" in item ? item.active : true
+
                 // The widget is constructed before this assignment lands, so
                 // BarWidget's geometry properties fall back to Style until the
                 // host is attached. See BarWidget.qml.
