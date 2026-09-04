@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+# Laptop lid handling.
+#
+# Closing the lid means "I am done" only when the laptop panel is the only
+# screen. With an external monitor attached it means "put this one away", so
+# the session must neither lock nor sleep -- it just drops the internal panel
+# out of the layout. Hyprland removes the output entirely rather than blanking
+# it, because a screen that still exists but cannot be seen swallows windows,
+# new app launches and the pointer.
+#
+# Suspend itself is logind's, not ours: HandleLidSwitch defaults to suspend and
+# HandleLidSwitchDocked to ignore, which is exactly the split above, so no
+# logind drop-in is installed. Locking goes through `loginctl lock-session` so
+# hypridle runs its own lock_cmd -- the same path config/hypr/hypridle.conf
+# already uses for before_sleep_cmd.
+#
+# Lives beside the config it serves, like hyprlock-capslock. Wired up in
+# conf/binds.lua (the lid itself) and conf/monitors.lua (monitor
+# hotplug, which is what recovers the panel when the dock is pulled while the
+# lid is still shut -- that fires no lid event).
+#
+# Usage: lid-switch closed|open|sync
+
+set -euo pipefail
+
+lock_file="${XDG_RUNTIME_DIR:-/tmp}/lid-switch.lock"
+
+# Overridable so the predicates can be pointed at fixtures in a test.
+drm_path="${LID_SWITCH_DRM_PATH:-/sys/class/drm}"
+lid_path="${LID_SWITCH_LID_PATH:-/proc/acpi/button/lid}"
+
+# Connector prefixes that are built into the laptop rather than plugged into it.
+internal_re='^(eDP|LVDS|DSI)-'
+
+usage() {
+    echo "Usage: $(basename "$0") {closed|open|sync}" >&2
+    exit 1
+}
+
+# Ground truth from the kernel, not from the event that woke us: the lid can
+# already be open again by the time this runs.
+lid_closed() {
+    local state
+    for state in "$lid_path"/*/state; do
+        [[ -r $state ]] || continue
+        [[ $(<"$state") == *closed* ]] && return 0
+    done
+    return 1
+}
+
+# Kernel view -- is a cable in? Used for the lock decision only, where the safe
+# error is to skip a lock rather than lock someone out of a session they are
+# still using.
+external_connected() {
+    # Not named `status`: zsh makes that read-only, and this file is worth
+    # keeping sourceable from an interactive shell for debugging.
+    local conn
+    for conn in "$drm_path"/card*-*/status; do
+        [[ -e $conn ]] || continue
+        [[ $conn =~ -(eDP|LVDS|DSI)-[^/]+/status$ ]] && continue
+        [[ $(<"$conn") == connected ]] && return 0
+    done
+    return 1
+}
+
+hypr_running() {
+    hyprctl monitors -j >/dev/null 2>&1
+}
+
+internal_output() {
+    hyprctl monitors all -j | jq -r --arg re "$internal_re" \
+        '.[] | select(.name | test($re)).name' | head -1
+}
+
+# Compositor view -- is an external monitor actually displaying? Stricter than
+# external_connected on purpose: a monitor that is cabled but switched off must
+# not cost us the only screen we can see.
+external_active() {
+    hyprctl monitors all -j | jq -e --arg re "$internal_re" \
+        '.[] | select(.name | test($re) | not) | select(.disabled == false)' \
+        >/dev/null 2>&1
+}
+
+internal_disabled() {
+    hyprctl monitors all -j | jq -e --arg n "$1" \
+        '.[] | select(.name == $n and .disabled == true)' >/dev/null 2>&1
+}
+
+# Enabling or disabling an output repacks the whole layout -- disabling eDP-1
+# slides DP-4 from x=1536 to x=0 -- but Quickshell's layer surfaces do not
+# follow. The bar keeps drawing at the monitor's old coordinates, which puts
+# everything right of the workspace pills off the edge of the screen.
+#
+# Restarting the shell re-anchors every surface. It is the same deliberate
+# restart config/systemd/user/quickshell.service documents for a config change,
+# and it only happens on an actual clamshell transition, not on the no-op
+# reconciles that the hotplug hooks fire constantly.
+bar_misplaced() {
+    local mons
+    mons=$(hyprctl monitors -j) || return 1
+    hyprctl layers -j | jq -e --argjson mons "$mons" '
+        to_entries[] as $entry
+        | ($mons[] | select(.name == $entry.key)) as $mon
+        | ($entry.value.levels["2"] // [])[]
+        | select(.namespace == "quickshell-bar")
+        | select(.x != $mon.x or .y != $mon.y)
+    ' >/dev/null 2>&1
+}
+
+# Give the compositor a moment to finish repacking before judging the surfaces,
+# then only pay for a restart if they really did not follow.
+resettle_bar() {
+    systemctl --user is-active --quiet quickshell.service || return 0
+    sleep 0.5
+    bar_misplaced || return 0
+    systemctl --user restart quickshell.service || true
+}
+
+# Reconcile the internal panel against the lid and the monitors actually in use.
+# Idempotent by design: every caller below may fire more than once for a single
+# physical change, and the hotplug hooks fire for changes that are not the lid
+# at all.
+reconcile() {
+    local internal
+    hypr_running || return 0
+
+    internal=$(internal_output)
+    [[ -n $internal ]] || return 0
+
+    # The name is interpolated into Lua that Hyprland then executes, and a
+    # headless output can be created with any name at all.
+    if [[ ! $internal =~ ^[A-Za-z0-9._-]+$ ]]; then
+        echo "lid-switch: refusing unsafe monitor name: $internal" >&2
+        return 1
+    fi
+
+    if lid_closed && external_active; then
+        internal_disabled "$internal" && return 0
+        hyprctl eval \
+            "hl.monitor({ output = \"$internal\", disabled = true })" >/dev/null
+        resettle_bar
+    else
+        internal_disabled "$internal" || return 0
+        # Reload rather than re-adding the output by hand: conf/monitors.lua is
+        # the only place the panel's mode, position and scale are written down,
+        # and a reload reapplies them without this script having to remember or
+        # duplicate them.
+        hyprctl reload >/dev/null
+        resettle_bar
+    fi
+}
+
+# A monitor coming or going takes a moment to settle, and the first pass can
+# read a state that is already stale. The second pass costs nothing when the
+# first one got it right, because reconcile is a no-op once the state matches.
+reconcile_settling() {
+    reconcile || true
+    sleep 2
+    reconcile
+}
+
+main() {
+    case ${1:-} in
+        closed)
+            # Undocked: this is the last screen, so secure it before logind
+            # suspends. Docked is clamshell -- still in use, must not lock.
+            if lid_closed && ! external_connected; then
+                loginctl lock-session 2>/dev/null || true
+            fi
+            reconcile
+            ;;
+        open)
+            reconcile
+            ;;
+        sync)
+            reconcile_settling
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+# Serialise: the lid binds and the monitor hooks can fire within milliseconds of
+# each other, and two reconciles interleaving would fight over the same output.
+#
+# A lid press waits for its turn, because dropping one loses a lock. A hotplug
+# sync does not: a second one is asking the same question the run in progress is
+# already answering, and its own settling pass will see whatever the first did.
+# That also keeps duplicate handlers cheap if a reload ever leaves two
+# registered, rather than queueing a stack of two-second passes behind them.
+exec 9>"$lock_file"
+case ${1:-} in
+    sync) flock -n 9 || exit 0 ;;
+    *)    flock -w 5 9 || exit 0 ;;
+esac
+
+main "$@"

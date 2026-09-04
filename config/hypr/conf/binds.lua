@@ -15,6 +15,7 @@ local terminal  = "kitty"
 local menu      = home .. "/.config/rofi/rofi-dynamic.sh"
 local powermenu = home .. "/.config/waybar/scripts/powermenu.sh"
 local wallpaper = home .. "/.config/wallpapers/bin/set_wallpaper"
+local lid_switch = home .. "/.config/hypr/lid-switch"
 
 -- Applications and session
 hl.bind(mainMod .. " + Return",        hl.dsp.exec_cmd(terminal))
@@ -55,6 +56,16 @@ hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = tr
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+
+-- Laptop lid. Closing it with no external display locks the session and lets
+-- logind suspend on its own default; closing it with a monitor attached is
+-- clamshell mode, which must neither lock nor sleep, so hypr/lid-switch only
+-- drops the internal panel out of the layout. See that script for the split.
+--
+-- `locked` is load-bearing here rather than a nicety: without it neither bind
+-- fires once hyprlock is up, which is precisely when a lid gets closed.
+hl.bind("switch:on:Lid Switch",  hl.dsp.exec_cmd(lid_switch .. " closed"), { locked = true })
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd(lid_switch .. " open"),   { locked = true })
 
 -- Screenshots (hyprshot)
 hl.bind("Print",                   hl.dsp.exec_cmd("hyprshot -m output")) -- full screen
