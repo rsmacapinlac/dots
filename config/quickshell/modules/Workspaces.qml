@@ -35,6 +35,31 @@
 // reflowing. That was backwards: four dots for workspaces that do not exist
 // answer neither question, and the row is a truer picture of the session when
 // it is allowed to grow and shrink.
+//
+// And only the workspaces on *this* bar's monitor are drawn. The bar is
+// instantiated once per screen, and drawing the session's whole list on each
+// one made both rows identical -- the same digits in the same order, differing
+// only in which pill was lit. A workspace living on the other monitor answers
+// neither question about this one: you are not on it, and you cannot be sent
+// to it without leaving the screen you are looking at.
+//
+// The cost is deliberate and worth writing down: an urgent workspace on the
+// other monitor no longer appears here. That narrows the second question from
+// "which workspace wants attention" to "which workspace *on this screen* wants
+// attention". It holds because the pill still pulses on the monitor that owns
+// it, and that monitor is by definition one you can see -- and because closing
+// the lid does not create a blind spot, since disabling the panel migrates its
+// workspaces onto the remaining output, where this row picks them up.
+//
+// Workspaces are not pinned to monitors anywhere in conf/; Hyprland binds a new
+// one to whichever monitor was focused when it was created. So each row is
+// emergent and will drift with use, and the numerals are not a positional index
+// into the row -- another reason every slot stays labelled.
+//
+// Note that the keybinds do not agree with this. `super+N` in conf/binds.lua is
+// session-global: pressed on the laptop it focuses workspace N wherever it
+// lives, which may change the *other* bar's row and leave this one untouched.
+// That is a known and accepted mismatch, not an oversight.
 
 import QtQuick
 import QtQuick.Layouts
@@ -60,10 +85,15 @@ BarWidget {
     //
     // Hyprland.focusedWorkspace is global -- one value for the whole session --
     // so reading it here highlighted the same pill on every monitor's bar
-    // regardless of what that monitor was actually showing. With eDP-1 on 1 and
-    // DP-6 on 3, both bars lit 1. The widget's first question is "which
-    // workspace is *this screen* on", so the answer has to come from this
-    // instance's own monitor.
+    // regardless of what that monitor was actually showing. With the laptop on
+    // 1 and the external on 3, both bars lit 1. The widget's first question is
+    // "which workspace is *this screen* on", so the answer has to come from
+    // this instance's own monitor.
+    //
+    // Connector names are not written down here on purpose. conf/monitors.lua
+    // matches the external by `desc:` precisely because the port floats -- the
+    // same panel has come up as DP-4 and DP-6 -- so the widget compares monitor
+    // objects and never a name.
     readonly property var monitor: root.screen !== null ? Hyprland.monitorFor(root.screen) : null
     readonly property int activeId: {
         if (root.monitor === null || root.monitor.activeWorkspace === null)
@@ -76,11 +106,29 @@ BarWidget {
     // row, so they answer neither question.
     readonly property var workspaceIds: {
         var ids = [];
+        var mon = root.monitor;
+        if (mon === null)
+            return ids;
+
         var values = Hyprland.workspaces.values;
         for (var i = 0; i < values.length; i++) {
-            var id = values[i].id;
-            if (id > 0 && ids.indexOf(id) === -1)
-                ids.push(id);
+            var ws = values[i];
+            if (ws.id <= 0)
+                continue;
+            // Reading ws.monitor is what subscribes this binding to it, so
+            // moving a workspace between outputs -- by dispatcher, or by the
+            // migration that disabling the panel forces -- re-filters both
+            // rows on its own. Comparing objects rather than names keeps this
+            // honest when a connector is renumbered across a replug.
+            //
+            // The activeId escape hatch covers the moment before the links
+            // populate: this monitor's own active workspace is on this monitor
+            // by definition, so it is drawn even if ws.monitor is still null,
+            // and the row is never briefly empty at startup.
+            if (ws.monitor !== mon && ws.id !== root.activeId)
+                continue;
+            if (ids.indexOf(ws.id) === -1)
+                ids.push(ws.id);
         }
         ids.sort(function (a, b) {
             return a - b;
